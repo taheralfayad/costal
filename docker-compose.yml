@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    command: /bin/sh -c "npm --prefix ./lti/frontend run dev & python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - redis
+  
+  db:
+    hostname: db
+    image: ankane/pgvector
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["celery", "-A", "costal", "worker", "--loglevel=info"]
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+  redis:
+    image: redis/redis-stack-server:latest
+    ports:
+      - "6379:6379"

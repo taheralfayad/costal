@@ -1,0 +1,8 @@
+django==5.1
+django-cors-headers==4.4.0
+PyLTI1p3==2.0.0
+celery==5.3.1
+redis==5.0.0
+psycopg[binary]
+pgvector
+django-webpack-loader

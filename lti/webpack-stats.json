@@ -1,0 +1,16 @@
+{
+  "status": "done",
+  "assets": {
+    "main.js": {
+      "name": "main.js",
+      "path": "/app/lti/static/frontend/main.js",
+      "publicPath": "/static/frontend/main.js"
+    }
+  },
+  "chunks": {
+    "main": [
+      "main.js"
+    ]
+  },
+  "publicPath": "/static/frontend/"
+}
