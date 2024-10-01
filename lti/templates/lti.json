@@ -1,0 +1,32 @@
+{
+    "title": "COSTAL",
+    "scopes": [],
+    "extensions": [
+        {
+            "domain": "https://{{ domain }}",
+            "tool_id": "COSTAL",
+            "platform": "canvas.instructure.com",
+            "settings": {
+                "platform": "canvas.instructure.com",
+                "placements": [
+                    {
+                        "text": "COSTAL",
+                        "enabled": true,
+                        "placement": "course_navigation",
+                        "message_type": "LtiResourceLinkRequest",
+                        "target_link_uri": "https://{{ domain }}/{{hosted_path}}lti/launch/"
+                    }
+                ]
+            },
+            "privacy_level": "anonymous"
+        }
+    ],
+    "description": "Adaptive learning platform.",
+    "custom_fields": {
+        "canvas_user_id": "$Canvas.user.id",
+        "canvas_course_id": "$Canvas.course.id"
+    },
+    "public_jwk_url": "https://{{ domain }}/{{hosted_path}}lti/jwks/",
+    "target_link_uri": "https://{{ domain }}/{{hosted_path}}lti/launch/",
+    "oidc_initiation_url": "https://{{ domain }}/{{hosted_path}}lti/login/"
+  }
