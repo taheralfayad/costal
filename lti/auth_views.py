@@ -21,7 +21,7 @@ def oauth_login(request):
         .rstrip("/")
     )
     query_params["redirect_uri"] = redirect_uri
-    query_string = query_params.urlencode()
+    query_string = query_params.urlencode() 
     return redirect(settings.CANVAS_URL + "/login/oauth2/auth?" + query_string)
 
 
@@ -79,7 +79,7 @@ def oauth_complete(request):
     course_object = Course.objects.get(course_id=request.session["course_id"])
     course_object.users.add(user_object)
 
-    return render(request, "index.html", request.session["course_data"])
+    return render(request, "index.html")
 
 
 def refresh_access_token(request, user_object):
@@ -155,7 +155,7 @@ def verify_auth(request, user, expiration_date, response_data):
             )
             response_data["access_token"] = refresh["access_token"]
 
-            return render(request, "index.html", request.session["course_data"])
+            return render(request, "index.html")
         else:
             print("reAuthenticating due to refresh failure")
             return reauthenticate(request=request)
@@ -169,13 +169,13 @@ def verify_auth(request, user, expiration_date, response_data):
         # check for WWW-Authenticate
         # https://canvas.instructure.com/doc/api/file.oauth.html
         if "WWW-Authenticate" not in r.headers and r.status_code != 401:
-            return render(request, "index.html", request.session["course_data"])
+            return render(request, "index.html")
         else:
             new_token = refresh_access_token(request, user).get("access_token")
             if new_token:
                 request.session["api_key"] = new_token
                 response_data["access_token"] = new_token
-                return render(request, "index.html", request.session["course_data"])
+                return render(request, "index.html")
 
             else:
                 print("reAuthenticating due to bad key")
