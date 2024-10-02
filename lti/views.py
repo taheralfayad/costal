@@ -108,7 +108,6 @@ def login(request):
         request, tool_conf, launch_data_storage=launch_data_storage
     )
     target_link_uri = get_launch_url(request)
-
     return oidc_login.enable_check_cookies().redirect(target_link_uri)
 
 
@@ -163,6 +162,7 @@ def launch(request):
         "course_id": course_id,
     }
 
+
     course, created = Course.objects.get_or_create(course_id=course_id)
     if created:
         course.save()
@@ -170,7 +170,8 @@ def launch(request):
     # Authenticate on new user
     user_exists = CanvasUser.objects.filter(uid=user_id).exists()
     if not user_exists:
-        return HttpResponseRedirect(reverse("chatbot:oauth_login"))
+        return HttpResponseRedirect(reverse("lti:oauth_login"))
+
 
     # Get the expiration date
     try:

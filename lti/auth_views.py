@@ -45,9 +45,7 @@ def oauth_complete(request):
         settings.CANVAS_URL + "/login/oauth2/token", data=payload
     )
 
-    print(auth_response.__dict__, flush=True)
     json_auth_response = auth_response.json()
-    print("GOT AUTH RESPONSE", flush=True)
 
     # Useful Variables
     refresh_token = json_auth_response.get("refresh_token")
