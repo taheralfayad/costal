@@ -25,10 +25,10 @@ Starting Costal in attached mode
 docker compose -f docker-compose.yml up
 ```
 
-5. Run database migrations with `make makemigrations`.
+5. Run database migrations with `make migrate`.
 ```
-$ make makemigrations
-docker compose -f docker-compose.yml run --rm web python manage.py makemigrations
+$ make migrate
+docker compose -f docker-compose.yml run --rm web python manage.py migrate
 ```
 
 6. To install the tool into your local canvas instance, follow the steps in [Generating LTI Keys](#generating-lti-keys). After finishing the [course deployment](#deploy-to-an-account-or-course), COSTAL should be availible in the course navigation section on the left side of the course it was installed in.
