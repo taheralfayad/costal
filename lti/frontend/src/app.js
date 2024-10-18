@@ -3,11 +3,8 @@ import React from 'react';
 function App() {
   return (
     <div className="App">
-      <p>hello</p>
-      <p>hello</p>
-      <p>hello</p>
-      <p>hello</p>
-      <p>hello</p>
+      <h1>COSTAL</h1>
+      <p>This is the application home page</p>
     </div>
   );
 }
