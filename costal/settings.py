@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
+from dotenv import load_dotenv
+
 from pathlib import Path
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +29,13 @@ SECRET_KEY = 'django-insecure-s@xhz$aoft2enp9+zy&@pvd%p2m+$wt6+b&)lo$dl@xu43qtde
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0']
+ALLOWED_HOSTS = ['*']
+
+SESSION_COOKIE_NAME = "pylti1p3-django-app-sessionid"
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True  # should be True in case of HTTPS usage (production)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 
@@ -36,18 +46,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "corsheaders",
     'lti',
     'webpack_loader',
 ]
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
 ROOT_URLCONF = 'costal.urls'
@@ -81,12 +94,15 @@ WEBPACK_LOADER = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME", "yourdbname"),
+        "USER": os.environ.get("DB_USERNAME", "yourdbuser"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "yourdbpassword"),
+        "HOST": os.environ.get("DB_HOST", "db"),
+        "PORT": os.environ.get("DB_PORT", 5432),
     }
 }
-
 # Celery 
 
 CELERY_BROKER_URL = "redis://redis:6379/0"
@@ -133,4 +149,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, "lti", "static")
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
+CORS_ALLOWED_ORIGINS = [
+    "http://canvas.docker",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://canvas.docker",
+]
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CANVAS_URL = os.environ.get("CANVAS_URL")
+API_CLIENT_ID = os.environ.get("API_CLIENT_ID")
+API_CLIENT_ID_SECRET = os.environ.get("API_CLIENT_ID_SECRET")

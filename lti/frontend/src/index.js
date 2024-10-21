@@ -5,7 +5,7 @@ import App from "./app";
 
 const router = createBrowserRouter([
   {
-    path: '/lti',
+    path: '/lti/launch/',
     element: <App/>
   },
 ])

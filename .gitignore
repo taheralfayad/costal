@@ -1,0 +1,9 @@
+.env
+db.sqlite3
+__pycache__
+.DS_store
+node_modules/
+data/
+main.js
+webpack-stats.json
+*.pyc
