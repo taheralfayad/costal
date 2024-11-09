@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "corsheaders",
     'lti',
+    'rest_framework',
     'webpack_loader',
 ]
 
