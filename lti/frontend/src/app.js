@@ -1,10 +1,16 @@
 import React from 'react';
+import AddQuestions from './instructor/pages/AddQuestions.js';
+import AssignmentPreview from './instructor/pages/AssignmentPreview.js';
+import CreateAssignment from './instructor/pages/CreateAssignment.js'
+import CreateQuestion from './instructor/pages/CreateQuestion.js';
 
-function App() {
+const App = () => {
   return (
     <div className="App">
-      <h1>COSTAL</h1>
-      <p>This is the application home page</p>
+      {/* <CreateAssignment />
+      <AddQuestions /> 
+      <CreateQuestion /> */}
+      <AssignmentPreview />
     </div>
   );
 }
