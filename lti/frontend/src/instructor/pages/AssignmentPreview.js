@@ -1,9 +1,7 @@
 import React from 'react';
-import Badge from '../../design-system/Badge';
+import { Badge, Button, Title } from '../../design-system';
 import CalendarIcon from '../../assets/calendar.svg';
-import Button from '../../design-system/Button';
 import PreviewQuestion from '../components/PreviewQuestion';
-
 
 const AssignmentPreview = () => {
 
@@ -12,7 +10,7 @@ const AssignmentPreview = () => {
       <header>
         <section className='flex justify-between items-center'>
           <section className='flex flex-col gap-4'>
-            <h1 className='text-slate-950 text-3xl font-semibold'>Great Assignment</h1>
+            <Title>Great Assignment</Title>
             <Badge title='Homework' />
             <section className='flex'>
               <CalendarIcon />

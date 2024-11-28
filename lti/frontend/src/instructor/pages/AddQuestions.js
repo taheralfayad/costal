@@ -1,15 +1,15 @@
 import React from 'react';
-import Badge from '../../design-system/Badge';
+import { Badge, Button, Title } from '../../design-system';
 import Writing from '../../assets/writing.svg';
 import CalendarIcon from '../../assets/calendar.svg';
 import PlusIcon from '../../assets/plus.svg';
 import PlusGIcon from '../../assets/plus-green.svg';
-import Button from '../../design-system/Button';
+
 
 const AddQuestions = () => {
   return (
     <main className='p-6 pl-10 flex flex-col gap-4'>
-      <h1 className='text-slate-950 text-3xl font-semibold'>Great Assignment</h1>
+      <Title>Great Assignment</Title>
       <Badge title='Homework' />
       <section className='flex'>
         <CalendarIcon />

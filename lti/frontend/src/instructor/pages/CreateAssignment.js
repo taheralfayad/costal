@@ -1,13 +1,11 @@
 import React from 'react';
-import Button from '../../design-system/Button';
-import Checkbox from '../../design-system/Checkbox';
-import Input from '../../design-system/Input';
+import { Button, Checkbox, Input, Title } from '../../design-system';
 
 const CreateAssignment = () => {
   return (
     <div>
       <main className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
-        <h1 className='text-slate-950 text-3xl font-semibold'>Create Assignment</h1>
+        <Title>Create Assignment</Title>
         <Input label='Name' placeholder='Great Assignment' />
         <section className='flex justify-between'>
           <Input label='Start Date' placeholder='10/10/2024' />
