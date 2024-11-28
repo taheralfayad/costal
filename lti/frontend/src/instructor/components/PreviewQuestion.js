@@ -1,7 +1,6 @@
 import React from 'react';
 import DotsVertical from '../../assets/dots-vertical.svg';
-import TextArea from '../../design-system/TextArea';
-import CorrectAnswer from '../../design-system/CorrectAnswer';
+import { TextArea, CorrectAnswer } from '../../design-system';
 
 const PreviewQuestion = ({ title, points, percentage, question, placeholder = 'Placeholder', correctAnswer }) => {
   return (
