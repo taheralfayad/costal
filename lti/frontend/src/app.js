@@ -8,6 +8,7 @@ import SelectQuestions from './instructor/pages/SelectQuestions.js';
 import AssignmentSettings from './instructor/pages/AssignmentSettings.js';
 import EditAssignment from './instructor/pages/EditAssignment.js';
 import SelectObjectives from './instructor/pages/SelectObjectives.js';
+import LandingPage from './instructor/pages/LandingPage.js';
 
 const App = () => {
   return (
@@ -19,8 +20,9 @@ const App = () => {
       <OpenSourceHw />
       <SelectQuestions /> 
       <AssignmentSettings />
-      <EditAssignment /> */}
-      <SelectObjectives />
+      <EditAssignment /> 
+      <SelectObjectives /> */}
+      <LandingPage />
 
     </div>
   );

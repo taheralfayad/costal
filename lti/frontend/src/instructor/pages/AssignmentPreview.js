@@ -20,7 +20,7 @@ const AssignmentPreview = () => {
               </article>
             </section>
           </section>
-          <Button type='greenOutline' label='Settings' />
+          <Button type='lightGreenOutline' label='Settings' />
         </section>
 
         <section className='mt-10 mb-2 flex justify-between items-center h-24 rounded-md border border-slate-300'>
