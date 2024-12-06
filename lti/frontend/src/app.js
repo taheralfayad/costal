@@ -9,6 +9,7 @@ import AssignmentSettings from './instructor/pages/AssignmentSettings.js';
 import EditAssignment from './instructor/pages/EditAssignment.js';
 import SelectObjectives from './instructor/pages/SelectObjectives.js';
 import LandingPage from './instructor/pages/LandingPage.js';
+import CourseSettings from './instructor/pages/CourseSettings.js';
 
 const App = () => {
   return (
@@ -21,8 +22,9 @@ const App = () => {
       <SelectQuestions /> 
       <AssignmentSettings />
       <EditAssignment /> 
-      <SelectObjectives /> */}
-      <LandingPage />
+      <SelectObjectives />
+      <LandingPage /> */}
+      <CourseSettings />
 
     </div>
   );

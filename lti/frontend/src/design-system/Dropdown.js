@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ChevronDown from '../assets/chevron-down.svg';
 
-const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect }) => {
+const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect, width = 'w-full' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
@@ -14,13 +14,13 @@ const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect
   };
 
   return (
-    <article className='mb-4 w-full'>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+    <article className='mb-4'>
+      {label && <label className="block text-sm font-medium text-gray-700 mb-2">
         {label}
-      </label>
+      </label>}
       <section className="relative">
         <button
-          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-left text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className={`${width} px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-left text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           onClick={toggleDropdown}
         >
           {selected || 'Dropdown'}
@@ -30,7 +30,7 @@ const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect
         </button>
 
         {isOpen && (
-          <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto focus:outline-none sm:text-sm">
+          <ul className={`absolute z-10 mt-1 ${width} bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto focus:outline-none sm:text-sm`}>
             {options.map((option, index) => (
               <li
                 key={index}

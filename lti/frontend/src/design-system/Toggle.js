@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const Toggle = () => {
+const Toggle = ({ color = 'bg-emerald-400' }) => {
   const [isToggled, setIsToggled] = useState(false);
 
   const handleToggle = () => {
@@ -9,18 +9,19 @@ const Toggle = () => {
 
   return (
     <article
-      className={`w-10 h-6 flex items-center rounded-full p-1 cursor-pointer ${
-        isToggled ? "bg-emerald-400" : "bg-gray-300"
-      }`}
       onClick={handleToggle}
+      className={`w-[55px] h-8 flex items-center rounded-[30px] p-1 cursor-pointer transition-colors duration-300
+        ${isToggled ? color : "bg-gray-300"}`}
     >
       <article
-        className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${
-          isToggled ? "translate-x-4" : "translate-x-0"
-        }`}
+        className={`w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300
+          ${isToggled ? "translate-x-[20px]" : "translate-x-0"} top-[2px]`}
       ></article>
     </article>
   );
+
+
+  
 };
 
 export default Toggle;
