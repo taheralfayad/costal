@@ -640,6 +640,358 @@
                     "is_correct": false
                 }
             ]
-        }
+        },
+        {
+            "question_text": "What is the primary use of the `break` statement in Python?",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To exit a loop prematurely",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To skip the current iteration of a loop",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `continue` statement in Python?",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To exit a loop prematurely",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To skip the current iteration of a loop",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `pass` statement in Python?",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To exit a loop prematurely",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To skip the current iteration of a loop",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To do nothing and avoid syntax errors",
+                    "is_correct": true
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `range()` function in Python?",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To exit a loop prematurely",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To generate a sequence of numbers",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to use the `range()` function in a loop?",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "`for i in range(5):`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`for i = range(5):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for int i in range(5):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i = range(0, 5):`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which Python data structure allows you to store multiple values in a single variable, while preserving order and allowing modifications?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "List",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Tuple",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Dictionary",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Set",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is a list",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "A data structure that stores multiple values in a single variable",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "A data structure that stores key-value pairs",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A data structure that stores multiple values in a single variable, but does not allow modifications",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A data structure that stores unique values",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to create a list in Python?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "`my_list = [1, 2, 3]`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`my_list = (1, 2, 3)`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_list = {1, 2, 3}`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_list = {1: 'one', 2: 'two', 3: 'three'}`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access an element in a list by its index in Python?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "`my_list[0]`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`my_list(0)`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_list{0}`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_list['0']`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access all elements in a list?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "`for item in my_list:`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`for i in range(len(my_list)):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i in my_list:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for item in range(my_list):`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access the first element of a list in Python?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "my_list[0]",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "my_list[1]",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "my_list[first]",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "my_list[-1]",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which method is used to add an element to the end of a list in Python?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "```array = []\n array.append('item')```",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "```array = []\n array.insert('item')```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array = []\n array.extend('item')```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array = []\n array.add('item')```",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you remove a specific element from a list by value?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "```array = [1, 2, 3] \n array.remove(2)```",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "```array = [1, 2, 3] \n array.pop(2)```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array = [1, 2, 3] \n del array[2]```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array = [1, 2, 3] \n array.discard(2)",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What does `my_list[1:4]` return?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "A new list containing elements from index 1 to 3",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "A new list containing elements from index 1 to 4",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A single element at index 4",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "An error",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you check if an element exists in a list?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "`if item in my_list:`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`if item == my_list:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`if item.contains(my_list):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`if my_list.has(item):`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which method is used to combine another list into an existing list?",
+            "category": "Data Structures",
+            "possible_answers": [
+                {
+                    "possible_answer": "```array1 = [1,2]\n array2 = [3,4]\n array1.extend(array2)```",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "```array1 = [1,2]\n array2 = [3,4]\n array1.append(array2)```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array1 = [1,2]\n array2 = [3,4]\n array1.concat(array2)```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array1 = [1,2]\n array2 = [3,4]\n array1.add(array2)```",
+                    "is_correct": false
+                }
+            ]
+        }       
     ]
 }
