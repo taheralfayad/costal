@@ -1,0 +1,645 @@
+{
+    "course_id": 1,
+    "questions": [
+        {
+            "question_text": "Which of the following is a valid variable name in Python?",
+            "category": "Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "1_variable",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable_1",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "variable-1",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable 1",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will happen if you try to use a Python keyword, such as for, as a variable name?",
+            "category": "Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "Python will throw an error",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Python will automatically rename the variable",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Python will ignore the keyword",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Python will ask you to confirm the variable name",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to create a variable in Python?",
+            "category": "Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "variable = value",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "variable: value",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable := value",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "value == variable",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to declare multiple variables in a single line?",
+            "category": "Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "variable1, variable2 = value1, value2",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "variable1 = value1, variable2 = value2",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable1 = value1; variable2 = value2",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable1 = value1 and variable2 = value2",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output?\n\n```x = 5\ny = 10\nx = y\nprint(x)```",
+            "category": "Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "10",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "15",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "20",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What type of variable does this statement create?\n\n```x = 5```",
+            "category": "Data Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "String",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Integer",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Float",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Boolean",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "In Python, you have to declare the data type of a variable before using it.",
+            "category": "Data Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "True",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "False",
+                    "is_correct": true
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to declare a string in Python?",
+            "category": "Data Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "x = 'Hello, World!'",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "string = Hello, World!",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x string = \"Hello, World!\"",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "string x = Hello, World!",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What type of variable does this statement create?\n\n```x = 3.14```",
+            "category": "Data Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "String",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Integer",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Float",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Boolean",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is a Boolean variable?",
+            "category": "Data Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "A variable that can only store numbers",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A variable that can only store text",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A variable that can only store true or false values",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "A variable that can store any type of value",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What output will the following code produce?\n\n```x = 5\nprint(type(x))```",
+            "category": "Data Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "int",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "str",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "float",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "bool",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "You can use the `type()` function to check the data type of a variable in Python.",
+            "category": "Data Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "True",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "False",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you run a Python script from the command line?",
+            "category": "Program Execution",
+            "possible_answers": [
+                {
+                    "possible_answer": "python script.py",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "run script.py",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "execute script.py",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "./script.py",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you pass command line arguments to a Python script?",
+            "category": "Program Execution",
+            "possible_answers": [
+                {
+                    "possible_answer": "python script.py arg1 arg2",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "python script.py -arg1 -arg2",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "python script.py --arg1 --arg2",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "python script.py -arg1 arg2",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `if` statement in Python?",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To loop through a list",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To check a condition and execute code based on the result",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to write an `if` statement in Python?",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "if x = 5:",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "if x == 5:",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "if x === 5:",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "if x := 5:",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output\n\n```x = 10\n if x > 5:\nprint('x is greater than 5')```",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "x is greater than 5",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "x is less than 5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x is equal to 5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "No output",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `else` statement in Python?",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To loop through a list",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To execute code when the `if` condition is not met",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the difference between the `if` and `elif` statements in Python?",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "`if` is used for the first condition, `elif` is used for subsequent conditions",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`if` is used for subsequent conditions, `elif` is used for the first condition",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`if` is used for all conditions, `elif` is used for the first condition",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`if` is used for the first condition, `elif` is used for all conditions",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What happens if you use an `elif` statement without an `if` statement in Python?",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "Python will throw an error",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Python will ignore the `elif` statement",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Python will automatically add an `if` statement",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Python will ask you to confirm the statement",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output\n\n ```x = 5\n if x > 10:\nprint('x is greater than 10')\nelif x > 5:\nprint('x is greater than 5')\nelse:\nprint('x is 5 or less')```",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "x is greater than 10",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x is greater than 5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x is 5 or less",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "No output",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which of the following correctly uses a ternary operator in Python?",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "x = 5 if x > 5 else 10",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "x = 5 ? x > 5 : 10",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x = 5 : x > 5 ? 10",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x = 5 if x > 5 : 10",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How many else statements can you have in a single if-elif-else block in Python?",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "0",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "1",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "As many as you want",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "2",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which of the following is an invalid conditional satatement in Python?",
+            "category": "Conditional Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "if x > 5:",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "if x == 5:",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "if x = 5:",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "if x < 5:",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is a `for` loop used for in Python?",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To check a condition and execute code based on the result",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To execute a block of code iteratively for a fixed number of times",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to write a `for` loop in Python?",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "`for i in range(5):`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`for i = 0; i < 5; i++:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i = 0 to 5:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i = 0; i < 5; i += 1:`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output\n\n```for i in range(5):\nprint(i)```",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "0\n1\n2\n3\n4",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "1\n2\n3\n4\n5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "0\n1\n2\n3\n4\n5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "1\n2\n3\n4",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `while` loop in Python?",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To check a condition and execute code based on the result",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To execute a block of code iteratively until a condition is met",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to write a `while` loop in Python?",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "`while x < 5:`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`while x = 5:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`while x := 5:`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output\n\n```x = 0\nwhile x < 5:\nprint(x)\nx += 1```",
+            "category": "Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "0\n1\n2\n3\n4",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "1\n2\n3\n4\n5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "0\n1\n2\n3\n4\n5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "1\n2\n3\n4",
+                    "is_correct": false
+                }
+            ]
+        }
+    ]
+}

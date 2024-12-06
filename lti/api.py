@@ -105,6 +105,41 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question.save()
         serializer = QuestionSerializer(question)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['post'], url_path='add_question_list')
+    def add_question_list(self, request):
+        data = request.data
+        course = Course.objects.get(id=data['course_id'])
+        for question in data:
+            question = Question(question_text=question['question_text'])
+            objective_name = question['objective']
+
+            objective = Objective.objects.get(question_text=objective_name)
+
+            if objective:
+                question.objectives.add(objective) 
+            else:
+                objective = Objective.objects.create(objective_name=objective_name)
+                objective.questions.add(question)
+                objective.course = course
+                objective.save()
+            
+            question.objectives.add(objective)
+
+            for answer in question['possible_answers']:
+                possible_answer = PossibleAnswers.objects.create(
+                    possible_answer=answer['possible_answer'],
+                    is_correct=answer['is_correct'],
+                    related_question=question
+                )
+                possible_answer.save()
+                question.possible_answers.add(possible_answer)
+            
+            question.save()
+        
+        return Response(status=status.HTTP_201_CREATED)
+                
+
 
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
