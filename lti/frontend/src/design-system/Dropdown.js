@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ChevronDown from '../assets/chevron-down.svg';
 
-const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect, width = 'w-full' }) => {
+const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect, width = 'w-full', margin=true  }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
@@ -14,7 +14,7 @@ const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect
   };
 
   return (
-    <article className='mb-4'>
+    <article className={`${margin? 'mb-4' : ''}`}>
       {label && <label className="block text-sm font-medium text-gray-700 mb-2">
         {label}
       </label>}

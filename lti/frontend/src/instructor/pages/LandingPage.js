@@ -2,8 +2,7 @@ import React from 'react';
 import { Button, Title } from '../../design-system';
 import CircularProgressChart from '../components/CircularProgressChart';
 import HomeworkGradesChart from '../components/HomeworkGradesChart';
-import User from '../../assets/user.svg';
-import Calendar from '../../assets/calendar.svg';
+import CourseInfo from '../components/CourseInfo';
 
 const LandingPage = () => {
     const chartsData = [
@@ -23,14 +22,7 @@ const LandingPage = () => {
                 <article className='flex flex-col gap-2'>
                     <Title>Welcome to COSTAL</Title>
                     <h2 className='text-slate-950 text-xl font-semibold'>MAC 2313 - Calculus 3 Fall 2024 M04</h2>
-                    <section className='flex'>
-                        <User />
-                        <p className='text-slate-600 text-base font-medium'>Bob Doe</p>
-                    </section>
-                    <section className='flex'>
-                        <Calendar />
-                        <p className='text-slate-600 text-base font-medium'>Aug 23, 2024 - Dec 10, 2024</p>
-                    </section>
+                    <CourseInfo />
                 </article>
                 <Button type='blackOutline' label='Settings' />
             </header>

@@ -10,6 +10,7 @@ import EditAssignment from './instructor/pages/EditAssignment.js';
 import SelectObjectives from './instructor/pages/SelectObjectives.js';
 import LandingPage from './instructor/pages/LandingPage.js';
 import CourseSettings from './instructor/pages/CourseSettings.js';
+import CourseOutline from './instructor/pages/CourseOutline.js';
 
 const App = () => {
   return (
@@ -23,8 +24,9 @@ const App = () => {
       <AssignmentSettings />
       <EditAssignment /> 
       <SelectObjectives />
-      <LandingPage /> */}
-      <CourseSettings />
+      <LandingPage />
+      <CourseSettings /> */}
+      <CourseOutline />
 
     </div>
   );
