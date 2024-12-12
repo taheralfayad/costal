@@ -8,3 +8,5 @@ export { default as Input } from './Input';
 export { default as RichTextEditor } from './RichTextEditor';
 export { default as TextArea } from './TextArea';
 export { default as Title } from './Title';
+export { default as DatePickerInput } from './DatePickerInput';
+export { default as DatePicker } from './DatePicker';
