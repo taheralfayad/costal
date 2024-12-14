@@ -3,6 +3,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './RichTextEditor.css'; 
 
+// TODO add a math keyboard
 const RichTextEditor = ({ label='Rich Text Editor', value, onChange, placeholder = 'Type here' }) => {
     const [wordCount, setWordCount] = React.useState(0);
 

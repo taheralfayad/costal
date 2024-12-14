@@ -2,7 +2,7 @@ import React from 'react';
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 
 // i love stackoverflow actually
-const CircularProgressChart = ({ percentage, label }) => {
+const CircularProgressChart = ({ percentage, label='' }) => {
     const data = [
         { name: 'Completed', value: percentage },
     ];
@@ -44,7 +44,7 @@ const CircularProgressChart = ({ percentage, label }) => {
                 >
                     {percentage}%
                 </h4>
-                <p className="text-gray-500 text-sm font-semibold">{label}</p>
+                {label && <p className="text-gray-500 text-sm font-semibold">{label}</p>}
             </section>
         </article>
     );
