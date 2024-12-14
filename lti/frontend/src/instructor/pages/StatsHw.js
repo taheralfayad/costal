@@ -9,8 +9,8 @@ import ProgressBar from '../components/ProgressBar';
 
 const StatsHw = () => {
   const data = [
-    { name: 'Complete', value: 6, color: '#86efac' },
-    { name: 'In Progress', value: 6, color: '#fde68a' },
+    { name: 'Complete', value: 6, color: '#6ee7b7' },
+    { name: 'In Progress', value: 6, color: '#fef08a' },
     { name: 'Struggling', value: 1, color: '#f87171' },
     { name: 'Not Started', value: 2, color: '#94a3b8' },
   ];

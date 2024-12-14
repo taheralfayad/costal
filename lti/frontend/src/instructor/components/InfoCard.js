@@ -7,7 +7,7 @@ const InfoCard = ({ icon, title, description, long=true}) => {
         {icon}
         <h3>{title}</h3>
       </section>
-      <p>{description}</p>
+      <p className='text-base font-semibold'>{description}</p>
     </article>
   );
 };
