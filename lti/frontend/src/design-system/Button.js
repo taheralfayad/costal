@@ -6,7 +6,7 @@ const Button = ({ label = 'Button', icon = null, onClick, type = 'primary', clas
   const customStyles = {
     primary: 'bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-emerald-500',
     outline:
-      'border border-emerald-500 text-emerald-500 hover:bg-emerald-100 focus:ring-emerald-500',
+      'border border-emerald-500 text-emerald-500 hover:bg-emerald-100 focus:ring-emerald-500 bg-white',
     blackOutline:
       'border border-slate-900 text-slate-900 hover:bg-gray-100 focus:ring-emerald-500',
     lightGreenOutline:

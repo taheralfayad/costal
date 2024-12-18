@@ -14,6 +14,9 @@ import CourseOutline from './instructor/pages/CourseOutline.js';
 import StatsOverall from './instructor/pages/StatsOverall.js';
 import StatsStudent from './instructor/pages/StatsStudent.js';
 import StatsHw from './instructor/pages/StatsHw.js';
+import HwDone from './student/pages/HwDone.js';
+
+
 
 const App = () => {
   return (
@@ -31,8 +34,9 @@ const App = () => {
       <CourseSettings /> 
       <CourseOutline />
       <StatsOverall /> 
-      <StatsStudent /> */}
-      <StatsHw />
+      <StatsStudent /> 
+      <StatsHw /> */}
+      <HwDone />
 
     </div>
   );
