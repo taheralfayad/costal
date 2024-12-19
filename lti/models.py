@@ -21,10 +21,48 @@ class CanvasUser(models.Model):
 
 
 class Course(models.Model):
-    course_id = models.CharField(max_length=200)
+    course_id = models.CharField(max_length=200, primary_key=True)
     users = models.ManyToManyField(CanvasUser)
     teachers = models.ManyToManyField(CanvasUser, related_name="teaching_courses")
 
+
+# Models
+
+class Assignment(models.Model):
+    assignment_name = models.CharField(max_length=255)
+    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, blank=True, null=True)
+    objectives = models.ManyToManyField("Objective", blank=True)
+    questions = models.ManyToManyField("Question", blank=True)
+
+    def __str__(self):
+        return self.assignment_name
+
+class Objective(models.Model):
+    objective_name = models.TextField()
+    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, null=True, blank=True)
+    questions = models.ManyToManyField("Question", blank=True)
+
+    def __str__(self):
+        return self.objective_name
+
+
+class Question(models.Model):
+    question_text = models.TextField()
+    objectives = models.ManyToManyField("Objective", blank=True)
+    assignments = models.ManyToManyField("Assignment", blank=True)
+    possible_answers = models.ManyToManyField("PossibleAnswers", blank=True)
+
+    def __str__(self):
+        return self.question_text
+
+
+class PossibleAnswers(models.Model):
+    related_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
+    possible_answer = models.TextField(default="")
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.possible_answer
 
 # LTI Key Models
 

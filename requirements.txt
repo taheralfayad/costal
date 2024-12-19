@@ -1,3 +1,4 @@
+bertopic==0.16.4
 django==5.1
 django-cors-headers==4.4.0
 djangorestframework==3.15.2
@@ -5,6 +6,7 @@ fastapi[standard]
 PyLTI1p3==2.0.0
 celery==5.3.1
 redis==5.0.0
+pandas==2.2.3 
 psycopg[binary]
 pgvector
 pycryptodome
