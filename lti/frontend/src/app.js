@@ -8,13 +8,13 @@ import SelectQuestions from './instructor/pages/SelectQuestions.js';
 import AssignmentSettings from './instructor/pages/AssignmentSettings.js';
 import EditAssignment from './instructor/pages/EditAssignment.js';
 import SelectObjectives from './instructor/pages/SelectObjectives.js';
-import LandingPage from './instructor/pages/LandingPage.js';
 import CourseSettings from './instructor/pages/CourseSettings.js';
 import CourseOutline from './instructor/pages/CourseOutline.js';
 import StatsOverall from './instructor/pages/StatsOverall.js';
 import StatsStudent from './instructor/pages/StatsStudent.js';
 import StatsHw from './instructor/pages/StatsHw.js';
 import HwDone from './student/pages/HwDone.js';
+import LandingPage from './student/pages/LandingPage.js';
 
 
 
@@ -35,8 +35,10 @@ const App = () => {
       <CourseOutline />
       <StatsOverall /> 
       <StatsStudent /> 
-      <StatsHw /> */}
-      <HwDone />
+      <StatsHw /> 
+      <HwDone /> */}
+      <LandingPage />
+
 
     </div>
   );
