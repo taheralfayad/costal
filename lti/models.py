@@ -64,6 +64,16 @@ class PossibleAnswers(models.Model):
     def __str__(self):
         return self.possible_answer
 
+
+class Response(models.Model):
+    user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    response = models.ForeignKey(PossibleAnswers, on_delete=models.CASCADE)
+    number_of_seconds_to_answer = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.user} answered {self.response} to {self.question}"
+
 # LTI Key Models
 
 class Key(models.Model):

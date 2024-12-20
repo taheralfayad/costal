@@ -3,8 +3,23 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from lti.models import Assignment, Textbook, Question, PossibleAnswers, Objective
-from lti.serializers import AssignmentSerializer, QuestionSerializer, TextbookSerializer, PossibleAnswersSerializer, ObjectiveSerializer
+from lti.models import (
+    Assignment,
+    CanvasUser,
+    Textbook,
+    Question,
+    PossibleAnswers,
+    Objective,
+    Response as StudentResponse
+)
+
+from lti.serializers import (
+    AssignmentSerializer,
+    QuestionSerializer,
+    TextbookSerializer,
+    PossibleAnswersSerializer,
+    ObjectiveSerializer
+)
 
 class TextbookViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -138,8 +153,22 @@ class QuestionViewSet(viewsets.ModelViewSet):
             question.save()
         
         return Response(status=status.HTTP_201_CREATED)
-                
 
+    @action(detail=False, methods=['post'], url_path='answer_question')           
+    def answer_question(self, request):
+        data = request.data
+        user = CanvasUser.objects.get(id=data['user_id'])
+        question = Question.objects.get(id=data['question_id'])
+        answer_choice = PossibleAnswers.objects.get(id=data['answer_choice'])
+        number_of_seconds_to_answer = data['seconds_taken']
+        response = StudentResponse.objects.create(
+            user=user,
+            question=question,
+            response=answer_choice,
+            number_of_seconds_to_answer=number_of_seconds_to_answer
+        )
+        response.save()
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
