@@ -15,6 +15,7 @@ import StatsStudent from './instructor/pages/StatsStudent.js';
 import StatsHw from './instructor/pages/StatsHw.js';
 import HwDone from './student/pages/HwDone.js';
 import LandingPage from './student/pages/LandingPage.js';
+import AssignmentLanding from './student/pages/AssignmentLanding.js';
 
 
 
@@ -36,8 +37,9 @@ const App = () => {
       <StatsOverall /> 
       <StatsStudent /> 
       <StatsHw /> 
-      <HwDone /> */}
-      <LandingPage />
+      <HwDone />
+      <LandingPage /> */}
+      <AssignmentLanding />
 
 
     </div>
