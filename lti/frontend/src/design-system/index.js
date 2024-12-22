@@ -11,3 +11,5 @@ export { default as Title } from './Title';
 export { default as DatePickerInput } from './DatePickerInput';
 export { default as DatePicker } from './DatePicker';
 export { default as CircularProgressChart } from './CircularProgressChart';
+export { default as SearchBar } from './SearchBar';
+export { default as SquareButton } from './SquareButton';
