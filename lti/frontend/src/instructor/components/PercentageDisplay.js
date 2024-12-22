@@ -1,5 +1,5 @@
 import React from 'react';
-import CircularProgressChart from './CircularProgressChart';
+import { CircularProgressChart } from '../../design-system';
 
 const PercentageDisplay = ({title, description, percentage, long=false}) => {
   return (

@@ -14,7 +14,7 @@ import StatsOverall from './instructor/pages/StatsOverall.js';
 import StatsStudent from './instructor/pages/StatsStudent.js';
 import StatsHw from './instructor/pages/StatsHw.js';
 import HwDone from './student/pages/HwDone.js';
-import LandingPage from './student/pages/LandingPage.js';
+import LandingPage from './instructor/pages/LandingPage.js';
 import AssignmentLanding from './student/pages/AssignmentLanding.js';
 
 
@@ -38,8 +38,8 @@ const App = () => {
       <StatsStudent /> 
       <StatsHw /> 
       <HwDone />
-      <LandingPage /> */}
-      <AssignmentLanding />
+      <LandingPage /> 
+      <AssignmentLanding percentageTotal={20} /> */}
 
 
     </div>

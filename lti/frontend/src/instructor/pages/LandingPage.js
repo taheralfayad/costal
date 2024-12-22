@@ -1,6 +1,5 @@
 import React from 'react';
-import { Button, Title } from '../../design-system';
-import CircularProgressChart from '../components/CircularProgressChart';
+import { Button, Title, CircularProgressChart } from '../../design-system';
 import HomeworkGradesChart from '../components/HomeworkGradesChart';
 import CourseInfo from '../components/CourseInfo';
 
@@ -52,11 +51,9 @@ const LandingPage = () => {
                 <article className='flex gap-10'>
                     {chartsData.map((chart, index) => (
                         <CircularProgressChart
-                            key={index}
                             percentage={chart.percentage}
                             label={chart.label}
-                            colors={chart.colors}
-                            size={chart.size}
+    
                         />
                     ))}
                 </article>
