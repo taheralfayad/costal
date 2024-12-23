@@ -7,6 +7,7 @@ PyLTI1p3==2.0.0
 celery==5.3.1
 redis==5.0.0
 pandas==2.2.3 
+pydantic==2.10.4
 psycopg[binary]
 pgvector
 pycryptodome

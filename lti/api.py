@@ -1,3 +1,6 @@
+import os
+import requests
+
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,7 +12,7 @@ from lti.models import (
     Textbook,
     Question,
     PossibleAnswers,
-    Objective,
+    Skill,
     Response as StudentResponse
 )
 
@@ -18,7 +21,7 @@ from lti.serializers import (
     QuestionSerializer,
     TextbookSerializer,
     PossibleAnswersSerializer,
-    ObjectiveSerializer
+    SkillSerializer
 )
 
 class TextbookViewSet(viewsets.ModelViewSet):
@@ -102,7 +105,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             )
 
         possible_answers = data['possible_answers']
-        objectives = data['objectives']
+        skill_id = data['skill_id']
 
         for answer in possible_answers:
             possible_answer = PossibleAnswers.objects.create(
@@ -113,9 +116,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             possible_answer.save()
             question.possible_answers.add(possible_answer)
 
-        for objective in objectives:
-            obj = Objective.objects.get(id=objective['id'])
-            question.objectives.add(obj)
+        question.associated_skill = Skill.objects.get(id=skill_id)
 
         question.save()
         serializer = QuestionSerializer(question)
@@ -127,19 +128,18 @@ class QuestionViewSet(viewsets.ModelViewSet):
         course = Course.objects.get(id=data['course_id'])
         for question in data:
             question = Question(question_text=question['question_text'])
-            objective_name = question['objective']
+            skill_name = question['sub_category']
 
-            objective = Objective.objects.get(question_text=objective_name)
+            skill = Skill.objects.get(skill_name=skill_name)
 
-            if objective:
-                question.objectives.add(objective) 
+            if skill:
+                question.associated_skill = skill
             else:
-                objective = Objective.objects.create(objective_name=objective_name)
-                objective.questions.add(question)
-                objective.course = course
-                objective.save()
-            
-            question.objectives.add(objective)
+                skill = Skill.objects.create(skill_name=skill_name)
+                skill.questions.add(question)
+                skill.course = course
+                skill.save()
+                question.associated_skill = skill
 
             for answer in question['possible_answers']:
                 possible_answer = PossibleAnswers.objects.create(
@@ -160,13 +160,30 @@ class QuestionViewSet(viewsets.ModelViewSet):
         user = CanvasUser.objects.get(id=data['user_id'])
         question = Question.objects.get(id=data['question_id'])
         answer_choice = PossibleAnswers.objects.get(id=data['answer_choice'])
-        number_of_seconds_to_answer = data['seconds_taken']
-        response = StudentResponse.objects.create(
+        number_of_seconds_to_answer = data['number_of_seconds_to_answer']
+        response = StudentResponse(
             user=user,
             question=question,
             response=answer_choice,
             number_of_seconds_to_answer=number_of_seconds_to_answer
         )
+
+
+        request_to_adaptive_engine = {
+            "user_id": user.id,
+            "skill_name": question.associated_skill.skill_name,
+            "correct": answer_choice.is_correct
+        }
+
+        print(request_to_adaptive_engine)
+
+        response_from_adaptive_engine = requests.post(
+            os.environ.get('ADAPTIVE_ENGINE_URL') + "/run-model-on-response/",
+            json=request_to_adaptive_engine
+        )
+
+        print(response)
+
         response.save()
         return Response(status=status.HTTP_201_CREATED)
 
@@ -182,12 +199,12 @@ class PossibleAnswersViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class ObjectiveViewSet(viewsets.ModelViewSet):
+class SkillViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
 
-    serializer_class = ObjectiveSerializer
-    queryset = Objective.objects.all()
+    serializer_class = SkillSerializer
+    queryset = Skill.objects.all()
 
     def get_queryset(self):
-        queryset = Objective.objects.all()
+        queryset = Skill.objects.all()
         return queryset

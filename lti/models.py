@@ -31,24 +31,24 @@ class Course(models.Model):
 class Assignment(models.Model):
     assignment_name = models.CharField(max_length=255)
     course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, blank=True, null=True)
-    objectives = models.ManyToManyField("Objective", blank=True)
     questions = models.ManyToManyField("Question", blank=True)
 
     def __str__(self):
         return self.assignment_name
 
-class Objective(models.Model):
-    objective_name = models.TextField()
+
+class Skill(models.Model):
+    skill_name = models.TextField()
     course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, null=True, blank=True)
     questions = models.ManyToManyField("Question", blank=True)
 
     def __str__(self):
-        return self.objective_name
+        return self.skill_name
 
 
 class Question(models.Model):
     question_text = models.TextField()
-    objectives = models.ManyToManyField("Objective", blank=True)
+    associated_skill = models.ForeignKey(Skill, on_delete=models.CASCADE, null=True, blank=True)
     assignments = models.ManyToManyField("Assignment", blank=True)
     possible_answers = models.ManyToManyField("PossibleAnswers", blank=True)
 
@@ -72,7 +72,7 @@ class Response(models.Model):
     number_of_seconds_to_answer = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.user} answered {self.response} to {self.question}"
+        return f"{self.user} answered {self.response} to {self.question} in {self.number_of_seconds_to_answer} seconds"
 
 # LTI Key Models
 
