@@ -5,6 +5,7 @@ import { Title } from '../../design-system';
 import Loader from '../components/Loader';
 import ProgressBar from '../components/ProgressBar';
 import Video from '../components/Video';
+import Writing from '../components/Writing';
 
 const Assignment = () => {
   return (
@@ -22,7 +23,7 @@ const Assignment = () => {
       </header>
 
       <section className='bg-[#f8f8f8] h-screen pt-8'>
-        <Loader />
+        <Writing title='Lorem Ipsum' question='Round 619,348 to the nearest ten thousand.' placeholder='Placeholder' />
       </section>
     </main>
   );
