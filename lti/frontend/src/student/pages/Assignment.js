@@ -2,6 +2,7 @@ import React from 'react';
 import Arrow from '../../assets/arrow-left.svg';
 import Menu from '../../assets/menu-alt.svg';
 import { Title } from '../../design-system';
+import Loader from '../components/Loader';
 import ProgressBar from '../components/ProgressBar';
 import Video from '../components/Video';
 
@@ -21,7 +22,7 @@ const Assignment = () => {
       </header>
 
       <section className='bg-[#f8f8f8] h-screen pt-8'>
-        <Video />
+        <Loader />
       </section>
     </main>
   );
