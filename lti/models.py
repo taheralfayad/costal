@@ -21,10 +21,58 @@ class CanvasUser(models.Model):
 
 
 class Course(models.Model):
-    course_id = models.CharField(max_length=200)
+    course_id = models.CharField(max_length=200, primary_key=True)
     users = models.ManyToManyField(CanvasUser)
     teachers = models.ManyToManyField(CanvasUser, related_name="teaching_courses")
 
+
+# Models
+
+class Assignment(models.Model):
+    assignment_name = models.CharField(max_length=255)
+    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, blank=True, null=True)
+    questions = models.ManyToManyField("Question", blank=True)
+
+    def __str__(self):
+        return self.assignment_name
+
+
+class Skill(models.Model):
+    skill_name = models.TextField()
+    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, null=True, blank=True)
+    questions = models.ManyToManyField("Question", blank=True)
+
+    def __str__(self):
+        return self.skill_name
+
+
+class Question(models.Model):
+    question_text = models.TextField()
+    associated_skill = models.ForeignKey(Skill, on_delete=models.CASCADE, null=True, blank=True)
+    assignments = models.ManyToManyField("Assignment", blank=True)
+    possible_answers = models.ManyToManyField("PossibleAnswers", blank=True)
+
+    def __str__(self):
+        return self.question_text
+
+
+class PossibleAnswers(models.Model):
+    related_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
+    possible_answer = models.TextField(default="")
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.possible_answer
+
+
+class Response(models.Model):
+    user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    response = models.ForeignKey(PossibleAnswers, on_delete=models.CASCADE)
+    number_of_seconds_to_answer = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.user} answered {self.response} to {self.question} in {self.number_of_seconds_to_answer} seconds"
 
 # LTI Key Models
 

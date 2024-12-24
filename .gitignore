@@ -7,3 +7,4 @@ data/
 main.js
 webpack-stats.json
 *.pyc
+node_modules
