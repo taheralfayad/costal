@@ -5,6 +5,7 @@ import { Title } from '../../design-system';
 import Loader from '../components/Loader';
 import MultipleChoice from '../components/MultipleChoice';
 import ProgressBar from '../components/ProgressBar';
+import SingleChoice from '../components/SingleChoice';
 import Textbook from '../components/Textbook';
 import Video from '../components/Video';
 import Writing from '../components/Writing';
@@ -25,7 +26,7 @@ const Assignment = () => {
       </header>
 
       <section className='bg-[#f8f8f8] h-screen pt-8'>
-        <Textbook />
+        <SingleChoice title='Lorem Ipsum' question='Choose the right option' options={['Wrong option', 'Wrong option','Wrong option','Right option']} />
       </section>
     </main>
   );
