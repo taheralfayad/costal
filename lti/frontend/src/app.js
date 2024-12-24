@@ -17,6 +17,7 @@ import HwDone from './student/pages/HwDone.js';
 import LandingPage from './instructor/pages/LandingPage.js';
 import AssignmentLanding from './student/pages/AssignmentLanding.js';
 import ActivityDetails from './student/pages/ActivityDetails.js';
+import Assignment from './student/pages/Assignment.js';
 
 
 
@@ -40,8 +41,9 @@ const App = () => {
       <StatsHw /> 
       <HwDone />
       <LandingPage /> 
-      <AssignmentLanding percentageTotal={20} /> */}
-      <ActivityDetails />
+      <AssignmentLanding percentageTotal={20} />
+      <ActivityDetails /> */}
+      <Assignment />
 
     </div>
   );
