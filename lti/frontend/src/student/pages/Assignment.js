@@ -2,6 +2,7 @@ import React from 'react';
 import Arrow from '../../assets/arrow-left.svg';
 import Menu from '../../assets/menu-alt.svg';
 import { Title } from '../../design-system';
+import Answered from '../components/Answered';
 import Loader from '../components/Loader';
 import MultipleChoice from '../components/MultipleChoice';
 import ProgressBar from '../components/ProgressBar';
@@ -25,8 +26,8 @@ const Assignment = () => {
         <ProgressBar percentage={20} />
       </header>
 
-      <section className='bg-[#f8f8f8] h-screen pt-8'>
-        <SingleChoice title='Lorem Ipsum' question='Choose the right option' options={['Wrong option', 'Wrong option','Wrong option','Right option']} />
+      <section className='bg-[#f8f8f8] h-full py-8'>
+        <Answered title='Lorem Ipsum' question='Choose the right option' correctAnswer='Right option' studentAnswer='Right option' isCorrect={true} />
       </section>
     </main>
   );
