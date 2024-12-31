@@ -25,7 +25,7 @@ const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect
         >
           {selected || 'Dropdown'}
           <span className="absolute inset-y-0 right-0 flex items-center pr-3">
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="h-4 w-4 text-slate-500" />
           </span>
         </button>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge, Button, CircularProgressChart, Title } from '../../design-system';
 import Arrow from '../../assets/arrow-left.svg';
 import StarDark from '../../assets/star-dark.svg';
@@ -6,8 +6,11 @@ import Menu from '../../assets/menu-alt.svg';
 import Cat from '../../assets/cat.svg';
 import TaskSummary from '../components/TaskSummary';
 import Objective from '../components/Objective';
+import SideMenu from '../components/SideMenu';
 
 const AssignmentLanding = ({ percentageTotal }) => {
+    const [isMenuOpen, setMenuOpen] = useState(false)
+
     const renderButtonLabel = () => {
         if (percentageTotal == 0) {
             return 'Get Started'
@@ -56,22 +59,22 @@ const AssignmentLanding = ({ percentageTotal }) => {
             return <section className='flex flex-col w-full'>
 
 
-            <section className='flex w-full justify-between items-center border-b border-slate-300 p-6'>
-                <section className='flex gap-4'>
-                    <StarDark />
-                    <section>
-                        <h4 className='text-slate-900 text-base font-medium mb-2'>Assigned Activity</h4>
-                        <p className='text-slate-700 text-xs font-medium'>Material from Assigned Objectives</p>
-                    </section>
+                <section className='flex w-full justify-between items-center border-b border-slate-300 p-6'>
+                    <section className='flex gap-4'>
+                        <StarDark />
+                        <section>
+                            <h4 className='text-slate-900 text-base font-medium mb-2'>Assigned Activity</h4>
+                            <p className='text-slate-700 text-xs font-medium'>Material from Assigned Objectives</p>
+                        </section>
 
+                    </section>
+                    <p className='text-slate-900 text-base font-medium'>10</p>
                 </section>
-                <p className='text-slate-900 text-base font-medium'>10</p>
+                <section className='flex w-full justify-between items-center p-4 px-8'>
+                    <p className='text-slate-600 text-base font-medium'>Last active a minute ago</p>
+                    <Button label='View Activity Details' type='outline' className='px-7 py-3' />
+                </section>
             </section>
-            <section className='flex w-full justify-between items-center p-4 px-8'>
-                <p className='text-slate-600 text-base font-medium'>Last active a minute ago</p>
-                <Button label='View Activity Details' type='outline' className='px-7 py-3' />
-            </section>
-        </section>
         }
 
     }
@@ -87,45 +90,51 @@ const AssignmentLanding = ({ percentageTotal }) => {
         }
     ]
     return (
-        <main >
-            <header className='p-6 pl-10 flex flex-col gap-4'>
-                <section className='flex gap-2 ml-8'>
-                    <Arrow className='w-5 h-5' />
-                    <p>Back to Course</p>
-                </section>
-                <section className='flex gap-2 items-center'>
-                    <Menu />
-                    <Title>Great Assignment</Title>
-                </section>
-                <section className='ml-8 flex flex-col gap-4'>
-                    <Badge title='Homework' />
+        <main>
+            <SideMenu isMenuOpen={isMenuOpen} />
+            <section
+                className={`flex-1 transition-all duration-300 ${isMenuOpen ? "ml-64" : "ml-0"
+                    }`}
+            >
+                <header className='p-6 pl-10 flex flex-col gap-4'>
+                    <section className='flex gap-2 ml-8'>
+                        <Arrow className='w-5 h-5' />
+                        <p>Back to Course</p>
+                    </section>
+                    <section className='flex gap-2 items-center'>
+                        <span onClick={() => setMenuOpen(!isMenuOpen)}><Menu /></span>
+                        <Title>Great Assignment</Title>
+                    </section>
+                    <section className='ml-8 flex flex-col gap-4'>
+                        <Badge title='Homework' />
 
-                    <section className={`flex justify-between ${(percentageTotal === 100 || percentageTotal === 0) ? 'w-3/4' : 'w-1/2'}`}>
-                        <TaskSummary title='Due' description='October 11, 2024'
-                            nextLine='12:00pm EST'
-                        />
-                        <TaskSummary title='Status' description={renderStatus()}
-                        />
-                        {renderThirdTaskSummary()}
+                        <section className={`flex justify-between ${(percentageTotal === 100 || percentageTotal === 0) ? 'w-3/4' : 'w-1/2'}`}>
+                            <TaskSummary title='Due' description='October 11, 2024'
+                                nextLine='12:00pm EST'
+                            />
+                            <TaskSummary title='Status' description={renderStatus()}
+                            />
+                            {renderThirdTaskSummary()}
+                        </section>
+
+                        <section>
+                            <Button label={renderButtonLabel()} className='px-7 py-3' />
+                        </section>
+                    </section>
+                </header>
+
+                <section className='bg-[#f8f8f8] p-6'>
+                    <h3 className='text-slate-900 text-lg font-medium ml-12 pb-4'>Activity</h3>
+                    <section className='bg-white rounded-xl border border-slate-300 mx-8'>
+                        {renderActivity()}
                     </section>
 
-                    <section>
-                        <Button label={renderButtonLabel()} className='px-7 py-3' />
+                    <h3 className='text-slate-900 text-lg font-medium ml-12 py-4'>Objectives</h3>
+                    <section className='bg-white rounded-xl border border-slate-300 mx-8'>
+                        <Objective title='Objective 1.1' estimateQuestions='1-2 Questions' subObjectives={subObjectives} />
                     </section>
-                </section>
-            </header>
 
-            <section className='bg-[#f8f8f8] p-6'>
-                <h3 className='text-slate-900 text-lg font-medium ml-12 pb-4'>Activity</h3>
-                <section className='bg-white rounded-xl border border-slate-300 mx-8'>
-                    {renderActivity()}
                 </section>
-
-                <h3 className='text-slate-900 text-lg font-medium ml-12 py-4'>Objectives</h3>
-                <section className='bg-white rounded-xl border border-slate-300 mx-8'>
-                    <Objective title='Objective 1.1' estimateQuestions='1-2 Questions' subObjectives={subObjectives} />
-                </section>
-
             </section>
         </main>
     );
