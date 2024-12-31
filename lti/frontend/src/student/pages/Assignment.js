@@ -27,7 +27,7 @@ const Assignment = () => {
       </header>
 
       <section className='bg-[#f8f8f8] h-full py-8'>
-        <Answered title='Lorem Ipsum' question='Choose the right option' correctAnswer='Right option' studentAnswer='Right option' isCorrect={true} />
+        <MultipleChoice title='Lorem Ipsum' question='Choose the right option' options={['Wrong option', 'Right option', 'Wrong option', 'Left option']}  />
       </section>
     </main>
   );

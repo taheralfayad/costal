@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Radio = ({ label = 'Radio', checked, onChange, id }) => {
+const Radio = ({ label = 'Radio', checked, onChange, id, isIncorrect }) => {
     return (
         <article className='flex items-center gap-2'>
             <input
@@ -8,7 +8,7 @@ const Radio = ({ label = 'Radio', checked, onChange, id }) => {
                 checked={checked}
                 onChange={onChange}
                 type="checkbox"
-                className='peer bg-white relative appearance-none h-5 w-5 border rounded-full focus:ring-blue-500 focus:ring-2 checked:bg-slate-50 checked:border-emerald-400'
+                className={`${isIncorrect ? 'border-red-500' : 'border-gray-300'} peer bg-white relative appearance-none h-5 w-5 border rounded-full focus:ring-blue-500 focus:ring-2 checked:bg-slate-50 checked:border-emerald-400`}
             />
 
             <span

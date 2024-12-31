@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Checkbox = ({ label = 'Checkbox', checked, onChange, id }) => {
+const Checkbox = ({ label = 'Checkbox', checked, onChange, id, isIncorrect }) => {
   return (
     <article className='flex items-center gap-2'>
       <input
@@ -8,7 +8,7 @@ const Checkbox = ({ label = 'Checkbox', checked, onChange, id }) => {
         checked={checked}
         onChange={onChange}
         type="checkbox"
-        className='peer bg-white relative appearance-none h-5 w-5 border rounded focus:ring-blue-500 focus:ring-2 text-emerald-600 checked:bg-emerald-500 checked:border-0'
+        className={` ${isIncorrect ? 'border-red-500' : 'border-gray-300'}  peer bg-white relative appearance-none h-5 w-5 border rounded focus:ring-blue-500 focus:ring-2 text-emerald-600 checked:bg-emerald-500 checked:border-0`}
       />
 
       <svg className='absolute w-3.5 h-3.5 pointer-events-none stroke-none fill-none peer-checked:stroke-white ml-[3px]' width="11" height="8" viewBox="0 0 11 8" fill="none" xmlns="http://www.w3.org/2000/svg">
