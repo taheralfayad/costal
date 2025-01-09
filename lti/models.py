@@ -51,6 +51,7 @@ class Question(models.Model):
     associated_skill = models.ForeignKey(Skill, on_delete=models.CASCADE, null=True, blank=True)
     assignments = models.ManyToManyField("Assignment", blank=True)
     possible_answers = models.ManyToManyField("PossibleAnswers", blank=True)
+    difficulty = models.IntegerField(default=0)
 
     def __str__(self):
         return self.question_text

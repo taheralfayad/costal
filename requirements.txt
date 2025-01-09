@@ -14,4 +14,5 @@ pycryptodome
 python-dotenv==1.0.0
 git+https://github.com/taheralfayad/pyBKT.git@master#egg=pyBKT
 django-webpack-loader
-uvicorn==0.33.0 
+uvicorn==0.33.0
+mabwiser

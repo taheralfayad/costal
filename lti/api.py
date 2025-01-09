@@ -157,6 +157,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='answer_question')           
     def answer_question(self, request):
         data = request.data
+        assignment = Assignment.objects.get(id=data['assignment_id'])
         user = CanvasUser.objects.get(id=data['user_id'])
         question = Question.objects.get(id=data['question_id'])
         answer_choice = PossibleAnswers.objects.get(id=data['answer_choice'])
@@ -168,11 +169,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
             number_of_seconds_to_answer=number_of_seconds_to_answer
         )
 
+        questions = assignment.questions.all()
 
         request_to_adaptive_engine = {
             "user_id": user.id,
+            "course_id": assignment.course_id,
+            "assignment_id": assignment.id,
             "skill_name": question.associated_skill.skill_name,
             "correct": answer_choice.is_correct
+            "questions": questions
         }
 
         print(request_to_adaptive_engine)
@@ -182,7 +187,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
             json=request_to_adaptive_engine
         )
 
-        print(response)
 
         response.save()
         return Response(status=status.HTTP_201_CREATED)
