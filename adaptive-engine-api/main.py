@@ -100,12 +100,23 @@ def run_model_on_response(request: RunModelOnResponseRequest):
 
     prediction_json = {
         "state_prediction": predictions.iloc[0]['state_predictions'],
+        "next_question": next_question
     }
 
     return prediction_json
 
 
-@app.post("/fit-model")
+@app.post("/initialize-mab/")
+def initialize_mab(request: RunModelOnResponseRequest):
+    linucb = MAB(arms=arms, learning_policy=LearningPolicy.LinUCB(alpha=0.1, l2_lambda=2))
+
+    with open("./models/mab_model_{course_id}_{assignment_id}_{user_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id, user_id=request.user_id), "wb") as f:
+        pickle.dump(mab, f)
+
+    return {"message": "MAB initialized successfully"}
+
+
+@app.post("/fit-model/")
 def fit_model(request: FitModelRequest):
     """
     Online fit the BKT model during initial assessment
