@@ -21,6 +21,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.svg$/,
+        use: ['@svgr/webpack'],
+      },      
+      {
         test: /\.js$/,
         exclude: /node_modules/,
         use: ['babel-loader'],
