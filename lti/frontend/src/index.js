@@ -8,8 +8,12 @@ import App from "./app";
 const router = createBrowserRouter([
   {
     path: '/lti/launch/',
-    element: <App/>
+    element: <App/>,
   },
+  {
+    path: '/lti/oauth_complete/',
+    element: <App/>,
+  }
 ])
 
 ReactDOM.createRoot(document.getElementById("root")).render(
