@@ -10,3 +10,4 @@ pgvector
 pycryptodome
 python-dotenv==1.0.0
 django-webpack-loader
+gunicorn==21.2.0
