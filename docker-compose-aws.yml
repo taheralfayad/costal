@@ -1,0 +1,18 @@
+services:
+  web:
+    image: ${ECR_REPOSITORY}:${RELEASE}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    command: /bin/sh -c "npm --prefix ./lti/frontend run dev & python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis/redis-stack-server:latest
+    ports:
+      - "6379:6379"
