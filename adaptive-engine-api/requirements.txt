@@ -1,0 +1,5 @@
+fastapi[standard]
+pandas==2.2.3 
+pydantic==2.10.4
+git+https://github.com/taheralfayad/pyBKT.git@master#egg=pyBKT
+uvicorn==0.33.0 

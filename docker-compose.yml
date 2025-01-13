@@ -18,8 +18,8 @@ services:
   
   adaptive-engine:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: adaptive-engine-api
+      dockerfile: adaptive.Dockerfile
     volumes:
       - .:/app
     env_file:
