@@ -30,7 +30,7 @@ class Course(models.Model):
 
 class Assignment(models.Model):
     assignment_name = models.CharField(max_length=255)
-    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, blank=True, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
     questions = models.ManyToManyField("Question", blank=True)
 
     def __str__(self):
@@ -39,8 +39,9 @@ class Assignment(models.Model):
 
 class Skill(models.Model):
     skill_name = models.TextField()
-    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, null=True, blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
     questions = models.ManyToManyField("Question", blank=True)
+    assignments = models.ManyToManyField("Assignment", blank=True)
 
     def __str__(self):
         return self.skill_name

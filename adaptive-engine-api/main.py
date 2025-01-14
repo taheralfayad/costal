@@ -44,8 +44,12 @@ class FitModelRequest(BaseModel):
 def run_model_on_response(request: RunModelOnResponseRequest):
     model = pybkt.Model(seed=42, num_fits=1)
     model.load('./models/bkt_model_{course_id}_{module_id}.pkl'.format(course_id=request.course_id, module_id=request.module_id))
-    with open("./models/mab_model_{course_id}_{assignment_id}_{user_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id, user_id=request.user_id), "rb") as f:
-        mab = pickle.load(f)
+
+    try:
+        with open("./models/mab_model_{course_id}_{assignment_id}_{user_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id, user_id=request.user_id), "rb") as f:
+            mab = pickle.load(f)
+    except:
+        return {"message": "MAB model not found"}
 
     set_of_mab_arms = set(mab.arms)
 
@@ -76,7 +80,7 @@ def run_model_on_response(request: RunModelOnResponseRequest):
             'seconds_taken': [request.seconds_taken],
             'hints_used': [request.hints_used],
             'difficulty': [request.difficulty],
-            'percentage_of_last_five_correct': [request.percentage_of_last_five_correct]
+            'percentage_of_last_five_correct': [request.percentage_of_last_five_correct],
             'bkt_prediction': [predictions_after.iloc[0]['state_predictions']]
         }
     )

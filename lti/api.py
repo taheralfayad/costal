@@ -176,7 +176,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             "course_id": assignment.course_id,
             "assignment_id": assignment.id,
             "skill_name": question.associated_skill.skill_name,
-            "correct": answer_choice.is_correct
+            "correct": answer_choice.is_correct,
             "questions": questions
         }
 
@@ -187,9 +187,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
             json=request_to_adaptive_engine
         )
 
+        next_question = response_from_adaptive_engine.json()['next_question']
 
         response.save()
-        return Response(status=status.HTTP_201_CREATED)
+        
+        return Response(next_question, status=status.HTTP_200_OK)
 
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
@@ -212,3 +214,15 @@ class SkillViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Skill.objects.all()
         return queryset
+
+    @action(detail=False, methods=['get'], url_path='get-skill-by-assignment-id/(?P<assignment_id>[^/.]+)')
+    def get_skill_by_assignment_id(self, request, assignment_id=None):
+        try:
+            skills = Skill.objects.filter(assignments__id=assignment_id)
+            serializer = SkillSerializer(skills, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Assignment.DoesNotExist:
+            return Response({'error': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
+        except IndexError:
+            return Response({'error': 'No questions found for this assignment'}, status=status.HTTP_404_NOT_FOUND)

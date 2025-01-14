@@ -22,10 +22,18 @@ import Assignment from './student/pages/Assignment.js';
 
 
 const App = () => {
+
+  const assignment = {
+    "id": 1,
+    "assignment_name": "The greatest assignment of all time",
+    "course": "1",
+  }
+
   return (
     <div className="App">
       {/* <CreateAssignment />
-      <AddQuestions /> 
+      <AddQuestions />
+      <Assignment />
       <CreateQuestion /> 
       <AssignmentPreview />
       <OpenSourceHw />
@@ -43,7 +51,7 @@ const App = () => {
       <LandingPage /> 
       <AssignmentLanding percentageTotal={20} />
       <ActivityDetails /> */}
-      <Assignment />
+      <CreateQuestion assignment={assignment}/>
 
     </div>
   );
