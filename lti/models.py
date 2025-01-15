@@ -32,6 +32,9 @@ class Assignment(models.Model):
     name = models.CharField(max_length=255)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
     questions = models.ManyToManyField("Question", blank=True)
+    start_date = models.DateTimeField(default=datetime.datetime.now)
+    end_date = models.DateTimeField(default=datetime.datetime.now)
+    assessment_type = models.TextField(default="Homework")
 
     def __str__(self):
         return self.name

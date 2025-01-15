@@ -1,5 +1,6 @@
 import os
 import requests
+import datetime
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -58,14 +59,20 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='create_assignment')
     def create_assignment(self, request):
         data = request.data
-        assignment = Assignment.objects.create(
-            assignment_name=data['assignment_name'],
-            course_id=data['course_id']
+
+        start_date = datetime.datetime.strptime(data["start_date"], "%Y-%m-%dT%H:%M")
+        end_date = datetime.datetime.strptime(data["end_date"], "%Y-%m-%dT%H:%M")
+
+        assignment = Assignment(
+            name=data['name'],
+            course_id=data['course_id'],
+            start_date=start_date,
+            end_date=end_date,
+            assessment_type=data['assessment_type']
         )
 
         assignment.save()
-        serializer = AssignmentSerializer(assignment)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_201_CREATED)
        
     @action(detail=False, methods=['post'], url_path='add_question')   
     def add_question(self, request):
