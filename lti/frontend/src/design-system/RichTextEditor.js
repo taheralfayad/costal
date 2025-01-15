@@ -25,7 +25,7 @@ const RichTextEditor = ({ label='Rich Text Editor', value, onChange, placeholder
         [{ script: 'sub' }, { script: 'super' }],
         ['blockquote', 'code-block'],
         [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
-        ['link', 'image', 'video'],
+        ['link'],
         ['formula'],
         ['clean'],
       ],

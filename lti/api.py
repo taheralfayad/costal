@@ -11,7 +11,7 @@ from lti.models import (
     CanvasUser,
     Textbook,
     Question,
-    PossibleAnswers,
+    PossibleAnswer,
     Skill,
     Response as StudentResponse
 )
@@ -20,7 +20,7 @@ from lti.serializers import (
     AssignmentSerializer,
     QuestionSerializer,
     TextbookSerializer,
-    PossibleAnswersSerializer,
+    PossibleAnswerSerializer,
     SkillSerializer
 )
 
@@ -92,7 +92,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def create_question(self, request):
         data = request.data
         question = Question.objects.create(
-            question_text=data['question_text'],
+            question_text=data['text'],
         )
 
         try:
@@ -108,7 +108,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         skill_id = data['skill_id']
 
         for answer in possible_answers:
-            possible_answer = PossibleAnswers.objects.create(
+            possible_answer = PossibleAnswer.objects.create(
                 possible_answer=answer['possible_answer'],
                 is_correct=answer['is_correct'],
                 related_question=question
@@ -142,7 +142,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 question.associated_skill = skill
 
             for answer in question['possible_answers']:
-                possible_answer = PossibleAnswers.objects.create(
+                possible_answer = PossibleAnswer.objects.create(
                     possible_answer=answer['possible_answer'],
                     is_correct=answer['is_correct'],
                     related_question=question
@@ -160,7 +160,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment = Assignment.objects.get(id=data['assignment_id'])
         user = CanvasUser.objects.get(id=data['user_id'])
         question = Question.objects.get(id=data['question_id'])
-        answer_choice = PossibleAnswers.objects.get(id=data['answer_choice'])
+        answer_choice = PossibleAnswer.objects.get(id=data['answer_choice'])
         number_of_seconds_to_answer = data['number_of_seconds_to_answer']
         response = StudentResponse(
             user=user,
@@ -197,11 +197,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
 
-    serializer_class = PossibleAnswersSerializer
-    queryset = PossibleAnswers.objects.all()
+    serializer_class = PossibleAnswerSerializer
+    queryset = PossibleAnswer.objects.all()
 
     def get_queryset(self):
-        queryset = PossibleAnswers.objects.all()
+        queryset = PossibleAnswer.objects.all()
         return queryset
 
 

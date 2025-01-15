@@ -21,6 +21,16 @@ const CreateQuestion = ({assignment}) => {
     }
   }
 
+  const handleSubmit = async () => {
+    const data = {
+      name: questionName,
+      difficulty: difficulty,
+      objective: objective,
+      text: editorValue,
+      points: 1
+    }
+  }
+
   const handleNameChange = (e) => {
     setQuestionName(e.target.value);
   }
@@ -49,11 +59,11 @@ const CreateQuestion = ({assignment}) => {
         <Input label='Name' placeholder='Great Assignment' value={questionName} onChange={(e) => (handleNameChange(e))}/>
         <Dropdown label='Objective' placeholder='Select Objective' value={objective} options={objectives.map(item => item.skill_name)} onSelect={handleObjectiveChange}/>
         <Dropdown label='Difficulty' placeholder='Select Difficulty' value={difficulty} options={difficulties} onSelect={handleDifficultyChange}/>
-        <RichTextEditor value={editorValue} onChange={handleInputChange} />
+        <RichTextEditor label='Question Editor' value={editorValue} onChange={handleInputChange} />
         <Input type='number' label='Points' min={1} max={15} placeholder={1} width='w-1/4' />
       </main>
       <section className='flex justify-end gap-2 pr-4 pb-2'>
-        <Button label='Create' />
+        <Button label='Create' onClick={handleSubmit}/>
         <Button label='Cancel' type='outline' />
       </section>
     </div>
