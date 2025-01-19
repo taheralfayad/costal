@@ -163,7 +163,7 @@ def launch(request):
     }
 
 
-    course, created = Course.objects.get_or_create(course_id=course_id)
+    course, created = Course.objects.get_or_create(course_id=course_id, name="Course")
     if created:
         course.save()
 

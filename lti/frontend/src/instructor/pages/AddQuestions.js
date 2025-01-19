@@ -6,16 +6,33 @@ import PlusIcon from '../../assets/plus.svg';
 import PlusGIcon from '../../assets/plus-green.svg';
 
 
-const AddQuestions = () => {
+const AddQuestions = ({assignment}) => {
+
+  const formatDate = (dateString) => {
+    const options = { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric', 
+      hour: 'numeric', 
+      minute: 'numeric', 
+      hour12: true, 
+      timeZone: 'America/New_York'
+    };
+    return new Intl.DateTimeFormat('en-US', options).format(new Date(dateString));
+  };
+
+  const startDate = formatDate(assignment.start_date);
+  const endDate = formatDate(assignment.end_date);
+
   return (
     <main className='p-6 pl-10 flex flex-col gap-4'>
-      <Title>Great Assignment</Title>
+      <Title>{assignment.name}</Title>
       <Badge title='Homework' />
       <section className='flex'>
         <CalendarIcon />
         <article className='pl-2'>
-          <p className='text-slate-600'>Starts on <b>October 10, 2024</b> at <b>12:00pm EST</b></p>
-          <p className='text-slate-600'>Ends on <b>October 11, 2024</b> at <b>12:00pm EST</b></p>
+        <p className='text-slate-600'>Starts on <b>{startDate.split(' at ')[0]}</b> at <b>{startDate.split(' at ')[1]}</b></p>
+        <p className='text-slate-600'>Ends on <b>{endDate.split(' at ')[0]}</b> at <b>{endDate.split(' at ')[1]}</b></p>
         </article>
       </section>
 

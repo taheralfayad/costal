@@ -25,8 +25,10 @@ const App = () => {
 
   const assignment = {
     "id": 1,
-    "assignment_name": "The greatest assignment of all time",
+    "name": "The greatest assignment of all time",
     "course": "1",
+    "start_date": "2025-01-01T01:01",
+    "end_date": "2025-01-02T01:01",
   }
 
   return (
@@ -51,7 +53,9 @@ const App = () => {
       <LandingPage /> 
       <AssignmentLanding percentageTotal={20} />
       <ActivityDetails /> */}
-      <CreateQuestion assignment={assignment}/>
+      {/* <CreateQuestion assignment={assignment}/> */}
+      {/* <Assignment /> */}
+      <AddQuestions assignment={assignment}/>
 
     </div>
   );

@@ -21,6 +21,7 @@ class CanvasUser(models.Model):
 
 
 class Course(models.Model):
+    name = models.CharField(max_length=255, default="Course")
     course_id = models.CharField(max_length=200, primary_key=True)
     users = models.ManyToManyField(CanvasUser)
     teachers = models.ManyToManyField(CanvasUser, related_name="teaching_courses")
