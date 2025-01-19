@@ -126,6 +126,10 @@ def launch(request):
         "canvas_user_id"
     ]
 
+    course_name = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/context']['title']
+
+    pprint.pprint(message_launch_data)
+
     try:
         course = Course.objects.get(course_id=course_id)
 
@@ -160,10 +164,11 @@ def launch(request):
         "launch_data": message_launch.get_launch_data(),
         "launch_id": message_launch.get_launch_id(),
         "course_id": course_id,
+        "course_name": course_name,
     }
 
 
-    course, created = Course.objects.get_or_create(course_id=course_id, name="Course")
+    course, created = Course.objects.get_or_create(course_id=course_id, name=course_name)
     if created:
         course.save()
 

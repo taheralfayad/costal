@@ -2,6 +2,7 @@ import os
 import requests
 import datetime
 
+from canvasapi import Canvas
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -55,6 +56,23 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Assignment.objects.all()
         return queryset
+
+
+    @action(detail=False, methods=['get'], url_path='get_course_assignments')
+    def get_course_assignments(self, request):
+        try:
+            course_id = request.query_params.get('course_id')
+            assignments = Assignment.objects.filter(course_id=course_id)
+            serializer = AssignmentSerializer(assignments, many=True)
+
+            print(serializer.data)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Assignment.DoesNotExist:
+            return Response({'error': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
+        except IndexError:
+            return Response({'error': 'No assignments found for this course'}, status=status.HTTP_404_NOT_FOUND)
+
 
     @action(detail=False, methods=['post'], url_path='create_assignment')
     def create_assignment(self, request):
@@ -233,3 +251,35 @@ class SkillViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
         except IndexError:
             return Response({'error': 'No questions found for this assignment'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class GetCourseProfessorName(APIView):
+    """
+    API endpoint to fetch the name(s) of professor(s) for a given course.
+    """
+
+    def get(self, request, *args, **kwargs):
+        canvas = Canvas(os.environ.get('CANVAS_URL'), request.session['api_key'])
+        course_id = request.query_params.get('course_id')
+        if not course_id:
+            raise ValidationError({"error": "course_id parameter is required."})
+
+        try:
+            # Fetch the course using Canvas API
+            course = canvas.get_course(course_id)
+
+            # Fetch enrollments with TeacherEnrollment type
+            teacher_names = []
+            enrollments = course.get_enrollments(type=['TeacherEnrollment'])
+            for enrollment in enrollments:
+                teacher_names.append(enrollment.user['name'])
+
+            # Return response with professor names
+            if not teacher_names:
+                return Response({"message": "No professors found for this course.", "professors": []})
+
+            return Response({"course_id": course_id, "professors": teacher_names})
+
+        except Exception as e:
+            raise NotFound({"error": str(e)})

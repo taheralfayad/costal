@@ -34,7 +34,7 @@ const App = () => {
   return (
     <div className="App">
       {/* <CreateAssignment />
-      <AddQuestions />
+      <AddQuestions assignment={assignment}/>
       <Assignment />
       <CreateQuestion /> 
       <AssignmentPreview />
@@ -55,7 +55,7 @@ const App = () => {
       <ActivityDetails /> */}
       {/* <CreateQuestion assignment={assignment}/> */}
       {/* <Assignment /> */}
-      <AddQuestions assignment={assignment}/>
+      <LandingPage />
 
     </div>
   );
