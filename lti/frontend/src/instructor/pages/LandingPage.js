@@ -4,7 +4,6 @@ import HomeworkGradesChart from '../components/HomeworkGradesChart';
 import CourseInfo from '../components/CourseInfo';
 
 const LandingPage = () => {
-    const [professorName, setProfessorName] = useState('');
     const [assignments, setAssignments] = useState([]);
     const [quizzes, setQuizzes] = useState([]);
 
@@ -22,18 +21,11 @@ const LandingPage = () => {
     const getCourseAssignments = async () => {
         const response = await fetch(`/lti/api/assignments/get_course_assignments/?course_id=${COURSE_ID}`);
         const data = await response.json();
-        console.log(data);
 
         const assignments = data.filter(assignment => assignment.assessment_type === 'Homework');
         const quizzes = data.filter(assignment => assignment.assessment_type === 'Quiz');
         setAssignments(assignments);
         setQuizzes(quizzes);
-    }
-
-    const getProfessorName = async () => {
-        const response = await fetch(`/lti/api/get_course_professor_name/?course_id=${COURSE_ID}`);
-        const data = await response.json();
-        setProfessorName(data.professors[0]);
     }
 
     useEffect(() => {
@@ -49,7 +41,7 @@ const LandingPage = () => {
                 <article className='flex flex-col gap-2'>
                     <Title>Welcome to COSTAL</Title>
                     <h2 className='text-slate-950 text-xl font-semibold'>{COURSE_NAME}</h2>
-                    <CourseInfo professorName={professorName}/>
+                    <CourseInfo />
                 </article>
                 <Button type='blackOutline' label='Settings' />
             </header>
