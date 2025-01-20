@@ -1,9 +1,9 @@
 services:
   web:
-    # image: ${ECR_REPOSITORY}:${RELEASE}
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${ECR_REPOSITORY}:${RELEASE}
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     volumes:
       - static_volume:/app/lti/static
     env_file:
