@@ -39,39 +39,9 @@ class LLMEngine:
             },
         }
 
-    def generate_questions(self, course_name: str, text: str) -> json:
-        key_concepts = self.extract_concepts(course_name, text)
-        system_instruction = (
-            f"You are an expert in {course_name}. You will be provided with key concepts and some text from the course content and your task is to create challenging multiple-choice questions based on those concepts, suitable for assessing student understanding.  Always provide 4 options (A, B, C, D) in the following JSON Schema.",
-        )
+    def __call__(self, prompt: str, max_tokens: int, temperature: float):
+        return self.llm(prompt=prompt, max_tokens=max_tokens, temperature=temperature)
 
-        questions = {}
-        for concept in key_concepts:
-            print(f"Generating qs for concept: {concept}")
-            prompt = f"Course Content: {text}\n\nKey Concept: {concept}"
-
-            response = self.llm.create_chat_completion(
-                messages=[
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": prompt},
-                ],
-                response_format={"type": "json_object", "schema": self.question_schema},
-                temperature=0.0,
-                max_tokens=200,
-            )
-
-            # Process the response
-            content = response["choices"][0]["message"]["content"]
-
-            try:
-                parsed_response = json.loads(content)
-                questions[concept] = parsed_response
-
-            except json.JSONDecodeError as e:
-                print(f"Error decoding JSON: {e}")
-                print(f"Raw response: {content}")
-
-        return json.dumps(questions, indent=4)
 
     def extract_concepts(self, course_name: str, text: str, num_concepts: int = 3):
         concept_schema = {
@@ -110,8 +80,116 @@ class LLMEngine:
 
         return parsed_response["concepts"]
 
+def generate_questions(self, course_name: str, topic: str, previous_questions: list, num_questions: int) -> str:
+      system_instruction = (
+          f"You are an expert in {course_name}. Based on the topic '{topic}' and the previously provided questions, generate new challenging multiple-choice questions suitable for assessing student understanding. Ensure the new questions are distinct from previously asked ones. Always provide 4 options (A, B, C, D) in the following JSON Schema: \n"
+          "{\"type\": \"object\", \"required\": [\"question\", \"options\", \"answer\"], \"properties\": {\"question\": {\"type\": \"string\"}, \"options\": {\"type\": \"object\", \"required\": [\"A\", \"B\", \"C\", \"D\"], \"properties\": {\"A\": {\"type\": \"string\"}, \"B\": {\"type\": \"string\"}, \"C\": {\"type\": \"string\"}, \"D\": {\"type\": \"string\"}}}, \"answer\": {\"type\": \"string\"}}}"
+      )
 
-# course_name = "Earth Science"
-# text = """The water cycle, also known as the hydrologic cycle, describes the continuous movement of water within the Earth and atmosphere. It is a complex system that includes many different processes. Liquid water evaporates into water vapor, condenses to form clouds, and precipitates back to earth in the form of rain and snow."""
-# service = LLMEngine()
-# service.generate_questions(course_name, text)
+      previous_questions_text = "\n".join(
+          [
+              f"Q: {q['question']}\nOptions: A: {q['options']['A']}, B: {q['options']['B']}, C: {q['options']['C']}, D: {q['options']['D']}\nCorrect Answer: {q['answer']}"
+              for q in previous_questions
+          ]
+      )
+
+      prompt = (
+          f"Topic: {topic}\n\n"
+          f"Previously Asked Questions:\n{previous_questions_text}\n\n"
+          f"Generate {num_questions} new questions for this topic."
+      )
+
+      response = self.llm.create_chat_completion(
+          messages=[
+              {"role": "system", "content": system_instruction},
+              {"role": "user", "content": prompt},
+          ],
+          response_format={"type": "json_object", "schema": self.question_schema},
+          temperature=0.7,
+          max_tokens=300,
+      )
+
+      # Process the response
+      content = response["choices"][0]["message"]["content"]
+
+      try:
+          parsed_response = json.loads(content)
+          # Validate the response matches the schema
+          if "question" in parsed_response and "options" in parsed_response and "answer" in parsed_response:
+              return json.dumps(parsed_response, indent=4)
+          else:
+              raise ValueError("Generated question does not match the required schema.")
+
+      except (json.JSONDecodeError, ValueError) as e:
+          print(f"Error processing response: {e}")
+          print(f"Raw response: {content}")
+          return json.dumps({"error": "Failed to generate a valid question."}, indent=4)
+
+def run_generate_questions(previous_questions: list, num_questions: int, course_name: str, topic: str):
+    llm_engine = LLMEngine()
+
+ 
+    
+
+    # Generate questions
+    result = generate_questions(llm_engine, course_name, topic, previous_questions, num_questions)
+    print(result)
+    return result
+
+
+# previous_questions = previous_questions = [
+#     {
+#         "question": "What is Newton's First Law?",
+#         "options": {
+#             "A": "Every object will remain at rest or in uniform motion unless acted upon by an external force.",
+#             "B": "Force equals mass times acceleration.",
+#             "C": "For every action, there is an equal and opposite reaction.",
+#             "D": "Energy cannot be created or destroyed.",
+#         },
+#         "answer": "A",
+#     },
+#     {
+#         "question": "What is Newton's Second Law?",
+#         "options": {
+#             "A": "Every object will remain at rest or in uniform motion unless acted upon by an external force.",
+#             "B": "Force equals mass times acceleration.",
+#             "C": "For every action, there is an equal and opposite reaction.",
+#             "D": "Energy cannot be created or destroyed.",
+#         },
+#         "answer": "B",
+#     },
+#     {
+#         "question": "What is Newton's Third Law?",
+#         "options": {
+#             "A": "Every object will remain at rest or in uniform motion unless acted upon by an external force.",
+#             "B": "Force equals mass times acceleration.",
+#             "C": "For every action, there is an equal and opposite reaction.",
+#             "D": "Energy cannot be created or destroyed.",
+#         },
+#         "answer": "C",
+#     },
+#     {
+#         "question": "What is the formula for force?",
+#         "options": {
+#             "A": "Force equals mass times acceleration.",
+#             "B": "Force equals mass divided by acceleration.",
+#             "C": "Force equals acceleration divided by mass.",
+#             "D": "Force equals velocity times mass.",
+#         },
+#         "answer": "A",
+#     },
+#     {
+#         "question": "What is the unit of force?",
+#         "options": {
+#             "A": "Joule",
+#             "B": "Newton",
+#             "C": "Watt",
+#             "D": "Pascal",
+#         },
+#         "answer": "B",
+#     }
+# ]
+# course_name = "Physics 101"
+# topic = "Newton's Laws of Motion"
+# num_questions = 3
+# run_generate_questions(previous_questions, num_questions, course_name, topic)
