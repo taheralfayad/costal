@@ -42,8 +42,9 @@ const App = () => {
       <HwDone />
       <LandingPage /> 
       <AssignmentLanding percentageTotal={20} />
-      <ActivityDetails /> */}
-      <Assignment />
+      <ActivityDetails /> 
+      <Assignment /> */}
+      <CreateQuestion /> 
 
     </div>
   );
