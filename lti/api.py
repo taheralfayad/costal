@@ -100,6 +100,19 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         assignment.questions.add(question)
         assignment.save()
         serializer = AssignmentSerializer(assignment)
+
+        if assignment.assessment_type == "Homework":
+            request_to_adaptive_engine = {
+                "question_id": question.id,
+                "assignment_id": assignment.id,
+                "course_id": assignment.course_id
+            }
+
+            response_from_adaptive_engine = requests.post(
+                os.environ.get('ADAPTIVE_ENGINE_URL') + "/add-arm-to-mab/",
+                json=request_to_adaptive_engine
+            )
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -116,9 +129,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='create_question')
     def create_question(self, request):
         data = request.data
-        question = Question.objects.create(
-            question_text=data['text'],
+        question = Question(
+            text=data['text'],
+            difficulty=data['difficulty'],
         )
+
+        question.save()
 
         try:
             assignment = Assignment.objects.get(id=data['assignment_id'])
@@ -133,8 +149,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
         skill_id = data['skill_id']
 
         for answer in possible_answers:
-            possible_answer = PossibleAnswer.objects.create(
-                possible_answer=answer['possible_answer'],
+            possible_answer = PossibleAnswer(
+                answer=answer['possible_answer'],
                 is_correct=answer['is_correct'],
                 related_question=question
             )
@@ -144,8 +160,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question.associated_skill = Skill.objects.get(id=skill_id)
 
         question.save()
-        serializer = QuestionSerializer(question)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_201_CREATED)
     
     @action(detail=False, methods=['post'], url_path='add_question_list')
     def add_question_list(self, request):
@@ -179,7 +194,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         
         return Response(status=status.HTTP_201_CREATED)
 
-    @action(detail=False, methods=['post'], url_path='answer_question')           
+    @action(detail=False, methods=['post'], url_path='answer_assignment_question')           
     def answer_question(self, request):
         data = request.data
         assignment = Assignment.objects.get(id=data['assignment_id'])

@@ -39,14 +39,18 @@ class FitModelRequest(BaseModel):
     question_id: int
     correct: int
 
+class AddArmToMABRequest(BaseModel):
+    question_id: int
+    assignment_id: int
+    course_id: int
 
 @app.post("/run-model-on-response/")
 def run_model_on_response(request: RunModelOnResponseRequest):
     model = pybkt.Model(seed=42, num_fits=1)
-    model.load('./models/bkt_model_{course_id}_{module_id}.pkl'.format(course_id=request.course_id, module_id=request.module_id))
+    model.load('./adaptive-engine-api/models/bkt_model_{course_id}_{module_id}.pkl'.format(course_id=request.course_id, module_id=request.module_id))
 
     try:
-        with open("./models/mab_model_{course_id}_{assignment_id}_{user_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id, user_id=request.user_id), "rb") as f:
+        with open("./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id), "rb") as f:
             mab = pickle.load(f)
     except:
         return {"message": "MAB model not found"}
@@ -98,8 +102,8 @@ def run_model_on_response(request: RunModelOnResponseRequest):
 
     next_question = mab.predict(context=arm_context)
 
-    model.save('./models/bkt_model_{course_id}_{user_id}.pkl'.format(course_id=request.course_id, user_id=request.user_id))
-    with open("./models/mab_model_{course_id}_{assignment_id}_{user_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id, user_id=request.user_id), "wb") as f:
+    model.save('./adaptive-engine-api/models/bkt_model_{course_id}_{user_id}.pkl'.format(course_id=request.course_id, user_id=request.user_id))
+    with open("./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}_{user_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id, user_id=request.user_id), "wb") as f:
         pickle.dump(mab, f)
 
     prediction_json = {
@@ -110,14 +114,28 @@ def run_model_on_response(request: RunModelOnResponseRequest):
     return prediction_json
 
 
-@app.post("/initialize-mab/")
-def initialize_mab(request: RunModelOnResponseRequest):
-    linucb = MAB(arms=arms, learning_policy=LearningPolicy.LinUCB(alpha=0.1, l2_lambda=2))
-
-    with open("./models/mab_model_{course_id}_{assignment_id}_{user_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id, user_id=request.user_id), "wb") as f:
-        pickle.dump(mab, f)
-
-    return {"message": "MAB initialized successfully"}
+@app.post("/add-arm-to-mab/")
+def add_arm_to_mab(request: AddArmToMABRequest):
+    try:
+        with open("./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id), "rb") as f:
+            mab = pickle.load(f)
+    except:
+        mab = MAB(arms=[request.question_id], learning_policy=LearningPolicy.LinUCB(alpha=1.25, l2_lambda=1))
+        # Save the MAB model
+        with open("./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id), "wb") as f:
+            pickle.dump(mab, f)
+        
+        return {"message": "Arm added to MAB model"}
+    
+    if request.question_id not in mab.arms:
+        mab.add_arm(request.question_id)
+        # Save the MAB model
+        with open("./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id), "wb") as f:
+            pickle.dump(mab, f)
+        
+        return {"message": "Arm added to MAB model"}
+    
+    return {"message": "Arm already exists in MAB model"}
 
 
 @app.post("/fit-model/")
@@ -129,7 +147,7 @@ def fit_model(request: FitModelRequest):
     # First try to load the BKT and MAB model if they are already available
     pybkt = pybkt.Model(seed=42, num_fits=1)
     try:
-        file_name = './models/bkt_model_{course_id}_{module_id}.pkl'.format(course_id=request.course_id, module_id=request.module_id)
+        file_name = './adaptive-engine-api/models/bkt_model_{course_id}_{module_id}.pkl'.format(course_id=request.course_id, module_id=request.module_id)
         pybkt.load(file_name)
     except:
         pass
@@ -145,7 +163,7 @@ def fit_model(request: FitModelRequest):
     )
 
     bkt.fit(data=data)
-    bkt_filename = './models/bkt_model_{course_id}_{module_id}.pkl'.format(course_id=request.course_id, module_id=request.module_id)
+    bkt_filename = './adaptive-engine-api/models/bkt_model_{course_id}_{module_id}.pkl'.format(course_id=request.course_id, module_id=request.module_id)
     bkt.save(bkt_filename)
 
     return {"message": "Model fit successfully"}
