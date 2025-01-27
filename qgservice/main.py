@@ -19,7 +19,7 @@ async def root():
 async def generate(request):
     try:
         questions_json = llm_service.generate_questions(
-            course_name=request.course_name, text=request.text
+            course_name=request.course_name, topic=request.topic, num_questions=request.num_questions, previous_questions=request.previous_questions
         )
 
         return json.loads(questions_json)
