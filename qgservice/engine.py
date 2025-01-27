@@ -93,48 +93,59 @@ def generate_questions(self, course_name: str, topic: str, previous_questions: l
           ]
       )
 
-      prompt = (
-          f"Topic: {topic}\n\n"
-          f"Previously Asked Questions:\n{previous_questions_text}\n\n"
-          f"Generate {num_questions} new questions for this topic."
-      )
+      questions = {}
 
-      response = self.llm.create_chat_completion(
-          messages=[
-              {"role": "system", "content": system_instruction},
-              {"role": "user", "content": prompt},
-          ],
-          response_format={"type": "json_object", "schema": self.question_schema},
-          temperature=0.7,
-          max_tokens=300,
-      )
+      for idx in range(num_questions):
+        print("Prev given questions")
+        print(previous_questions_text)
+        print("Current gen questions:")
+        print(questions)
+        prompt = (
+            f"Topic: {topic}\n\n"
+            f"Previously Asked Questions:\n{previous_questions_text}\n\n"
+            f"Previously Generated Questions:\n{questions}\n\n"
+            f"Generate a new question for this topic, while refraining from repeating your previously generated questions."
+        )
 
-      # Process the response
-      content = response["choices"][0]["message"]["content"]
+        response = self.llm.create_chat_completion(
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object", "schema": self.question_schema},
+            temperature=0.7,
+            max_tokens=300,
+        )
 
-      try:
-          parsed_response = json.loads(content)
-          # Validate the response matches the schema
-          if "question" in parsed_response and "options" in parsed_response and "answer" in parsed_response:
-              return json.dumps(parsed_response, indent=4)
-          else:
-              raise ValueError("Generated question does not match the required schema.")
+        # Process the response
+        content = response["choices"][0]["message"]["content"]
 
-      except (json.JSONDecodeError, ValueError) as e:
-          print(f"Error processing response: {e}")
-          print(f"Raw response: {content}")
-          return json.dumps({"error": "Failed to generate a valid question."}, indent=4)
+        try:
+            parsed_response = json.loads(content)
+            # Validate the response matches the schema
+            if "question" in parsed_response and "options" in parsed_response and "answer" in parsed_response:
+                questions[idx] = parsed_response
+                previous_questions_text += json.dumps(parsed_response)
+            else:
+                raise ValueError("Generated question does not match the required schema.")
 
-def run_generate_questions(previous_questions: list, num_questions: int, course_name: str, topic: str):
-    llm_engine = LLMEngine()
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"Error processing response: {e}")
+            print(f"Raw response: {content}")
+            return json.dumps({"error": "Failed to generate a valid question."}, indent=4)
 
- 
-    
+      return json.dumps(questions, indent=4)
 
-    # Generate questions
-    result = generate_questions(llm_engine, course_name, topic, previous_questions, num_questions)
-    print(result)
-    return result
+# def run_generate_questions(previous_questions: list, num_questions: int, course_name: str, topic: str):
+#     llm_engine = LLMEngine()
+
+
+
+
+#     # Generate questions
+#     result = generate_questions(llm_engine, course_name, topic, previous_questions, num_questions)
+#     json.dumps(result)
+#     return result
 
 
 # previous_questions = previous_questions = [
@@ -147,49 +158,10 @@ def run_generate_questions(previous_questions: list, num_questions: int, course_
 #             "D": "Energy cannot be created or destroyed.",
 #         },
 #         "answer": "A",
-#     },
-#     {
-#         "question": "What is Newton's Second Law?",
-#         "options": {
-#             "A": "Every object will remain at rest or in uniform motion unless acted upon by an external force.",
-#             "B": "Force equals mass times acceleration.",
-#             "C": "For every action, there is an equal and opposite reaction.",
-#             "D": "Energy cannot be created or destroyed.",
-#         },
-#         "answer": "B",
-#     },
-#     {
-#         "question": "What is Newton's Third Law?",
-#         "options": {
-#             "A": "Every object will remain at rest or in uniform motion unless acted upon by an external force.",
-#             "B": "Force equals mass times acceleration.",
-#             "C": "For every action, there is an equal and opposite reaction.",
-#             "D": "Energy cannot be created or destroyed.",
-#         },
-#         "answer": "C",
-#     },
-#     {
-#         "question": "What is the formula for force?",
-#         "options": {
-#             "A": "Force equals mass times acceleration.",
-#             "B": "Force equals mass divided by acceleration.",
-#             "C": "Force equals acceleration divided by mass.",
-#             "D": "Force equals velocity times mass.",
-#         },
-#         "answer": "A",
-#     },
-#     {
-#         "question": "What is the unit of force?",
-#         "options": {
-#             "A": "Joule",
-#             "B": "Newton",
-#             "C": "Watt",
-#             "D": "Pascal",
-#         },
-#         "answer": "B",
 #     }
 # ]
 # course_name = "Physics 101"
 # topic = "Newton's Laws of Motion"
 # num_questions = 3
-# run_generate_questions(previous_questions, num_questions, course_name, topic)
+# res = run_generate_questions(previous_questions, num_questions, course_name, topic)
+# print(res)
