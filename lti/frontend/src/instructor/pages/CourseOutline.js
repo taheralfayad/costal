@@ -98,7 +98,7 @@ const CourseOutline = () => {
         <main className='flex flex-col gap-4'>
             <header className='p-6 pl-10 flex items-center justify-between'>
                 <article className='flex flex-col gap-2'>
-                    <Title>MAC 2313 - Calculus 3 Fall 2024 M04</Title>
+                    <Title>{COURSE_NAME}</Title>
                     <CourseInfo />
                 </article>
                 <Button type='lightGreenOutline' label='Settings' />

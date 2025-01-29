@@ -11,11 +11,13 @@ from rest_framework.views import APIView
 from lti.models import (
     Assignment,
     CanvasUser,
+    Course,
     Textbook,
     Question,
     PossibleAnswer,
     Skill,
-    Response as StudentResponse
+    Response as StudentResponse,
+    Module,
 )
 
 from lti.serializers import (
@@ -23,7 +25,8 @@ from lti.serializers import (
     QuestionSerializer,
     TextbookSerializer,
     PossibleAnswerSerializer,
-    SkillSerializer
+    SkillSerializer,
+    ModuleSerializer,
 )
 
 class TextbookViewSet(viewsets.ModelViewSet):
@@ -108,7 +111,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
                 "course_id": assignment.course_id
             }
 
-            response_from_adaptive_engine = requests.post(
+            requests.post(
                 os.environ.get('ADAPTIVE_ENGINE_URL') + "/add-arm-to-mab/",
                 json=request_to_adaptive_engine
             )
@@ -194,7 +197,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         
         return Response(status=status.HTTP_201_CREATED)
 
-    @action(detail=False, methods=['post'], url_path='answer_assignment_question')           
+    @action(detail=False, methods=['post'], url_path='answer_question')           
     def answer_question(self, request):
         data = request.data
         assignment = Assignment.objects.get(id=data['assignment_id'])
@@ -209,29 +212,79 @@ class QuestionViewSet(viewsets.ModelViewSet):
             number_of_seconds_to_answer=number_of_seconds_to_answer
         )
 
-        questions = assignment.questions.all()
+        if assignment.assessment_type == "Homework":
+
+            request_to_adaptive_engine = {
+                "user_id": user.id,
+                "course_id": assignment.course_id,
+                "assignment_id": assignment.id,
+                "skill_name": question.associated_skill.id,
+                "correct": answer_choice.is_correct,
+                "difficulty": question.difficulty,
+                "hints_used": data["hints_used"],
+                "seconds_taken": data["number_of_seconds_to_answer"],
+                "module_id": assignment.associated_module.id,
+                "question_id": question.id
+            }
+
+            response_from_adaptive_engine = requests.post(
+                os.environ.get('ADAPTIVE_ENGINE_URL') + "/run-model-on-response/",
+                json=request_to_adaptive_engine
+            )
+
+            next_question = response_from_adaptive_engine.json()['next_question']
+            state_prediction = response_from_adaptive_engine.json()['state_prediction']
+        else:
+            request_to_adaptive_engine = {
+                "user_id": user.id,
+                "course_id": assignment.course_id,
+                "module_id": assignment.associated_module.id,
+                "skill_name": question.associated_skill.id,
+                "correct": answer_choice.is_correct
+            }
+
+            requests.post(
+                os.environ.get('ADAPTIVE_ENGINE_URL') + "/fit-model/",
+                json=request_to_adaptive_engine
+            )
+
+            return Response(status=status.HTTP_200_OK)
+
+
+        print(next_question)
+        print(state_prediction)
+
+        json = {
+            'next_question': next_question,
+            'state_prediction': state_prediction
+        }
+
+        response.save()
+        
+        return Response(json, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['post'], url_path='answer_quiz_question')
+    def answer_quiz_question(self, request):
+        data = request.data
+        assignment = Assignment.objects.get(id=data['assignment_id'])
+        user = CanvasUser.objects.get(id=data['user_id'])
+        question = Question.objects.get(id=data['question_id'])
+        answer_choice = PossibleAnswer.objects.get(id=data['answer_choice'])
+        number_of_seconds_to_answer = data['number_of_seconds_to_answer']
+        response = StudentResponse(
+            user=user,
+            question=question,
+            response=answer_choice,
+            number_of_seconds_to_answer=number_of_seconds_to_answer
+        )
 
         request_to_adaptive_engine = {
             "user_id": user.id,
             "course_id": assignment.course_id,
             "assignment_id": assignment.id,
             "skill_name": question.associated_skill.skill_name,
-            "correct": answer_choice.is_correct,
-            "questions": questions
+            "correct": answer_choice.is_correct
         }
-
-        print(request_to_adaptive_engine)
-
-        response_from_adaptive_engine = requests.post(
-            os.environ.get('ADAPTIVE_ENGINE_URL') + "/run-model-on-response/",
-            json=request_to_adaptive_engine
-        )
-
-        next_question = response_from_adaptive_engine.json()['next_question']
-
-        response.save()
-        
-        return Response(next_question, status=status.HTTP_200_OK)
 
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
@@ -242,6 +295,17 @@ class PossibleAnswersViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = PossibleAnswer.objects.all()
+        return queryset
+    
+
+class ModuleViewSet(viewsets.ModelViewSet):
+    """ViewSet for the ReportEntry class"""
+
+    serializer_class = ModuleSerializer
+    queryset = Module.objects.all()
+
+    def get_queryset(self):
+        queryset = Module.objects.all()
         return queryset
 
 

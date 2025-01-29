@@ -29,6 +29,14 @@ class Course(models.Model):
 
 # Models
 
+class Module(models.Model):
+    name = models.CharField(max_length=255)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
+    assignments = models.ManyToManyField("Assignment", blank=True)
+
+    def __str__(self):
+        return self.name
+
 class Assignment(models.Model):
     name = models.CharField(max_length=255)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
@@ -36,6 +44,7 @@ class Assignment(models.Model):
     start_date = models.DateTimeField(default=datetime.datetime.now)
     end_date = models.DateTimeField(default=datetime.datetime.now)
     assessment_type = models.TextField(default="Homework")
+    associated_module = models.ForeignKey(Module, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
