@@ -25,10 +25,6 @@ sudo yum install -y docker
 sudo curl -L https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-compose-plugin-2.6.0-3.el7.x86_64.rpm -o ./compose-plugin.rpm
 sudo yum install ./compose-plugin.rpm -y
 
-# give docker user necessary premissions
-# sudo usermod -aG docker $USER
-# newgrp docker
-
 # start docker daemon
 systemctl enable docker
 systemctl start docker
@@ -37,7 +33,7 @@ systemctl start docker
 touch .env
 
 # login to ecr
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REPOSITORY
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
 
 # start docker compose
 docker compose -f docker-compose-aws.yml up
