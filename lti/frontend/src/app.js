@@ -44,7 +44,23 @@ const App = () => {
       <AssignmentLanding percentageTotal={20} />
       <ActivityDetails /> 
       <Assignment /> */}
-      <CreateQuestion /> 
+      <CourseOutline data={[
+        {
+            id: 1,
+            name: 'MODULE 1',
+            rows: [
+                { topic: 'Topic', start: 'Feb 11', end: 'Feb 27' },
+                { topic: 'Topic', start: 'Feb 11', end: 'Feb 29' },
+                { topic: 'Topic', start: 'Feb 29', end: 'Mar 2' },
+            ]
+        },
+        {
+            id: 2,
+            name: 'MODULE 2',
+            rows: [
+            ]
+        }
+    ]} /> 
 
     </div>
   );

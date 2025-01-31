@@ -1,98 +1,227 @@
 import React, { useState } from 'react';
-import { Button, Checkbox, DatePicker, Dropdown, Title } from '../../design-system';
+import { Button, Checkbox, DatePicker, Dropdown, Input, Title } from '../../design-system';
 import CourseInfo from '../components/CourseInfo';
-
+import ChevronDown from '../../assets/chevron-down.svg';
 import Menu from '../../assets/menu.svg'
 import DropdownMenu from '../components/DropdownMenu';
 
 
-const CourseOutline = () => {
-    const [isOrdering, setOrdering] = useState(false)
-    const rows = [
-        { topic: 'Topic', start: 'Feb 11', end: 'Feb 27' },
-        { topic: 'Topic', start: 'Feb 11', end: 'Feb 29' },
-        { topic: 'Topic', start: 'Feb 29', end: 'Mar 2' },
-    ]
-    const [allChecked, setAllChecked] = useState(false);
-    const [checkedRows, setCheckedRows] = useState(Array(rows.length).fill(false));
-    const [isStartDateOpen, setStartDateOpen] = useState(false)
-    const [isEndDateOpen, setEndDateOpen] = useState(false)
-
-    const handleAllChecked = () => {
-        setAllChecked(!allChecked);
-        setCheckedRows(Array(rows.length).fill(!allChecked));
-    };
-
-    const handleRowChecked = (index) => {
-        const updatedCheckedRows = [...checkedRows];
-        updatedCheckedRows[index] = !updatedCheckedRows[index];
-        setCheckedRows(updatedCheckedRows);
-
-        if (updatedCheckedRows.includes(false)) {
-            setAllChecked(false);
-        } else {
-            setAllChecked(true);
+const CourseOutline = ({ data }) => {
+    const [modules, setModules] = useState(data.map(d => {
+        return {
+            id: d.id,
+            name: d.name,
+            rows: d.rows,
+            isOrdering: false,
+            allChecked: false,
+            checkedRows: Array(d.rows.length).fill(false),
+            isStartDateOpen: false,
+            isEndDateOpen: false,
+            isTableVisible: true,
+            isEditing: false
         }
+    }));
+
+    const [isAddingModule, setIsAddingModule] = useState(false);
+    const [newModuleName, setNewModuleName] = useState('');
+
+    const handleAddNewModule = () => {
+        setIsAddingModule(!isAddingModule);
     };
 
-    const handleStartDate = () => {
-        console.log('here')
-        setStartDateOpen(!isStartDateOpen)
-    }
+    const handleSaveNewModule = () => {
+        const newModule = {
+            id: modules.length + 1,
+            name: newModuleName,
+            rows: [],
+            isOrdering: false,
+            allChecked: false,
+            checkedRows: [],
+            isStartDateOpen: false,
+            isEndDateOpen: false,
+            isTableVisible: true,
+            isEditing: false
+        };
+        setModules([...modules, newModule]);
+        setIsAddingModule(false);
+        setNewModuleName('');
+    };
 
-    const handleEndDate = () => {
-        console.log('here')
-        setEndDateOpen(!isEndDateOpen)
-    }
+    const handleModuleNameChange = (e) => {
+        setNewModuleName(e.target.value);
+    };
 
 
-    const renderMenu = () => {
-        if (isOrdering) {
+    const handleAllChecked = (moduleId) => {
+        setModules(modules.map(module => {
+            if (module.id === moduleId) {
+                const allChecked = !module.allChecked;
+                return {
+                    ...module,
+                    allChecked,
+                    checkedRows: Array(module.rows.length).fill(allChecked)
+                };
+            }
+            return module;
+        }));
+    };
+
+    const handleRowChecked = (moduleId, index) => {
+        setModules(modules.map(module => {
+            if (module.id === moduleId) {
+                const updatedCheckedRows = [...module.checkedRows];
+                updatedCheckedRows[index] = !updatedCheckedRows[index];
+                return {
+                    ...module,
+                    checkedRows: updatedCheckedRows,
+                    allChecked: updatedCheckedRows.every(Boolean)
+                };
+            }
+            return module;
+        }));
+    };
+
+    const handleOrdering = (moduleId) => {
+        setModules(modules.map(module => {
+            if (module.id === moduleId) {
+                return {
+                    ...module,
+                    isOrdering: !module.isOrdering
+                };
+            }
+            return module;
+        }));
+    };
+
+    const toggleTableVisibility = (moduleId) => {
+        setModules(modules.map(module =>
+            module.id === moduleId ? { ...module, isTableVisible: !module.isTableVisible } : module
+        ));
+    };
+
+    const handleStartDate = (moduleId) => {
+        setModules(modules.map(module =>
+            module.id === moduleId ? { ...module, isStartDateOpen: !module.isStartDateOpen } : module
+        ));
+    };
+
+    const handleEndDate = (moduleId) => {
+        setModules(modules.map(module =>
+            module.id === moduleId ? { ...module, isEndDateOpen: !module.isEndDateOpen } : module
+        ));
+    };
+
+    const handleEditClick = (moduleId) => {
+        setModules(modules.map(module =>
+            module.id === moduleId ? { ...module, isEditing: !module.isEditing } : module
+        ));
+    };
+
+    const handleInputChange = (moduleId, event) => {
+        const newValue = event.target.value;
+        setModules(modules.map(module =>
+            module.id === moduleId ? { ...module, editedName: newValue } : module
+        ));
+    };
+
+    const handleSaveName = (moduleId) => {
+        setModules(modules.map(module =>
+            module.id === moduleId ? { ...module, name: module.editedName, isEditing: false } : module
+        ));
+    };
+
+    const renderModuleName = (module) => {
+        if (module.isEditing) {
+            return <section className='flex items-center gap-6'>
+                <Input
+                    value={module.editedName}
+                    label=''
+                    onChange={(e) => handleInputChange(module.id, e)}
+                    width='w-40'
+                />
+                <span className='mb-4 flex gap-4'>
+                    <Button label='Save' onClick={() => handleSaveName(module.id)} />
+                    <Button label='Cancel' onClick={() => handleEditClick(module.id)} type='outline' />
+                </span>
+            </section>
+        }
+        return <h3
+            className='text-slate-900 text-lg font-medium cursor-pointer'
+            onClick={() => handleEditClick(module.id)}
+        >
+            {module.name}
+        </h3>
+
+    };
+
+    const renderMenu = (module) => {
+        if (module.isOrdering) {
             return (
-                <section className='flex justify-between items-center mt-16 mx-16'>
+                <section className='flex justify-between items-center mt-8 mx-16'>
                     <section className='flex items-center gap-4'>
-                        <h2 className='text-slate-900 text-xl font-medium'>Course Outline</h2>
+                        <button
+                            onClick={() => toggleTableVisibility(module.id)}
+                            className={` transform transition-transform ${module.isTableVisible ? '' : 'rotate-[180deg]'
+                                }`}
+                        >
+                            <ChevronDown />
+                        </button>
+                        {renderModuleName(module)}
                     </section>
                     <section className='flex gap-4'>
-                        <Button label='Save' onClick={() => setOrdering(!isOrdering)} />
-                        <Button label='Cancel' onClick={() => setOrdering(!isOrdering)} type='outline' />
+                        <Button label='Save' onClick={() => handleOrdering(module.id)} />
+                        <Button label='Cancel' onClick={() => handleOrdering(module.id)} type='outline' />
                         <Dropdown label='' width='w-44' margin={false} />
                     </section>
                 </section>
             )
         }
 
-        if (checkedRows.includes(true)) {
+        if (module.checkedRows.includes(true)) {
             return (
-                <section className='flex justify-between items-center mt-16 mx-16'>
+                <section className='flex justify-between items-center mt-8 mx-16'>
                     <section className='flex items-center gap-4'>
-                        <Checkbox label='' checked={allChecked} onChange={handleAllChecked} />
-                        <h2 className='text-slate-900 text-xl font-medium'>Course Outline</h2>
+                        <button
+                            onClick={() => toggleTableVisibility(module.id)}
+                            className={` transform transition-transform ${module.isTableVisible ? '' : 'rotate-[180deg]'
+                                }`}
+                        >
+                            <ChevronDown />
+                        </button>
+                        <Checkbox label='' checked={module.allChecked} onChange={() => handleAllChecked(module.id)} />
+                        {renderModuleName(module)}
                     </section>
                     <section className='flex gap-4'>
-                        <Button label='Edit Start Date' type='outline' onClick={handleStartDate} />
-                        <Button label='Edit End Date' type='outline' onClick={handleEndDate} />
+                        <Button label='Edit Start Date' type='outline' onClick={() => handleStartDate(module.id)} />
+                        <Button label='Edit End Date' type='outline' onClick={() => handleEndDate(module.id)} />
                     </section>
 
-                    <DatePicker position='bottom-1 right-12' isCalendarOpen={isStartDateOpen} handleCalendarOpen={handleStartDate}  />
-                    <DatePicker position='bottom-1 right-12' isCalendarOpen={isEndDateOpen} handleCalendarOpen={handleEndDate}  />
+                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isStartDateOpen} handleCalendarOpen={() => handleStartDate(module.id)} />
+                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isEndDateOpen} handleCalendarOpen={() => handleEndDate(module.id)} />
                 </section>
             )
         }
-
         return (
-            <section className='flex justify-between items-center mt-16 mx-16'>
+            <section className='flex justify-between items-center mt-8 mx-16'>
                 <section className='flex items-center gap-4'>
-                    <Checkbox label='' checked={allChecked} onChange={handleAllChecked} />
-                    <h2 className='text-slate-900 text-xl font-medium'>Course Outline</h2>
+                    <button
+                        onClick={() => toggleTableVisibility(module.id)}
+                        className={` transform transition-transform ${module.isTableVisible ? '' : 'rotate-[180deg]'
+                            }`}
+                    >
+                        <ChevronDown />
+                    </button>
+                    <Checkbox label='' checked={module.allChecked} onChange={() => handleAllChecked(module.id)} />
+                    {renderModuleName(module)}
                 </section>
                 <section className='flex gap-4'>
                     <Button label='Add' />
-                    <Button label='Edit Order' onClick={() => setOrdering(!isOrdering)} type='outline' />
+                    <Button label='Edit Order' onClick={() => handleOrdering(module.id)} type='outline' />
                 </section>
             </section>
         )
     }
+
 
     return (
         <main className='flex flex-col gap-4'>
@@ -104,30 +233,52 @@ const CourseOutline = () => {
                 <Button type='lightGreenOutline' label='Settings' />
 
             </header>
-            <section className='bg-[#f8f8f8] h-[100vh]'>
-                {renderMenu()}
-
-
-                <section className='bg-white rounded-xl border border-slate-300 mt-6 mx-16'>
-                    <table className='w-full'>
-                        {rows.map((row, i) => (
-                            <tr className='last:border-none border-b border-slate-300'>
-                                <td className='w-5 p-4' >
-                                    {isOrdering ? <Menu /> : <Checkbox label='' checked={checkedRows[i]} onChange={() => handleRowChecked(i)} />}
-                                </td>
-                                <td className='w-4/5 text-slate-700 text-sm font-medium'>{row.topic}</td>
-                                <td className='w-1/5 pl-8 text-slate-700 text-sm font-medium'>{row.start} - {row.end}</td>
-                                <td className='pr-6'><DropdownMenu /></td>
-                            </tr>
-                        ))}
-
-                    </table>
+            <section className='bg-[#f8f8f8] min-h-screen'>
+                <section className='flex gap-6 items-center mt-4 mx-16'>
+                    <h2 className={`text-slate-900 text-xl font-medium ${isAddingModule ? 'mb-4' : ''}`}>Course Outline</h2>
+                    {!isAddingModule ? (
+                        <Button label='Add New Module' onClick={handleAddNewModule} />
+                    ) : (
+                        <section className="flex items-center gap-4">
+                            <Input
+                                type='text'
+                                placeholder='Enter module name'
+                                label=''
+                                value={newModuleName}
+                                onChange={handleModuleNameChange}
+                            />
+                            <span className='mb-4 flex gap-4'>
+                                <Button label='Save' onClick={handleSaveNewModule} />
+                                <Button label='Cancel' onClick={handleAddNewModule} type='outline' />
+                            </span>
+                        </section>
+                    )}
                 </section>
+                {modules.map(module => (
+                    <section key={module.id}>
+                        {renderMenu(module)}
+                        {module.isTableVisible &&
+                            <section className='bg-white rounded-xl border border-slate-300 mt-6 mx-16'>
+                                {module.rows.length > 0 ? <table className='w-full'>
+                                    {module.rows.map((row, i) => (
+                                        <tr key={i} className='last:border-none border-b border-slate-300'>
+                                            <td className='w-5 p-4'>
+                                                {module.isOrdering ? <Menu /> : <Checkbox label='' checked={module.checkedRows[i]} onChange={() => handleRowChecked(module.id, i)} />}
+                                            </td>
+                                            <td className='w-4/5 text-slate-700 text-sm font-medium'>{row.topic}</td>
+                                            <td className='w-1/5 pl-8 text-slate-700 text-sm font-medium'>{row.start} - {row.end}</td>
+                                            <td className='pr-6'><DropdownMenu /></td>
+                                        </tr>
+                                    ))}
+                                </table> : <p className='h-10 flex justify-center items-center text-slate-700 text-sm font-medium'>No assignment yet</p>}
+                            </section>
+                        }
 
-
+                    </section>
+                ))}
             </section>
 
-        </main >
+        </main>
     );
 };
 

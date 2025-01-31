@@ -33,7 +33,6 @@ const ShortAnswerConfig = () => {
                     placeholder='Great Answer'
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    id='todo-input'
                 />
             </form>
 
