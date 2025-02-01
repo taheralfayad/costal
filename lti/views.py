@@ -128,8 +128,6 @@ def launch(request):
 
     course_name = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/context']['title']
 
-    pprint.pprint(message_launch_data)
-
     try:
         course = Course.objects.get(course_id=course_id)
 
