@@ -24,7 +24,7 @@ import Assignment from './student/pages/Assignment.js';
 const App = () => {
 
   const assignment = {
-    "id": 1,
+    "id": 3,
     "name": "The greatest assignment of all time",
     "course": "1",
     "start_date": "2025-01-01T01:01",
@@ -57,7 +57,7 @@ const App = () => {
       {/* <Assignment />
       <LandingPage />
       <ActivityDetails /> 
-      <Assignment /> */}
+      <Assignment /> 
       <CourseOutline data={[
         {
             id: 1,
@@ -74,8 +74,8 @@ const App = () => {
             rows: [
             ]
         }
-    ]} /> 
-
+    ]} /> */}
+      <CreateQuestion assignment={assignment}/>
     </div>
   );
 }

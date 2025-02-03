@@ -68,6 +68,7 @@ class Question(models.Model):
     possible_answers = models.ManyToManyField("PossibleAnswer", blank=True)
     difficulty = models.IntegerField(default=0)
     num_points = models.IntegerField(default=1)
+    type = models.TextField(default="multiple")
 
     def __str__(self):
         return self.name

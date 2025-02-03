@@ -1,6 +1,7 @@
 import os
 import requests
 import datetime
+import json
 
 from canvasapi import Canvas
 from rest_framework import status, viewsets
@@ -132,9 +133,24 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='create_question')
     def create_question(self, request):
         data = request.data
+
+        skill = Skill.objects.get(id=data['skill_id'])
+
+        difficulty_map = {
+            "easy": 1,
+            "medium": 2,
+            "hard": 3
+        }
+
+        difficulty = difficulty_map[data['difficulty'].lower()]
+
         question = Question(
+            name = data['name'],
             text=data['text'],
-            difficulty=data['difficulty'],
+            difficulty=difficulty,
+            type=data['type'],
+            num_points=data['points'],
+            associated_skill=skill
         )
 
         question.save()
@@ -148,8 +164,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        possible_answers = data['possible_answers']
-        skill_id = data['skill_id']
+        possible_answers = json.loads(data['possible_answers'])
 
         for answer in possible_answers:
             possible_answer = PossibleAnswer(
@@ -160,9 +175,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
             possible_answer.save()
             question.possible_answers.add(possible_answer)
 
-        question.associated_skill = Skill.objects.get(id=skill_id)
-
-        question.save()
         return Response(status=status.HTTP_201_CREATED)
     
     @action(detail=False, methods=['post'], url_path='add_question_list')
