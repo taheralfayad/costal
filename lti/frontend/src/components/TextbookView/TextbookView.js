@@ -1,8 +1,8 @@
 import React from 'react';
-import PDFViewer from './PDFViewer.tsx';
+import PDFViewer from './PDFViewer.js';
 
 // TODO: Change the hardcoded data to call from the API endpoint TextbookViewSet.get_by_isbn(isbn) instead.
-const TextbookView = ({ pdfFile, title, author }: { pdfFile: string; title: string; author: string }) => {
+const TextbookView = ({ pdfFile, title, author }) => {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center">
       <header className="w-full bg-green-700 text-white py-4 shadow-md">
