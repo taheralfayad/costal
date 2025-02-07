@@ -39,6 +39,8 @@ class LLMEngine:
             },
         }
 
+        self.conversation_history = []
+
     def __call__(self, prompt: str, max_tokens: int, temperature: float):
         return self.llm(prompt=prompt, max_tokens=max_tokens, temperature=temperature)
 
@@ -80,88 +82,89 @@ class LLMEngine:
 
         return parsed_response["concepts"]
 
-def generate_questions(self, course_name: str, topic: str, previous_questions: list, num_questions: int) -> str:
-      system_instruction = (
-          f"You are an expert in {course_name}. Based on the topic '{topic}' and the previously provided questions, generate new challenging multiple-choice questions suitable for assessing student understanding. Ensure the new questions are distinct from previously asked ones. Always provide 4 options (A, B, C, D) in the following JSON Schema: \n"
-          "{\"type\": \"object\", \"required\": [\"question\", \"options\", \"answer\"], \"properties\": {\"question\": {\"type\": \"string\"}, \"options\": {\"type\": \"object\", \"required\": [\"A\", \"B\", \"C\", \"D\"], \"properties\": {\"A\": {\"type\": \"string\"}, \"B\": {\"type\": \"string\"}, \"C\": {\"type\": \"string\"}, \"D\": {\"type\": \"string\"}}}, \"answer\": {\"type\": \"string\"}}}"
-      )
-
-      previous_questions_text = "\n".join(
-          [
-              f"Q: {q['question']}\nOptions: A: {q['options']['A']}, B: {q['options']['B']}, C: {q['options']['C']}, D: {q['options']['D']}\nCorrect Answer: {q['answer']}"
-              for q in previous_questions
-          ]
-      )
-
-      questions = {}
-
-      for idx in range(num_questions):
-        print("Prev given questions")
-        print(previous_questions_text)
-        print("Current gen questions:")
-        print(questions)
-        prompt = (
-            f"Topic: {topic}\n\n"
-            f"Previously Asked Questions:\n{previous_questions_text}\n\n"
-            f"Previously Generated Questions:\n{questions}\n\n"
-            f"Generate a new question for this topic, while refraining from repeating your previously generated questions."
+    def generate_questions(self, course_name: str, topic: str, previous_questions: list, num_questions: int) -> str:
+        system_instruction = (
+            f"You are an expert in {course_name}. Based on the topic '{topic}' and the previously provided questions, generate new challenging multiple-choice questions suitable for assessing student understanding. Ensure the new questions are distinct from previously asked ones. Always provide 4 options (A, B, C, D) in the following JSON Schema: \n"
+            "{\"type\": \"object\", \"required\": [\"question\", \"options\", \"answer\"], \"properties\": {\"question\": {\"type\": \"string\"}, \"options\": {\"type\": \"object\", \"required\": [\"A\", \"B\", \"C\", \"D\"], \"properties\": {\"A\": {\"type\": \"string\"}, \"B\": {\"type\": \"string\"}, \"C\": {\"type\": \"string\"}, \"D\": {\"type\": \"string\"}}}, \"answer\": {\"type\": \"string\"}}}"
         )
+
+        previous_questions_text = "\n".join(
+            [
+                f"Q: {q['question']}\nOptions: A: {q['options']['A']}, B: {q['options']['B']}, C: {q['options']['C']}, D: {q['options']['D']}\nCorrect Answer: {q['answer']}"
+                for q in previous_questions
+            ]
+        )
+
+        questions = {}
+
+        for idx in range(num_questions):
+            print("Prev given questions")
+            print(previous_questions_text)
+            print("Current gen questions:")
+            print(questions)
+            prompt = (
+                f"Topic: {topic}\n\n"
+                f"Previously Asked Questions:\n{previous_questions_text}\n\n"
+                f"Previously Generated Questions:\n{questions}\n\n"
+                f"Generate a new question for this topic, while refraining from repeating your previously generated questions."
+            )
+
+            response = self.llm.create_chat_completion(
+                messages=[
+                    {"role": "system", "content": system_instruction},
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={"type": "json_object", "schema": self.question_schema},
+                temperature=0.7,
+                max_tokens=300,
+            )
+
+            # Process the response
+            content = response["choices"][0]["message"]["content"]
+
+            try:
+                parsed_response = json.loads(content)
+                # Validate the response matches the schema
+                if "question" in parsed_response and "options" in parsed_response and "answer" in parsed_response:
+                    questions[idx] = parsed_response
+                    previous_questions_text += json.dumps(parsed_response)
+                else:
+                    raise ValueError("Generated question does not match the required schema.")
+
+            except (json.JSONDecodeError, ValueError) as e:
+                print(f"Error processing response: {e}")
+                print(f"Raw response: {content}")
+                return json.dumps({"error": "Failed to generate a valid question."}, indent=4)
+
+        return json.dumps(questions, indent=4)
+    
+    def generate_chat_response(self, user_message: str) -> str:
+        system_instruction = (
+            "You are a helpful assistant capable of answering a wide range of questions. "
+            "Respond succinctly providing only the information the user requests. "
+            "Do not give the exact answer, your goal is to help guide the user to the answer."
+        )
+
+        self.conversation_history.append({"role": "user", "content": user_message})
+
+        messages = [{"role": "system", "content": system_instruction}] + self.conversation_history
 
         response = self.llm.create_chat_completion(
-            messages=[
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": prompt},
-            ],
-            response_format={"type": "json_object", "schema": self.question_schema},
+            messages=messages,
             temperature=0.7,
-            max_tokens=300,
+            max_tokens=150,
         )
 
-        # Process the response
-        content = response["choices"][0]["message"]["content"]
+        chatbot_reply = response["choices"][0]["message"]["content"]
 
-        try:
-            parsed_response = json.loads(content)
-            # Validate the response matches the schema
-            if "question" in parsed_response and "options" in parsed_response and "answer" in parsed_response:
-                questions[idx] = parsed_response
-                previous_questions_text += json.dumps(parsed_response)
-            else:
-                raise ValueError("Generated question does not match the required schema.")
+        self.conversation_history.append({"role": "assistant", "content": chatbot_reply})
 
-        except (json.JSONDecodeError, ValueError) as e:
-            print(f"Error processing response: {e}")
-            print(f"Raw response: {content}")
-            return json.dumps({"error": "Failed to generate a valid question."}, indent=4)
+        return chatbot_reply
 
-      return json.dumps(questions, indent=4)
-
-# def run_generate_questions(previous_questions: list, num_questions: int, course_name: str, topic: str):
-#     llm_engine = LLMEngine()
-
-
-
-
-#     # Generate questions
-#     result = generate_questions(llm_engine, course_name, topic, previous_questions, num_questions)
-#     json.dumps(result)
-#     return result
-
-
-# previous_questions = previous_questions = [
-#     {
-#         "question": "What is Newton's First Law?",
-#         "options": {
-#             "A": "Every object will remain at rest or in uniform motion unless acted upon by an external force.",
-#             "B": "Force equals mass times acceleration.",
-#             "C": "For every action, there is an equal and opposite reaction.",
-#             "D": "Energy cannot be created or destroyed.",
-#         },
-#         "answer": "A",
-#     }
-# ]
-# course_name = "Physics 101"
-# topic = "Newton's Laws of Motion"
-# num_questions = 3
-# res = run_generate_questions(previous_questions, num_questions, course_name, topic)
-# print(res)
+# llm_engine = LLMEngine()
+# user_message = "What color is the sky?"
+# chatbot_reply = llm_engine.generate_chat_response(user_message)
+# print(chatbot_reply)
+# user_message = "What did i most recently ask you?"
+# chatbot_reply = llm_engine.generate_chat_response(user_message)
+# print(chatbot_reply)   - SHOULD know the answer.
