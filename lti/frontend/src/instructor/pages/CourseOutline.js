@@ -79,7 +79,7 @@ const CourseOutline = () => {
         setIsAddingModule(!isAddingModule);
     };
 
-    const handleSaveNewModule = () => {
+    const handleSaveNewModule = async () => {
         const newModule = {
             id: modules.length + 1,
             name: newModuleName,
@@ -95,6 +95,26 @@ const CourseOutline = () => {
         setModules([...modules, newModule]);
         setIsAddingModule(false);
         setNewModuleName('');
+
+        try {
+            const response = await fetch('/lti/api/modules/create_module/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    course_id: COURSE_ID,
+                    name: newModuleName
+                })
+            });
+
+            const data = await response.json();
+            console.log(data);
+        }
+        catch (error) {
+            console.error(error
+            );
+        }
     };
 
     const handleModuleNameChange = (e) => {

@@ -351,7 +351,18 @@ class ModuleViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
         except IndexError:
             return Response({'error': 'No modules found for this course'}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['post'], url_path='create_module')
+    def create_module(self, request):
+        data = request.data
 
+        module = Module(
+            name=data['name'],
+            course_id=data['course_id']
+        )
+
+        module.save()
+        return Response(status=status.HTTP_201_CREATED)
 
 class SkillViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
