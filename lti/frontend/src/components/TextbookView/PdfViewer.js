@@ -15,7 +15,7 @@ const PDFViewer = ({ pdfFile }) => {
   };
 
   const goToNextPage = () => {
-    setPageNumber((prevPage) => Math.min(prevPage + 1, numPages!));
+    setPageNumber((prevPage) => Math.min(prevPage + 1, numPages));
   };
 
   const goToPrevPage = () => {
