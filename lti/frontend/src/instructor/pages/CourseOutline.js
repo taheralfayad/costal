@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Checkbox, DatePicker, Dropdown, Input, Title } from '../../design-system';
 import CourseInfo from '../components/CourseInfo';
 import ChevronDown from '../../assets/chevron-down.svg';
@@ -6,21 +6,71 @@ import Menu from '../../assets/menu.svg'
 import DropdownMenu from '../components/DropdownMenu';
 
 
-const CourseOutline = ({ data }) => {
-    const [modules, setModules] = useState(data.map(d => {
-        return {
-            id: d.id,
-            name: d.name,
-            rows: d.rows,
+const CourseOutline = () => {
+    const [data, setData] = useState([]);
+    const [modules, setModules] = useState([
+        {
+            id: 1,
+            name: '',
+            rows: [],
             isOrdering: false,
             allChecked: false,
-            checkedRows: Array(d.rows.length).fill(false),
+            checkedRows: [],
             isStartDateOpen: false,
             isEndDateOpen: false,
             isTableVisible: true,
             isEditing: false
+        }]);
+    
+    
+    const formatTimeStamps = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString("en-US", { 
+            year: "numeric", 
+            month: "long", 
+            day: "numeric", 
+            hour: "2-digit", 
+            minute: "2-digit", 
+            second: "2-digit",
+            hour12: true 
+        });
+    };
+
+
+    const retrieveModules = async () => {
+        try {
+            const response = await fetch(`/lti/api/modules/get_modules_by_course_id/${COURSE_ID}`);
+            
+            const newData = await response.json();
+            
+            setData(newData);
+
+        } catch (error) {
+            console.error(error);
         }
-    }));
+    };
+
+    useEffect(() => {
+        retrieveModules();
+    }, []);
+
+    useEffect(() => {
+        if (data) {
+            setModules(data.map(d => ({
+                id: d.id,
+                name: d.name,
+                rows: d.rows || [],
+                isOrdering: false,
+                allChecked: false,
+                checkedRows: Array((d.rows || []).length).fill(false), // Prevent undefined issues
+                isStartDateOpen: false,
+                isEndDateOpen: false,
+                isTableVisible: true,
+                isEditing: false
+            })));
+        }
+    }, [data]);
+    
 
     const [isAddingModule, setIsAddingModule] = useState(false);
     const [newModuleName, setNewModuleName] = useState('');
@@ -266,7 +316,7 @@ const CourseOutline = ({ data }) => {
                                                 {module.isOrdering ? <Menu /> : <Checkbox label='' checked={module.checkedRows[i]} onChange={() => handleRowChecked(module.id, i)} />}
                                             </td>
                                             <td className='w-4/5 text-slate-700 text-sm font-medium'>{row.topic}</td>
-                                            <td className='w-1/5 pl-8 text-slate-700 text-sm font-medium'>{row.start} - {row.end}</td>
+                                            <td className='w-1/5 pl-8 text-slate-700 text-sm font-medium'>{formatTimeStamps(row.start)} - {formatTimeStamps(row.end)}</td>
                                             <td className='pr-6'><DropdownMenu /></td>
                                         </tr>
                                     ))}

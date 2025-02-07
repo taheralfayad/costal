@@ -75,7 +75,7 @@ const App = () => {
             ]
         }
     ]} /> */}
-      <CreateQuestion assignment={assignment}/>
+        <CourseOutline/>
     </div>
   );
 }

@@ -319,6 +319,38 @@ class ModuleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Module.objects.all()
         return queryset
+    
+    @action(detail=False, methods=['get'], url_path='get_modules_by_course_id/(?P<course_id>[^/.]+)')
+    def get_modules_by_course_id(self, request, course_id=None):
+        try:
+            response = []
+
+            modules = Module.objects.filter(course_id=course_id)
+
+            for module in modules:
+                module_response = {
+                    "id": module.id,
+                    "name": module.name,
+                }
+
+                module_response['rows'] = []
+
+                for assignment in module.assignments.all():
+                    module_response['rows'].append({
+                        "id": assignment.id,
+                        "topic": assignment.name,
+                        "start": assignment.start_date,
+                        "end": assignment.end_date,
+                        "assessment_type": assignment.assessment_type
+                    })
+                
+                response.append(module_response)
+                
+            return Response(response, status=status.HTTP_200_OK)
+        except Module.DoesNotExist:
+            return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
+        except IndexError:
+            return Response({'error': 'No modules found for this course'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class SkillViewSet(viewsets.ModelViewSet):
