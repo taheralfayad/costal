@@ -1,15 +1,15 @@
 import './App.css';
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import TextbookView from './components/TextbookView/TextbookView.tsx';
-import TextbookList from './components/TextbookView/TextbookList.tsx';
-import PDFViewer from './components/TextbookView/PDFViewer.tsx';
+import TextbookView from './components/TextbookView/TextbookView.js';
+import TextbookList from './components/TextbookView/TextbookList.js';
+import PDFViewer from './components/TextbookView/PDFViewer.js';
 
 function App() {
   return (
       <Routes>
       <Route path="/list" element={<TextbookList />} />
-      <Route path="/textbook/:id" 
+      <Route path="/textbook/:isbn" 
              element={
              <TextbookView
              pdfFile="/sample.pdf"
