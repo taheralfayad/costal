@@ -10,6 +10,9 @@ llm_service = LLMEngine()
 class QuestionGenerationRequest(BaseModel):
     course_name: str
     text: str
+    
+class ChatRequest(BaseModel):
+    message: str
 
 @app.get("/")
 async def root():
@@ -26,6 +29,18 @@ async def generate(request):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/chat")
+async def chat(request: ChatRequest):
+    try:
+        # Use LLMEngine to generate a response based on user message and history
+        chatbot_reply = llm_service.generate_chat_response(request.message)
+        
+        return {"reply": chatbot_reply}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8002)
