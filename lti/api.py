@@ -351,6 +351,35 @@ class ModuleViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
         except IndexError:
             return Response({'error': 'No modules found for this course'}, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=False, methods=['get'], url_path='get_modules_with_skills/(?P<course_id>[^/.]+)')
+    def get_modules_with_skills(self, request, course_id=None):
+        try:
+            response = []
+
+            modules = Module.objects.filter(course_id=course_id)
+
+            for module in modules:
+                module_response = {
+                    "id": module.id,
+                    "name": module.name,
+                }
+
+                module_response['skills'] = []
+
+                for skill in module.skills.all():
+                    module_response['skills'].append({
+                        "id": skill.id,
+                        "name": skill.name
+                    })
+                
+                response.append(module_response)
+                
+            return Response(response, status=status.HTTP_200_OK)
+        except Module.DoesNotExist:
+            return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
+        except IndexError:
+            return Response({'error': 'No modules found for this course'}, status=status.HTTP_404_NOT_FOUND)
         
     @action(detail=False, methods=['post'], url_path='create_module')
     def create_module(self, request):
@@ -363,6 +392,23 @@ class ModuleViewSet(viewsets.ModelViewSet):
 
         module.save()
         return Response(status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['post'], url_path="add_objective_to_module/(?P<module_id>[^/.]+)")
+    def add_objective_to_module(self, request, module_id=None):
+        module = Module.objects.get(id=module_id)
+        course_id = module.course.id
+
+        objective = Skill(
+            name=request.data['name'],
+            course_id=course_id
+        )
+
+        objective.save()
+
+        module.skills.add(objective)
+
+        return Response(status=status.HTTP_200_OK)
+
 
 class SkillViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""

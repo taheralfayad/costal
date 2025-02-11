@@ -33,6 +33,7 @@ class Module(models.Model):
     name = models.CharField(max_length=255)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
     assignments = models.ManyToManyField("Assignment", blank=True)
+    skills = models.ManyToManyField("Skill", blank=True)
 
     def __str__(self):
         return self.name

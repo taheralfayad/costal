@@ -29,7 +29,6 @@ const LandingPage = () => {
     }
 
     useEffect(() => {
-        getProfessorName();
         getCourseAssignments();
     }
     , []);
