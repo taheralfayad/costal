@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import MathInput from "react-math-keyboard";
+import React, { useRef, useState } from "react";
 import { Button, TextArea } from '../../design-system';
 import DotsVertical from '../../assets/dots-vertical.svg';
+import styles from "./styles.css";
 
+const Writing = ({ title, question, placeholder, isMath = false }) => {
+  const [isIncorrect, setIncorrect] = useState(false)
+  const firstMathfieldRef = useRef();
+  const [value, setValue] = useState("");
 
-const Writing = ({ title, question, placeholder }) => {
-  const [isIncorrect, setIncorrect] = useState(true)
 
   return (
     <article className='w-[90%] mx-auto'>
@@ -25,7 +29,23 @@ const Writing = ({ title, question, placeholder }) => {
         </section>
         {isIncorrect && (<p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-4 rounded'>Sorry, that's incorrect. Try again?</p>)}
         <section className='px-8 pb-8'>
-          <TextArea placeholder={placeholder} isIncorrect={isIncorrect} label='' />
+          {isMath ?  <article className='mb-4'><MathInput
+            setValue={(val) => {
+              setValue(val);
+            }}
+            style={{
+              border: isIncorrect && '#f87171',
+              boxShadow: isIncorrect && '0 0 0 2px rgba(248, 113, 113, 0.5)'
+            }}
+              setMathfieldRef={(mathfield) => {
+                if (mathfield) {
+                  firstMathfieldRef.current = mathfield;
+
+                  const mathElement = mathfield.$el;
+                }
+              }}
+              divisionFormat="obelus"
+            /></article> : <TextArea placeholder={placeholder} isIncorrect={isIncorrect} label='' />} 
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' />
             <Button label='Submit' />
