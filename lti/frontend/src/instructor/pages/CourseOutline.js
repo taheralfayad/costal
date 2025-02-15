@@ -7,12 +7,32 @@ import DropdownMenu from '../components/DropdownMenu';
 
 
 const CourseOutline = () => {
-    const [data, setData] = useState([]);
+    const [data, setData] = useState([
+        {
+            id: 1,
+            name: 'MODULE 1',
+            rows: [
+                { topic: 'BTopic 1', start: 'Feb 11', end: 'Feb 27' },
+                { topic: 'CTopic 2', start: 'Feb 11', end: 'Feb 29' },
+                { topic: 'ATopic 3', start: 'Feb 29', end: 'Mar 2' },
+            ]
+        },
+        {
+            id: 2,
+            name: 'MODULE 2',
+            rows: [
+                { topic: 'Topic 1', start: 'Feb 11', end: 'Feb 27' },
+                { topic: 'Topic 2', start: 'Feb 11', end: 'Feb 29' },
+                { topic: 'Topic 3', start: 'Feb 29', end: 'Mar 2' },
+            ]
+        }
+    ]);
     const [modules, setModules] = useState([
         {
             id: 1,
             name: '',
             rows: [],
+            originalRows: [],
             isOrdering: false,
             allChecked: false,
             checkedRows: [],
@@ -21,18 +41,18 @@ const CourseOutline = () => {
             isTableVisible: true,
             isEditing: false
         }]);
-    
-    
+
+
     const formatTimeStamps = (timestamp) => {
         const date = new Date(timestamp);
-        return date.toLocaleString("en-US", { 
-            year: "numeric", 
-            month: "long", 
-            day: "numeric", 
-            hour: "2-digit", 
-            minute: "2-digit", 
+        return date.toLocaleString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
             second: "2-digit",
-            hour12: true 
+            hour12: true
         });
     };
 
@@ -40,10 +60,10 @@ const CourseOutline = () => {
     const retrieveModules = async () => {
         try {
             const response = await fetch(`/lti/api/modules/get_modules_by_course_id/${COURSE_ID}`);
-            
+
             const newData = await response.json();
-            
-            setData(newData);
+
+            //setData(newData);
 
         } catch (error) {
             console.error(error);
@@ -62,7 +82,7 @@ const CourseOutline = () => {
                 rows: d.rows || [],
                 isOrdering: false,
                 allChecked: false,
-                checkedRows: Array((d.rows || []).length).fill(false), // Prevent undefined issues
+                checkedRows: Array((d.rows || []).length).fill(false),
                 isStartDateOpen: false,
                 isEndDateOpen: false,
                 isTableVisible: true,
@@ -70,10 +90,40 @@ const CourseOutline = () => {
             })));
         }
     }, [data]);
-    
+
 
     const [isAddingModule, setIsAddingModule] = useState(false);
     const [newModuleName, setNewModuleName] = useState('');
+    const [draggedRowIndex, setDraggedRowIndex] = useState(null);
+
+    
+
+    const handleDragStart = (moduleId, index) => {
+        const module = modules.find(m => m.id === moduleId);
+        if (!module.isOrdering) return;
+
+        setDraggedRowIndex({ moduleId, index });
+    };
+
+    const handleDragOver = (event, moduleId) => {
+        event.preventDefault();
+    };
+
+    const handleDrop = (moduleId, index) => {
+        if (!draggedRowIndex || draggedRowIndex.moduleId !== moduleId || draggedRowIndex.index === index) return;
+
+        setModules(modules.map(module => {
+            if (module.id === moduleId) {
+                const updatedRows = [...module.rows];
+                const [movedRow] = updatedRows.splice(draggedRowIndex.index, 1);
+                updatedRows.splice(index, 0, movedRow);
+                return { ...module, rows: updatedRows };
+            }
+            return module;
+        }));
+
+        setDraggedRowIndex(null);
+    };
 
     const handleAddNewModule = () => {
         setIsAddingModule(!isAddingModule);
@@ -151,17 +201,21 @@ const CourseOutline = () => {
         }));
     };
 
-    const handleOrdering = (moduleId) => {
+    const handleOrdering = (moduleId, isCancel = false) => {
         setModules(modules.map(module => {
             if (module.id === moduleId) {
-                return {
-                    ...module,
-                    isOrdering: !module.isOrdering
-                };
+                if (!module.isOrdering) {
+                    return { ...module, originalRows: [...module.rows], isOrdering: true };
+                }
+                if (isCancel) {
+                    return { ...module, rows: module.originalRows, isOrdering: false };
+                }
+                return { ...module, isOrdering: false };
             }
             return module;
         }));
     };
+    
 
     const toggleTableVisibility = (moduleId) => {
         setModules(modules.map(module =>
@@ -198,6 +252,21 @@ const CourseOutline = () => {
         setModules(modules.map(module =>
             module.id === moduleId ? { ...module, name: module.editedName, isEditing: false } : module
         ));
+    };
+
+    const handleSort = (moduleId, type) => {
+        setModules(modules.map(module => {
+            if (module.id === moduleId) {
+                let sortedRows = [...module.rows];
+                if (type === 'alphabetically') {
+                    sortedRows.sort((a, b) => a.topic.localeCompare(b.topic));
+                } else if (type === 'dueDate') {
+                    sortedRows.sort((a, b) => new Date(a.end) - new Date(b.end));
+                }
+                return { ...module, rows: sortedRows };
+            }
+            return module;
+        }));
     };
 
     const renderModuleName = (module) => {
@@ -240,8 +309,12 @@ const CourseOutline = () => {
                     </section>
                     <section className='flex gap-4'>
                         <Button label='Save' onClick={() => handleOrdering(module.id)} />
-                        <Button label='Cancel' onClick={() => handleOrdering(module.id)} type='outline' />
-                        <Dropdown label='' width='w-44' margin={false} />
+                        <Button label='Cancel' onClick={() => handleOrdering(module.id, true)} type='outline' />
+                        <Dropdown label='' width='w-44' placeholder='Options' margin={false} options={[
+        { label: 'Alphabetically', onClick: () => handleSort(module.id, 'alphabetically') },
+        { label: 'By Due Date', onClick: () => handleSort(module.id, 'dueDate') },
+        { label: 'Cancel', onClick: () => handleSort(module.id, 'cancel') }
+    ]} />
                     </section>
                 </section>
             )
@@ -331,15 +404,25 @@ const CourseOutline = () => {
                             <section className='bg-white rounded-xl border border-slate-300 mt-6 mx-16'>
                                 {module.rows.length > 0 ? <table className='w-full'>
                                     {module.rows.map((row, i) => (
-                                        <tr key={i} className='last:border-none border-b border-slate-300'>
+                                        <tr
+                                            key={i}
+                                            className={`last:border-none border-b border-slate-300 cursor-${module.isOrdering ? 'move' : 'default'}`}
+                                            draggable={module.isOrdering}
+                                            onDragStart={() => handleDragStart(module.id, i)}
+                                            onDragOver={(event) => handleDragOver(event, module.id)}
+                                            onDrop={() => handleDrop(module.id, i)}
+                                        >
                                             <td className='w-5 p-4'>
                                                 {module.isOrdering ? <Menu /> : <Checkbox label='' checked={module.checkedRows[i]} onChange={() => handleRowChecked(module.id, i)} />}
                                             </td>
                                             <td className='w-4/5 text-slate-700 text-sm font-medium'>{row.topic}</td>
-                                            <td className='w-1/5 pl-8 text-slate-700 text-sm font-medium'>{formatTimeStamps(row.start)} - {formatTimeStamps(row.end)}</td>
+                                            <td className='w-1/5 pl-8 text-slate-700 text-sm font-medium'>
+                                                {formatTimeStamps(row.start)} - {formatTimeStamps(row.end)}
+                                            </td>
                                             <td className='pr-6'><DropdownMenu /></td>
                                         </tr>
                                     ))}
+
                                 </table> : <p className='h-10 flex justify-center items-center text-slate-700 text-sm font-medium'>No assignment yet</p>}
                             </section>
                         }

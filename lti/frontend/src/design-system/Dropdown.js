@@ -8,9 +8,9 @@ const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect
   const toggleDropdown = () => setIsOpen(!isOpen);
 
   const handleOptionClick = (option) => {
-    setSelected(option);
+    setSelected(option.label);
     setIsOpen(false);
-    if (onSelect) onSelect(option);
+    option.onClick()
   };
 
   return (
@@ -37,7 +37,7 @@ const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect
                 className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-emerald-100"
                 onClick={() => handleOptionClick(option)}
               >
-                <span className="block truncate text-gray-700">{option}</span>
+                <span className="block truncate text-gray-700">{option.label}</span>
               </li>
             ))}
           </ul>
