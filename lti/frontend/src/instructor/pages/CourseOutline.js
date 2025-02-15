@@ -7,26 +7,7 @@ import DropdownMenu from '../components/DropdownMenu';
 
 
 const CourseOutline = () => {
-    const [data, setData] = useState([
-        {
-            id: 1,
-            name: 'MODULE 1',
-            rows: [
-                { topic: 'BTopic 1', start: 'Feb 11', end: 'Feb 27' },
-                { topic: 'CTopic 2', start: 'Feb 11', end: 'Feb 29' },
-                { topic: 'ATopic 3', start: 'Feb 29', end: 'Mar 2' },
-            ]
-        },
-        {
-            id: 2,
-            name: 'MODULE 2',
-            rows: [
-                { topic: 'Topic 1', start: 'Feb 11', end: 'Feb 27' },
-                { topic: 'Topic 2', start: 'Feb 11', end: 'Feb 29' },
-                { topic: 'Topic 3', start: 'Feb 29', end: 'Mar 2' },
-            ]
-        }
-    ]);
+    const [data, setData] = useState([]);
     const [modules, setModules] = useState([
         {
             id: 1,
@@ -63,7 +44,7 @@ const CourseOutline = () => {
 
             const newData = await response.json();
 
-            //setData(newData);
+            setData(newData);
 
         } catch (error) {
             console.error(error);
