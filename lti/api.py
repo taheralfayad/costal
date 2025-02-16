@@ -85,16 +85,20 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         start_date = datetime.datetime.strptime(data["start_date"], "%Y-%m-%dT%H:%M")
         end_date = datetime.datetime.strptime(data["end_date"], "%Y-%m-%dT%H:%M")
 
+        module = Module.objects.get(id=data['module_id'])
+
         assignment = Assignment(
             name=data['name'],
             course_id=data['course_id'],
             start_date=start_date,
             end_date=end_date,
-            assessment_type=data['assessment_type']
+            assessment_type=data['assessment_type'],
+            module=module
         )
 
         assignment.save()
-        return Response(status=status.HTTP_201_CREATED)
+        module.assignments.add(assignment)
+        return Response({"message": "Assignment created successfully"}, status=status.HTTP_201_CREATED)
        
     @action(detail=False, methods=['post'], url_path='add_question')   
     def add_question(self, request):

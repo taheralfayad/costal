@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Button, Checkbox, DatePicker, Dropdown, Input, Title } from '../../design-system';
 import CourseInfo from '../components/CourseInfo';
 import ChevronDown from '../../assets/chevron-down.svg';
@@ -7,6 +8,7 @@ import DropdownMenu from '../components/DropdownMenu';
 
 
 const CourseOutline = () => {
+    const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [modules, setModules] = useState([
         {
@@ -339,7 +341,8 @@ const CourseOutline = () => {
                     {renderModuleName(module)}
                 </section>
                 <section className='flex gap-4'>
-                    <Button label='Add' />
+                    <Button label='Add Assignment to Module' onClick={() => navigate(`/lti/create_assignment/${module.id}`)} />
+                    <Button label='Add Objectives to Module' onClick={() => navigate('/lti/select_objectives/')}/>
                     <Button label='Edit Order' onClick={() => handleOrdering(module.id)} type='outline' />
                 </section>
             </section>

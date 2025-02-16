@@ -1,4 +1,5 @@
 import React, { useEffect, useState} from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, Input, Title } from '../../design-system';
 import Toggle from '../../design-system/Toggle';
 import ChapterDropdown from '../components/ChapterDropdown';
@@ -9,6 +10,7 @@ import Topic from '../components/Topic';
 const SelectObjectives = () => {
   const [modules, setModules] = useState([]);
   const [moduleObjectives, setModuleObjectives] = useState({});
+  const navigate = useNavigate();
 
   const handleInputChange = (moduleId, value) => {
     setModuleObjectives((prev) => ({
@@ -116,7 +118,7 @@ const SelectObjectives = () => {
         <StatsCard objectives={4} questions={4} points={4} />
         <section className='flex justify-end gap-2 pr-4'>
           <Button label='Save' />
-          <Button label='Cancel' type='outline' />
+          <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')}/>
         </section>
       </section>
     </main>

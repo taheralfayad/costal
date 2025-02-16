@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Checkbox, Dropdown, Input, Title } from '../../design-system';
 
 const CreateAssignment = () => {
@@ -6,6 +7,8 @@ const CreateAssignment = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [assessmentType, setAssessmentType] = useState('');
+  const { moduleId } = useParams();
+  const navigate = useNavigate();
 
   const handleCreateAssignment = async () => {
     const formData = new FormData();
@@ -14,13 +17,17 @@ const CreateAssignment = () => {
     formData.append('end_date', endDate);
     formData.append('assessment_type', assessmentType);
     formData.append('course_id', COURSE_ID);
+    formData.append('module_id', moduleId);
 
-    response = await fetch('/lti/api/assignments/create_assignment/', {
+    const response = await fetch('/lti/api/assignments/create_assignment/', {
       method: 'POST',
       body: formData,
     });
 
-    console.log(response);
+    if (response.status === 201) {
+      console.log("ts")
+      navigate('/lti/course_outline');
+    }
   }
 
   const handleAssessmentTypeChange = (option) => {
@@ -56,7 +63,7 @@ const CreateAssignment = () => {
           <Input label='End Date' placeholder='10/12/2024' type='datetime-local' onChange={(e) => (handleEndDateChange(e))}/>
         </section>
         <section className='flex flex-col gap-4'>
-          <Dropdown label="Assignment Type" placeholder="Assignment Type" options={['Homework', 'Quiz']} onSelect={handleAssessmentTypeChange}/>
+          <Dropdown label="Assignment Type" placeholder="Assignment Type" options={[{"label": 'Homework'}, {"label": 'Quiz'}]} onSelect={handleAssessmentTypeChange}/>
         </section>
 
         <section className='h-20 rounded-[10px] border border-slate-300 flex items-center justify-center gap-4'>
@@ -68,7 +75,7 @@ const CreateAssignment = () => {
       </main>
       <section className='flex justify-end gap-2 pr-2'>
         <Button label='Create' onClick={handleCreateAssignment}/>
-        <Button label='Cancel' type='outline' />
+        <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')}/>
       </section>
     </div>
   );
