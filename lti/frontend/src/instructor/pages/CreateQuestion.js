@@ -44,7 +44,7 @@ const CreateQuestion = ({ assignment }) => {
     if (selectedCheckbox === 'multiple') {
       const multipleChoiceData = multipleChoiceAnswers.map((choice) => {
         return { possible_answer: choice.text, is_correct: choice.checked };
-        }
+      }
       );
       formData.append('possible_answers', JSON.stringify(multipleChoiceData));
     }
