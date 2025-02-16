@@ -25,7 +25,7 @@ const SelectObjectives = () => {
     console.log(moduleId, newObjective);
   
     try {
-      const response = await fetch(`/lti/api/modules/add_objective_to_module/${moduleId}`, {
+      const response = await fetch(`/lti/api/modules/add_objective_to_module/${moduleId}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,14 +33,14 @@ const SelectObjectives = () => {
         body: JSON.stringify({ title: newObjective }),
       });
   
-    //   if (response.ok) {
-    //     const updatedModules = modules.map((module) =>
-    //       module.id === moduleId
-    //         ? { ...module, skills: [...module.skills, { id: Date.now(), chapter: '', title: newObjective, description: '' }] }
-    //         : module
-    //     );
-    //     setModules(updatedModules);
-    //   }
+      if (response.ok) {
+        const updatedModules = modules.map((module) =>
+          module.id === moduleId
+            ? { ...module, skills: [...module.skills, { id: Date.now(), chapter: '', name: newObjective, description: '' }] }
+            : module
+        );
+        setModules(updatedModules);
+      }
     } catch (error) {
       console.error('Error adding objective:', error);
     }
@@ -53,7 +53,7 @@ const SelectObjectives = () => {
   };
 
   const retrieveModules = async () => {
-    const response = await fetch(`/lti/api/modules/get_modules_by_course_id/${COURSE_ID}`);;
+    const response = await fetch(`/lti/api/modules/get_modules_with_skills/${COURSE_ID}`);;
     const data = await response.json();
     setModules(data);
   }
@@ -87,13 +87,13 @@ const SelectObjectives = () => {
 
             <Topic chapter='4.2 Logistic Regression' title='Lorem Ipsum' description='Lorem Ipsum' />
           </ChapterDropdown> */}
-        {modules.map((module) => {
+        {modules && modules.map((module) => {
 
           return (
             <ChapterDropdown chapterTitle={module.name} key={module.id}>
               {module.skills &&
                 module.skills.map((topic) => (
-                  <Topic chapter={topic.chapter} title={topic.title} description={topic.description} key={topic.id} />
+                  <Topic topic={topic.name} />
                 ))}
 
               <Input label="Add Objective" value={moduleObjectives[module.id] || ''} onChange={(e) => handleInputChange(module.id, e.target.value)} />

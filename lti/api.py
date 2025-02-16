@@ -396,10 +396,10 @@ class ModuleViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path="add_objective_to_module/(?P<module_id>[^/.]+)")
     def add_objective_to_module(self, request, module_id=None):
         module = Module.objects.get(id=module_id)
-        course_id = module.course.id
+        course_id = module.course.course_id
 
         objective = Skill(
-            name=request.data['name'],
+            name=request.data['title'],
             course_id=course_id
         )
 
