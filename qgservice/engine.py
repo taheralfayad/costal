@@ -141,7 +141,7 @@ class LLMEngine:
     def generate_chat_response(self, user_message: str) -> str:
         system_instruction = (
             "You are a helpful assistant capable of answering a wide range of questions. "
-            "Respond succinctly providing only the information the user requests. "
+            "Please respond succinctly providing only the information the user requests. "
             "Do not give the exact answer, your goal is to help guide the user to the answer."
         )
 
@@ -158,6 +158,28 @@ class LLMEngine:
         chatbot_reply = response["choices"][0]["message"]["content"]
 
         self.conversation_history.append({"role": "assistant", "content": chatbot_reply})
+
+        return chatbot_reply
+    
+    def generate_hint(self, question: str) -> str:
+        system_instruction = (
+            "You are an assistant in a very sensitive learning environment for quizzes and tests."
+            "Your responsibility is to generate an appropriate hint for the user without giving away the answer."
+            "Omit all filler words. Keep the hint as concise as possible without giving the answer."
+        )
+
+        messages = [
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": question},
+        ]
+
+        response = self.llm.create_chat_completion(
+            messages=messages,
+            temperature=0.7,
+            max_tokens=150,
+        )
+
+        chatbot_reply = response["choices"][0]["message"]["content"]
 
         return chatbot_reply
 
