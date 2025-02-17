@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Checkbox, Dropdown, Input, Title } from '../../design-system';
+import { Button, Checkbox, DatePickerInput, Dropdown, Input, Title } from '../../design-system';
 
 const CreateAssignment = () => {
   const [name, setName] = useState('');
@@ -57,10 +57,10 @@ const CreateAssignment = () => {
         <Title>Create Assignment</Title>
         <Input label='Name' placeholder='Great Assignment' value={name} onChange={(e) => (handleNameChange(e))}/>
         <section className='flex justify-between'>
-          <Input label='Start Date' placeholder='10/10/2024' type='datetime-local' onChange={(e) => (handleStartDateChange(e))}/>
+          <DatePickerInput position='top-20 left-1' label='Start Date' placeholder='10/10/2024' type='datetime-local' value={startDate} onChange={(e) => (handleStartDateChange(e))}/>
         </section>
         <section className='flex justify-between'>
-          <Input label='End Date' placeholder='10/12/2024' type='datetime-local' onChange={(e) => (handleEndDateChange(e))}/>
+          <DatePickerInput position='top-20 left-1' label='End Date' placeholder='10/12/2024' type='datetime-local' value={startDate} onChange={(e) => (handleEndDateChange(e))}/>
         </section>
         <section className='flex flex-col gap-4'>
           <Dropdown label="Assignment Type" placeholder="Assignment Type" options={[{"label": 'Homework'}, {"label": 'Quiz'}]} onSelect={handleAssessmentTypeChange}/>
