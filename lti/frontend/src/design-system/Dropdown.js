@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ChevronDown from '../assets/chevron-down.svg';
 
-const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], onSelect, width = 'w-full', margin=true  }) => {
+const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], width = 'w-full', margin=true  }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 

@@ -1,10 +1,13 @@
 import React, {useEffect} from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Checkbox, Input, Title } from '../../design-system';
 import StatsCard from '../components/StatsCard';
 import Pencil from '../../assets/pencil-line.svg'
 
 
 const EditAssignment = () => {
+  const { assignmentId } = useParams();
+  const navigate = useNavigate();
 
   return (
     <main className='p-4 pl-10 flex flex-col gap-4'>
@@ -50,7 +53,7 @@ const EditAssignment = () => {
         <StatsCard objectives={4} questions={4} points={4} />
         <section className='flex justify-end gap-2 pr-4'>
           <Button label='Save' />
-          <Button label='Cancel' type='outline' />
+          <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')}/>
         </section>
       </section>
     </main>

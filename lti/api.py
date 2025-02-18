@@ -85,11 +85,12 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         start_date = datetime.datetime.strptime(data["start_date"], "%Y-%m-%dT%H:%M")
         end_date = datetime.datetime.strptime(data["end_date"], "%Y-%m-%dT%H:%M")
 
+        course = Course.objects.get(course_id=data['course_id'])
         module = Module.objects.get(id=data['module_id'])
 
         assignment = Assignment(
             name=data['name'],
-            course_id=data['course_id'],
+            course=course,
             start_date=start_date,
             end_date=end_date,
             assessment_type=data['assessment_type'],
@@ -122,6 +123,14 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             )
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    
+    @action(detail=False, methods=['post'], url_path='delete_assignment')
+    def delete_assignment(self, request):
+        data = request.data
+        assignment = Assignment.objects.get(id=data['assignment_id'])
+        assignment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class QuestionViewSet(viewsets.ModelViewSet):

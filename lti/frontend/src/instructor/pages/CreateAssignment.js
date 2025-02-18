@@ -30,8 +30,12 @@ const CreateAssignment = () => {
     }
   }
 
-  const handleAssessmentTypeChange = (option) => {
-    setAssessmentType(option);
+  const handleQuizSelection = () => {
+    setAssessmentType('Quiz');
+  }
+
+  const handleHomeworkSelection = () => {
+    setAssessmentType('Homework');
   }
 
   const handleNameChange = (e) => {
@@ -63,7 +67,7 @@ const CreateAssignment = () => {
           <Input label='End Date' placeholder='10/12/2024' type='datetime-local' onChange={(e) => (handleEndDateChange(e))}/>
         </section>
         <section className='flex flex-col gap-4'>
-          <Dropdown label="Assignment Type" placeholder="Assignment Type" options={[{"label": 'Homework'}, {"label": 'Quiz'}]} onSelect={handleAssessmentTypeChange}/>
+          <Dropdown label="Assignment Type" placeholder="Assignment Type" options={[{"label": 'Homework', "onClick": handleHomeworkSelection}, {"label": 'Quiz', "onClick": handleQuizSelection}]}/>
         </section>
 
         <section className='h-20 rounded-[10px] border border-slate-300 flex items-center justify-center gap-4'>

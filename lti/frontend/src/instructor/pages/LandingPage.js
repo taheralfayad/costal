@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, Title, CircularProgressChart } from '../../design-system';
 import HomeworkGradesChart from '../components/HomeworkGradesChart';
 import CourseInfo from '../components/CourseInfo';
@@ -6,6 +7,7 @@ import CourseInfo from '../components/CourseInfo';
 const LandingPage = () => {
     const [assignments, setAssignments] = useState([]);
     const [quizzes, setQuizzes] = useState([]);
+    const navigate = useNavigate();
 
     const chartsData = [
         {
@@ -61,7 +63,7 @@ const LandingPage = () => {
 
                         </section>
                     </section>
-                    <Button type='blackOutline' label='Manage' />
+                    <Button type='blackOutline' label='Manage' onClick={() => navigate('/lti/course_outline')}/>
                 </section>
 
             </section>

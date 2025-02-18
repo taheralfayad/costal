@@ -6,6 +6,8 @@ import App from "./app";
 import SelectObjectives from "./instructor/pages/SelectObjectives";
 import CourseOutline from "./instructor/pages/CourseOutline";
 import CreateAssignment from "./instructor/pages/CreateAssignment";
+import LandingPage from "./instructor/pages/LandingPage";
+import EditAssignment from "./instructor/pages/EditAssignment";
 
 const router = createBrowserRouter([
   {
@@ -25,8 +27,16 @@ const router = createBrowserRouter([
     element: <CourseOutline/>,
   },
   {
+    path: '/lti/landing_page/',
+    element: <LandingPage/>,
+  },
+  {
     path: '/lti/create_assignment/:moduleId',
     element: <CreateAssignment/>,
+  },
+  {
+    path: '/lti/edit_assignment/:assignmentId',
+    element: <EditAssignment/>,
   }
 ])
 

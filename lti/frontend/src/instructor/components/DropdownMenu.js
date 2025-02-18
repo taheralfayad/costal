@@ -4,7 +4,7 @@ import DeleteModal from './DeleteModal';
 import DropdownMenuItem from './DropdownMenuItem';
 
 
-const DropdownMenu = () => {
+const DropdownMenu = ({ deleteFunction, editFunction, idOfObject, nameOfObject }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -26,9 +26,13 @@ const DropdownMenu = () => {
     }
 
     const handleDelete = () => {
-        console.log('Assignment deleted!')
+        deleteFunction(idOfObject);
         setIsModalOpen(false);
     };
+
+    const handleEditObject = () => {
+        editFunction(idOfObject);
+    }
 
     return (
         <article className='relative inline-block text-left' ref={dropdownRef}>
@@ -42,7 +46,7 @@ const DropdownMenu = () => {
             {isOpen && (
                 <article className='z-50 py-1 absolute right-2 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200'>
                     <DropdownMenuItem label='Delete' onClick={handleDeleteItem} />
-                    <DropdownMenuItem label='Edit' />
+                    <DropdownMenuItem label='Edit' onClick={handleEditObject}/>
                     <DropdownMenuItem label='Preview as Student' />
                 </article>
             )}
@@ -51,6 +55,7 @@ const DropdownMenu = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onDelete={handleDelete}
+                nameOfObjectToDelete={nameOfObject}
             />
         </article>
     );

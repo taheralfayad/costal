@@ -4,6 +4,7 @@ import { Button, Checkbox, DatePicker, Dropdown, Input, Title } from '../../desi
 import CourseInfo from '../components/CourseInfo';
 import ChevronDown from '../../assets/chevron-down.svg';
 import Menu from '../../assets/menu.svg'
+import Arrow from '../../assets/arrow-left.svg';
 import DropdownMenu from '../components/DropdownMenu';
 
 
@@ -237,6 +238,32 @@ const CourseOutline = () => {
         ));
     };
 
+    const handleDeleteAssignment = async (assignmentId) => {
+        try {
+            const formData = new FormData();
+            formData.append('assignment_id', assignmentId);
+
+            const response = await fetch(`/lti/api/assignments/delete_assignment/`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.status === 204) {
+                setModules(modules.map(module => {
+                    const updatedRows = module.rows.filter(row => row.id !== assignmentId);
+                    return { ...module, rows: updatedRows };
+                }));
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
+    }
+
+    const handleEditAssignment = (assignmentId) => {
+        navigate(`/lti/edit_assignment/${assignmentId}`);
+    };
+
     const handleSort = (moduleId, type) => {
         setModules(modules.map(module => {
             if (module.id === moduleId) {
@@ -354,7 +381,12 @@ const CourseOutline = () => {
         <main className='flex flex-col gap-4'>
             <header className='p-6 pl-10 flex items-center justify-between'>
                 <article className='flex flex-col gap-2'>
-                    <Title>{COURSE_NAME}</Title>
+                    <span className='flex flex-row gap-2'>
+                        <button onClick={() => navigate('/lti/landing_page/')}>
+                            <Arrow className='mt-1 mr-2' />
+                        </button>
+                        <Title>{COURSE_NAME}</Title>
+                    </span>
                     <CourseInfo />
                 </article>
                 <Button type='lightGreenOutline' label='Settings' />
@@ -403,7 +435,7 @@ const CourseOutline = () => {
                                             <td className='w-1/5 pl-8 text-slate-700 text-sm font-medium'>
                                                 {formatTimeStamps(row.start)} - {formatTimeStamps(row.end)}
                                             </td>
-                                            <td className='pr-6'><DropdownMenu /></td>
+                                            <td className='pr-6'><DropdownMenu editFunction={handleEditAssignment} deleteFunction={handleDeleteAssignment} idToDelete={row.id} nameOfDeletedObject={row.topic}/></td>
                                         </tr>
                                     ))}
 

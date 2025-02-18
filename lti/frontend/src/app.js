@@ -59,7 +59,7 @@ const App = () => {
       <ActivityDetails /> 
       <Assignment /> 
       <CourseOutline/> */}
-      <CourseOutline />
+      <LandingPage />
     </div>
   );
 }
