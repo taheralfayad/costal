@@ -9,9 +9,34 @@ export RELEASE_BUNDLE_NAME=
 export ECR_REPOSITORY=
 export RELEASE=
 
+export CANVAS_URL=
+export API_CLIENT_ID=
+export API_CLIENT_ID_SECRET=
+
+export DB_NAME=
+export DB_HOST=
+export DB_USERNAME=
+export DB_PASSWORD=
+export DB_PORT=
+
 # pull release bundle from s3 and cd into project directory
 aws s3 cp s3://costal-release-bucket/$RELEASE_BUNDLE_NAME /home/ec2-user/costal/
 cd /home/ec2-user/costal/
+
+# create .env using the exported variables
+cat << EOF > /home/ec2-user/costal/.env
+DB_NAME=${DB_NAME}
+DB_HOST=${DB_HOST}
+DB_USERNAME=${DB_USERNAME}
+DB_PASSWORD=${DB_PASSWORD}
+DB_PORT=${DB_PORT}
+RELEASE_BUNDLE_NAME=${RELEASE_BUNDLE_NAME}
+ECR_REPOSITORY=${ECR_REPOSITORY}
+RELEASE=${RELEASE}
+CANVAS_URL=${CANVAS_URL}
+API_CLIENT_ID=${API_CLIENT_ID}
+API_CLIENT_ID_SECRET=${API_CLIENT_ID_SECRET}
+EOF
 
 # unzip and remove .zip file
 unzip /home/ec2-user/costal/$RELEASE_BUNDLE_NAME -d /home/ec2-user/costal
