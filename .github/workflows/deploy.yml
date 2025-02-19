@@ -1,0 +1,94 @@
+name: Deploy Build to AWS
+
+on:
+  push:
+    branches:
+      - aws #TODO: Update to main before merge
+
+jobs:
+  Format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Format with Black
+        uses: psf/black@stable
+
+Deploy:
+    needs: Format
+    runs-on: ubuntu-latest
+    env:
+      COMMIT_TAG: ${{ github.sha }}
+      DEPLOY_BUNDLE_BUCKET: ${{ vars.DEPLOY_BUNDLE_BUCKET }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+      LAUNCH_TEMPLATE_ID: ${{ secrets.LAUNCH_TEMPLATE_ID }}
+
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Clean up disk space
+        run: |
+          docker system prune -af
+          sudo rm -rf /usr/local/lib/python3.9/site-packages/nvidia
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+      - name: Copy .env file
+        run: cp .env.example .env
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        run: |
+          docker buildx build --platform linux/arm64 -t backend:$COMMIT_TAG --load .
+          
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: "true"
+
+      - name: Tag, and push latest docker image to Amazon ECR
+        run: |
+          docker tag backend:$COMMIT_TAG $ECR_REPOSITORY:$COMMIT_TAG
+          docker push $ECR_REPOSITORY:$COMMIT_TAG
+
+      - name: Build release bundle
+        run: |
+          zip $COMMIT_TAG.zip docker-compose-aws.yml -r devops/
+          aws s3 cp $COMMIT_TAG.zip $DEPLOY_BUNDLE_BUCKET
+
+      - name: Install Boto and AWS CLI
+        run: pip install awscli boto3
+
+      - name: Deploy new EC2 instance from launch template
+        run: |
+          INSTANCE_ID=$(aws ec2 run-instances \
+            --launch-template LaunchTemplateId=$LAUNCH_TEMPLATE_ID \
+            --query 'Instances[0].InstanceId' --output text)
+
+          echo "Waiting for EC2 instance $INSTANCE_ID to be running..."
+          aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+
+          echo "Deployment triggered. Instance ID: $INSTANCE_ID"
+
