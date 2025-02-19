@@ -18,6 +18,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Lint with flake8
+        uses: py-actions/flake8@v2
+
       - name: Format with Black
         uses: psf/black@stable
 
