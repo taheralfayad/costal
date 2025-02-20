@@ -6,19 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('lti', '0001_initial'),
+        ("lti", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Textbook',
+            name="Textbook",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255)),
-                ('author', models.CharField(max_length=255)),
-                ('published_date', models.DateField(blank=True, null=True)),
-                ('isbn', models.CharField(blank=True, max_length=13, null=True, unique=True)),
-                ('file', models.FileField(blank=True, null=True, upload_to='textbooks/')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=255)),
+                ("author", models.CharField(max_length=255)),
+                ("published_date", models.DateField(blank=True, null=True)),
+                (
+                    "isbn",
+                    models.CharField(blank=True, max_length=13, null=True, unique=True),
+                ),
+                (
+                    "file",
+                    models.FileField(blank=True, null=True, upload_to="textbooks/"),
+                ),
             ],
         ),
     ]

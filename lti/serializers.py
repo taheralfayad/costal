@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from lti.models import Assignment, Textbook, Question, PossibleAnswers, Skill
 
+
 class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assignment
@@ -22,6 +23,7 @@ class PossibleAnswersSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     possible_answers = PossibleAnswersSerializer(read_only=True, many=True)
+
     class Meta:
         model = Question
         fields = "__all__"

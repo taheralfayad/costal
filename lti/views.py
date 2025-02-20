@@ -98,6 +98,7 @@ def get_launch_url(request):
         raise Exception('Missing "target_link_uri" param')
     return target_link_uri
 
+
 @csrf_exempt
 def login(request):
     get_token(request)
@@ -162,7 +163,6 @@ def launch(request):
         "course_id": course_id,
     }
 
-
     course, created = Course.objects.get_or_create(course_id=course_id)
     if created:
         course.save()
@@ -171,7 +171,6 @@ def launch(request):
     user_exists = CanvasUser.objects.filter(uid=user_id).exists()
     if not user_exists:
         return HttpResponseRedirect(reverse("lti:oauth_login"))
-
 
     # Get the expiration date
     try:

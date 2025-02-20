@@ -8,71 +8,146 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='CanvasUser',
+            name="CanvasUser",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uid', models.CharField(max_length=200)),
-                ('refresh_token', models.CharField(max_length=255, null=True)),
-                ('expires_in', models.BigIntegerField(default=0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("uid", models.CharField(max_length=200)),
+                ("refresh_token", models.CharField(max_length=255, null=True)),
+                ("expires_in", models.BigIntegerField(default=0)),
             ],
         ),
         migrations.CreateModel(
-            name='Deployment',
+            name="Deployment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('deployment_id', models.CharField(max_length=255)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("deployment_id", models.CharField(max_length=255)),
             ],
         ),
         migrations.CreateModel(
-            name='Key',
+            name="Key",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('public_key', models.TextField()),
-                ('private_key', models.TextField()),
-                ('alg', models.TextField(default='RS256')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("public_key", models.TextField()),
+                ("private_key", models.TextField()),
+                ("alg", models.TextField(default="RS256")),
             ],
         ),
         migrations.CreateModel(
-            name='Course',
+            name="Course",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('course_id', models.CharField(max_length=200)),
-                ('teachers', models.ManyToManyField(related_name='teaching_courses', to='lti.canvasuser')),
-                ('users', models.ManyToManyField(to='lti.canvasuser')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("course_id", models.CharField(max_length=200)),
+                (
+                    "teachers",
+                    models.ManyToManyField(
+                        related_name="teaching_courses", to="lti.canvasuser"
+                    ),
+                ),
+                ("users", models.ManyToManyField(to="lti.canvasuser")),
             ],
         ),
         migrations.CreateModel(
-            name='KeySet',
+            name="KeySet",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('keys', models.ManyToManyField(blank=True, related_name='key_sets', to='lti.key')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "keys",
+                    models.ManyToManyField(
+                        blank=True, related_name="key_sets", to="lti.key"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Registration',
+            name="Registration",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('issuer', models.CharField(max_length=255)),
-                ('client_id', models.CharField(max_length=255)),
-                ('platform_login_auth_endpoint', models.CharField(max_length=255)),
-                ('platform_service_auth_endpoint', models.CharField(max_length=255)),
-                ('platform_jwks_endpoint', models.CharField(max_length=255)),
-                ('deployments', models.ManyToManyField(blank=True, related_name='registrations', to='lti.deployment')),
-                ('key_set', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='registrations', to='lti.keyset')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("issuer", models.CharField(max_length=255)),
+                ("client_id", models.CharField(max_length=255)),
+                ("platform_login_auth_endpoint", models.CharField(max_length=255)),
+                ("platform_service_auth_endpoint", models.CharField(max_length=255)),
+                ("platform_jwks_endpoint", models.CharField(max_length=255)),
+                (
+                    "deployments",
+                    models.ManyToManyField(
+                        blank=True, related_name="registrations", to="lti.deployment"
+                    ),
+                ),
+                (
+                    "key_set",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="registrations",
+                        to="lti.keyset",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='deployment',
-            name='registration',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='lti.registration'),
+            model_name="deployment",
+            name="registration",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="lti.registration"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='registration',
-            constraint=models.UniqueConstraint(fields=('issuer', 'client_id'), name='unique_issuer_client_id'),
+            model_name="registration",
+            constraint=models.UniqueConstraint(
+                fields=("issuer", "client_id"), name="unique_issuer_client_id"
+            ),
         ),
     ]

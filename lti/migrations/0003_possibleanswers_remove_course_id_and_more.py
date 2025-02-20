@@ -7,76 +7,164 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('lti', '0002_textbook'),
+        ("lti", "0002_textbook"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PossibleAnswers',
+            name="PossibleAnswers",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('possible_answer', models.TextField(default='')),
-                ('is_correct', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("possible_answer", models.TextField(default="")),
+                ("is_correct", models.BooleanField(default=False)),
             ],
         ),
         migrations.RemoveField(
-            model_name='course',
-            name='id',
+            model_name="course",
+            name="id",
         ),
         migrations.AlterField(
-            model_name='course',
-            name='course_id',
+            model_name="course",
+            name="course_id",
             field=models.CharField(max_length=200, primary_key=True, serialize=False),
         ),
         migrations.CreateModel(
-            name='Assignment',
+            name="Assignment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('assignment_name', models.CharField(max_length=255)),
-                ('course', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='lti.course')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("assignment_name", models.CharField(max_length=255)),
+                (
+                    "course",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="lti.course",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Question',
+            name="Question",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('question_text', models.TextField()),
-                ('assignments', models.ManyToManyField(blank=True, to='lti.assignment')),
-                ('possible_answers', models.ManyToManyField(blank=True, to='lti.possibleanswers')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("question_text", models.TextField()),
+                (
+                    "assignments",
+                    models.ManyToManyField(blank=True, to="lti.assignment"),
+                ),
+                (
+                    "possible_answers",
+                    models.ManyToManyField(blank=True, to="lti.possibleanswers"),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='possibleanswers',
-            name='related_question',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='lti.question'),
+            model_name="possibleanswers",
+            name="related_question",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="lti.question",
+            ),
         ),
         migrations.AddField(
-            model_name='assignment',
-            name='questions',
-            field=models.ManyToManyField(blank=True, to='lti.question'),
+            model_name="assignment",
+            name="questions",
+            field=models.ManyToManyField(blank=True, to="lti.question"),
         ),
         migrations.CreateModel(
-            name='Response',
+            name="Response",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('number_of_seconds_to_answer', models.IntegerField(default=0)),
-                ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='lti.question')),
-                ('response', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='lti.possibleanswers')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='lti.canvasuser')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("number_of_seconds_to_answer", models.IntegerField(default=0)),
+                (
+                    "question",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="lti.question"
+                    ),
+                ),
+                (
+                    "response",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="lti.possibleanswers",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="lti.canvasuser"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Skill',
+            name="Skill",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('skill_name', models.TextField()),
-                ('course', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='lti.course')),
-                ('questions', models.ManyToManyField(blank=True, to='lti.question')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("skill_name", models.TextField()),
+                (
+                    "course",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="lti.course",
+                    ),
+                ),
+                ("questions", models.ManyToManyField(blank=True, to="lti.question")),
             ],
         ),
         migrations.AddField(
-            model_name='question',
-            name='associated_skill',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='lti.skill'),
+            model_name="question",
+            name="associated_skill",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="lti.skill",
+            ),
         ),
     ]

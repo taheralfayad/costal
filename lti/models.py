@@ -2,6 +2,7 @@ import datetime
 
 from django.db import models
 
+
 class Textbook(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
@@ -12,7 +13,9 @@ class Textbook(models.Model):
     def __str__(self):
         return self.title
 
+
 # Canvas Models
+
 
 class CanvasUser(models.Model):
     uid = models.CharField(max_length=200)
@@ -28,9 +31,12 @@ class Course(models.Model):
 
 # Models
 
+
 class Assignment(models.Model):
     assignment_name = models.CharField(max_length=255)
-    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, blank=True, null=True)
+    course = models.ForeignKey(
+        Course, to_field="course_id", on_delete=models.CASCADE, blank=True, null=True
+    )
     questions = models.ManyToManyField("Question", blank=True)
 
     def __str__(self):
@@ -39,7 +45,9 @@ class Assignment(models.Model):
 
 class Skill(models.Model):
     skill_name = models.TextField()
-    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, null=True, blank=True)
+    course = models.ForeignKey(
+        Course, to_field="course_id", on_delete=models.CASCADE, null=True, blank=True
+    )
     questions = models.ManyToManyField("Question", blank=True)
 
     def __str__(self):
@@ -48,7 +56,9 @@ class Skill(models.Model):
 
 class Question(models.Model):
     question_text = models.TextField()
-    associated_skill = models.ForeignKey(Skill, on_delete=models.CASCADE, null=True, blank=True)
+    associated_skill = models.ForeignKey(
+        Skill, on_delete=models.CASCADE, null=True, blank=True
+    )
     assignments = models.ManyToManyField("Assignment", blank=True)
     possible_answers = models.ManyToManyField("PossibleAnswers", blank=True)
 
@@ -57,7 +67,9 @@ class Question(models.Model):
 
 
 class PossibleAnswers(models.Model):
-    related_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
+    related_question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, null=True, blank=True
+    )
     possible_answer = models.TextField(default="")
     is_correct = models.BooleanField(default=False)
 
@@ -74,7 +86,9 @@ class Response(models.Model):
     def __str__(self):
         return f"{self.user} answered {self.response} to {self.question} in {self.number_of_seconds_to_answer} seconds"
 
+
 # LTI Key Models
+
 
 class Key(models.Model):
     public_key = models.TextField()
