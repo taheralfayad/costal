@@ -45,5 +45,5 @@ register: ## Add a new registration for Templater in a platform
 deploy: ## Add a new deployment for Templater to an existing registration
 	${DOCKER_COMPOSE} run --rm web python cli.py add_deployment
 
-format: ## Run Python code formatter (black) and import sorter (isort). Will fix formatting errors.
-	${DOCKER_COMPOSE} run --rm web sh -c "black . && isort ."
+format: ## Run Python code formatter (black) and linter (flake8). Will fix formatting errors.
+	${DOCKER_COMPOSE} run --rm web sh -c "black . && flake8 ."
