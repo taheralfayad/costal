@@ -1,5 +1,3 @@
-import datetime
-
 from django.db import models
 
 
@@ -84,8 +82,10 @@ class Response(models.Model):
     number_of_seconds_to_answer = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.user} answered {self.response} to {self.question} in {self.number_of_seconds_to_answer} seconds"
-
+        return (
+            f"{self.user} answered {self.response} to {self.question}\n"
+            f"in {self.number_of_seconds_to_answer} seconds"
+        )
 
 # LTI Key Models
 

@@ -1,13 +1,10 @@
-import os
-import requests
-
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from lti.models import (
     Assignment,
+    Course,
     CanvasUser,
     Textbook,
     Question,
@@ -180,10 +177,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         print(request_to_adaptive_engine)
 
-        response_from_adaptive_engine = requests.post(
-            os.environ.get("ADAPTIVE_ENGINE_URL") + "/run-model-on-response/",
-            json=request_to_adaptive_engine,
-        )
+        # response_from_adaptive_engine = requests.post(
+        #     os.environ.get("ADAPTIVE_ENGINE_URL") + "/run-model-on-response/",
+        #     json=request_to_adaptive_engine,
+        # )
 
         print(response)
 
