@@ -1,12 +1,20 @@
 import React from 'react';
 import { Button, Dropdown, Input, Title } from '../../design-system';
 import Toggle from '../../design-system/Toggle';
+import Arrow from '../../assets/arrow-left.svg';
+import { useNavigate } from 'react-router-dom';
 
 const CourseSettings = () => {
+    const navigate = useNavigate();
     return (
         <main className='p-6 pl-10 flex flex-col gap-6'>
             <header className='flex gap-14'>
-            <Title>Course Settings</Title>
+            <span className='flex flex-row gap-2'>
+                <button onClick={() => navigate('/lti/landing_page/')}>
+                    <Arrow className='mt-1 mr-2' />
+                </button>
+                <Title>Course Settings</Title>
+            </span>
             <Button type='blackOutline' label='Copy Course' />
             </header>
             <h2 className='text-slate-950 text-2xl font-semibold'>Grading</h2>

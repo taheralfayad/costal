@@ -10,7 +10,7 @@ WORKDIR /app/
 
 COPY /lti/frontend/package.json /app/
 
-RUN npm install --verbose
+RUN npm install --verbose --force
 
 # Add this line to install the necessary libraries
 RUN apt-get update \

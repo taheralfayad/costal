@@ -44,7 +44,7 @@ const LandingPage = () => {
                     <h2 className='text-slate-950 text-xl font-semibold'>{COURSE_NAME}</h2>
                     <CourseInfo />
                 </article>
-                <Button type='blackOutline' label='Settings' />
+                <Button type='blackOutline' label='Settings' onClick={() => navigate('/lti/course_settings/')}/>
             </header>
             <section>
 

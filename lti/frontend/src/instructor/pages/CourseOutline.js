@@ -389,7 +389,7 @@ const CourseOutline = () => {
                     </span>
                     <CourseInfo />
                 </article>
-                <Button type='lightGreenOutline' label='Settings' />
+                <Button type='lightGreenOutline' label='Settings' onClick={() => navigate('/lti/course_settings')}/>
 
             </header>
             <section className='bg-[#f8f8f8] min-h-screen'>

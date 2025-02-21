@@ -8,6 +8,7 @@ import CourseOutline from "./instructor/pages/CourseOutline";
 import CreateAssignment from "./instructor/pages/CreateAssignment";
 import LandingPage from "./instructor/pages/LandingPage";
 import EditAssignment from "./instructor/pages/EditAssignment";
+import CourseSettings from "./instructor/pages/CourseSettings";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: '/lti/edit_assignment/:assignmentId',
     element: <EditAssignment/>,
+  },
+  {
+    path: '/lti/course_settings/',
+    element: <CourseSettings/>,
   }
 ])
 
