@@ -61,6 +61,15 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         queryset = Assignment.objects.all()
         return queryset
 
+    @action(detail=False, methods=['get'], url_path='get_assignment_by_id/(?P<assignment_id>[^/.]+)')
+    def get_assignment_by_id(self, request, assignment_id=None):
+        try:
+            assignment = Assignment.objects.get(id=assignment_id)
+            serializer = AssignmentSerializer(assignment)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Assignment.DoesNotExist:
+            return Response({'error': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
+
 
     @action(detail=False, methods=['get'], url_path='get_course_assignments')
     def get_course_assignments(self, request):
@@ -94,7 +103,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             start_date=start_date,
             end_date=end_date,
             assessment_type=data['assessment_type'],
-            module=module
+            associated_module=module
         )
 
         assignment.save()

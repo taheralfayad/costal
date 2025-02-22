@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Badge, Button, Title } from '../../design-system';
 import Writing from '../../assets/writing.svg';
 import CalendarIcon from '../../assets/calendar.svg';
@@ -6,7 +7,25 @@ import PlusIcon from '../../assets/plus.svg';
 import PlusGIcon from '../../assets/plus-green.svg';
 
 
-const AddQuestions = ({assignment}) => {
+const AddQuestions = () => {
+  const [assignment, setAssignment] = useState({});
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const { assignmentId } = useParams();
+
+  const getAssignment = async () => {
+    console.log(assignmentId)
+    const response = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
+    const data = await response.json();
+    console.log(data);
+    setAssignment(data);
+    setStartDate(formatDate(data.start_date));
+    setEndDate(formatDate(data.end_date));
+  };
+
+  useEffect(() => {
+    getAssignment();
+  }, []);
 
   const formatDate = (dateString) => {
     const options = { 
@@ -20,9 +39,6 @@ const AddQuestions = ({assignment}) => {
     };
     return new Intl.DateTimeFormat('en-US', options).format(new Date(dateString));
   };
-
-  const startDate = formatDate(assignment.start_date);
-  const endDate = formatDate(assignment.end_date);
 
   return (
     <main className='p-6 pl-10 flex flex-col gap-4'>

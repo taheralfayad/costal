@@ -9,6 +9,7 @@ import CreateAssignment from "./instructor/pages/CreateAssignment";
 import LandingPage from "./instructor/pages/LandingPage";
 import EditAssignment from "./instructor/pages/EditAssignment";
 import CourseSettings from "./instructor/pages/CourseSettings";
+import AddQuestions from "./instructor/pages/AddQuestions";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
   {
     path: '/lti/oauth_complete/',
     element: <App/>,
+  },
+  {
+    path: '/lti/add_questions/:assignmentId',
+    element: <AddQuestions/>,
   },
   {
     path: '/lti/select_objectives/',

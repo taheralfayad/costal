@@ -264,6 +264,12 @@ const CourseOutline = () => {
         navigate(`/lti/edit_assignment/${assignmentId}`);
     };
 
+    const handleAddQuestion = (assignmentId) => {
+        console.log("This is the assignment id");
+        console.log(assignmentId);
+        navigate(`/lti/add_questions/${assignmentId}`);
+    };
+
     const handleSort = (moduleId, type) => {
         setModules(modules.map(module => {
             if (module.id === moduleId) {
@@ -435,7 +441,9 @@ const CourseOutline = () => {
                                             <td className='w-1/5 pl-8 text-slate-700 text-sm font-medium'>
                                                 {formatTimeStamps(row.start)} - {formatTimeStamps(row.end)}
                                             </td>
-                                            <td className='pr-6'><DropdownMenu editFunction={handleEditAssignment} deleteFunction={handleDeleteAssignment} idToDelete={row.id} nameOfDeletedObject={row.topic}/></td>
+                                            <td className='pr-6'>
+                                                <DropdownMenu editFunction={handleEditAssignment} deleteFunction={handleDeleteAssignment} addQuestionFunction={handleAddQuestion} idOfObject={row.id} nameOfObject={row.topic}/>
+                                            </td>
                                         </tr>
                                     ))}
 
