@@ -31,7 +31,7 @@ jobs:
       COMMIT_TAG: ${{ github.sha }}
       DEPLOY_BUNDLE_BUCKET: ${{ vars.DEPLOY_BUNDLE_BUCKET }}
       ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-      LAUNCH_TEMPLATE_ID: ${{ secrets.LAUNCH_TEMPLATE_ID }}
+      LAUNCH_TEMPLATE_ID: ${{ vars.LAUNCH_TEMPLATE_ID }}
 
 
     steps:
@@ -65,11 +65,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR Public
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v2
         with:
-          mask-password: "true"
+          registry-type: public
 
       - name: Tag, and push latest docker image to Amazon ECR
         run: |
