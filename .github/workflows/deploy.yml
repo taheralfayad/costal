@@ -86,8 +86,18 @@ jobs:
 
       - name: Deploy new EC2 instance from launch template
         run: |
+          USER_DATA=$(cat <<EOF
+          #!/bin/bash
+          echo "Updating release information..."
+          echo "export RELEASE_BUNDLE_NAME=${COMMIT_TAG}.zip" >> /etc/environment
+          echo "export RELEASE=${COMMIT_TAG}" >> /etc/environment
+          source /etc/environment
+          EOF
+          )          
+
           INSTANCE_ID=$(aws ec2 run-instances \
             --launch-template LaunchTemplateId=$LAUNCH_TEMPLATE_ID \
+            --user-data "$USER_DATA" \
             --query 'Instances[0].InstanceId' --output text)
 
           echo "Waiting for EC2 instance $INSTANCE_ID to be running..."

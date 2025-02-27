@@ -4,10 +4,11 @@ exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
 echo BEGIN
 date '+%Y-%m-%d %H:%M:%S'
 
+# get release information from pipeline
+source /etc/environment
+
 # set env variables
-export RELEASE_BUNDLE_NAME=
 export ECR_REPOSITORY=
-export RELEASE=
 
 export CANVAS_URL=
 export API_CLIENT_ID=
