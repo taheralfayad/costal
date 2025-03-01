@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM nikolaik/python-nodejs:python3.12-nodejs22-slim
+FROM nikolaik/python-nodejs:python3.10-nodejs22-slim
 ARG REQUIREMENTS
 
 # Set environment variables
@@ -20,6 +20,13 @@ RUN apt-get update \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  cmake \
+  g++ \
+  && rm -rf /var/lib/apt/lists/*
+
 
 RUN apt-get update && apt-get install -y git
 

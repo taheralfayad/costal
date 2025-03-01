@@ -12,7 +12,8 @@ psycopg[binary]
 pgvector
 pycryptodome
 python-dotenv==1.0.0
-git+https://github.com/taheralfayad/pyBKT.git@master#egg=pyBKT
+numpy<2.0
+pyBKT
 django-webpack-loader
 uvicorn==0.33.0
 mabwiser

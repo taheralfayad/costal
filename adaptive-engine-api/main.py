@@ -1,4 +1,5 @@
 import pickle
+import csv
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -57,16 +58,26 @@ def run_model_on_response(request: RunModelOnResponseRequest):
             'correct': [request.correct]
         }
     )
+
     
+    data.to_csv('./adaptive-engine-api/models/bkt_data_{course_id}_{module_id}.csv'.format(course_id=request.course_id, module_id=request.module_id), mode='a', header=False, index=False)
+
     try:
         predictions_before = model.predict(data=data)
     except:
         predictions_before = pd.DataFrame({'state_predictions': [0]})
-    
+   
+
+    data = pd.read_csv("./adaptive-engine-api/models/bkt_data_{course_id}_{module_id}.csv".format(course_id=request.course_id, module_id=request.module_id))
     model.fit(data=data)
     predictions_after = model.predict(data=data)
 
     delta = predictions_after.iloc[0]['state_predictions'] - predictions_before.iloc[0]['state_predictions']
+
+    # Define a threshold to decide mastery
+    mastery_threshold = 0.95
+    # Create a mastery indicator: 1 if mastered, 0 otherwise.
+    is_mastered = 1 if predictions_after.iloc[0]['state_predictions'] >= mastery_threshold else 0
 
     arm_context = pd.DataFrame(
         {
@@ -74,7 +85,8 @@ def run_model_on_response(request: RunModelOnResponseRequest):
             'seconds_taken': [request.seconds_taken],
             'hints_used': [request.hints_used],
             'difficulty': [request.difficulty],
-            'bkt_prediction': [predictions_after.iloc[0]['state_predictions']]
+            'bkt_prediction': [predictions_after.iloc[0]['state_predictions']],
+            'is_mastered': [is_mastered]
         }
     )
 
@@ -85,19 +97,23 @@ def run_model_on_response(request: RunModelOnResponseRequest):
     else:
         multiplier = 1 - (request.difficulty - 1) * 0.25
 
-    reward = pd.Series([delta * multiplier])
+    if not is_mastered:
+        reward = pd.Series([delta * multiplier])
+    else:
+        reward = pd.Series([-1])
 
     mab.partial_fit(decisions=[request.question_id], rewards=reward, contexts=arm_context)
 
     next_question = mab.predict(arm_context)
 
-    model.save('./adaptive-engine-api/models/bkt_model_{course_id}_{user_id}.pkl'.format(course_id=request.course_id, user_id=request.user_id))
+    model.save('./adaptive-engine-api/models/bkt_model_{course_id}_{module_id}.pkl'.format(course_id=request.course_id, module_id=request.module_id))
     with open("./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}.pkl".format(course_id=request.course_id, assignment_id=request.assignment_id, user_id=request.user_id), "wb") as f:
         pickle.dump(mab, f)
 
     prediction_json = {
         "state_prediction": predictions_after.iloc[0]['state_predictions'],
-        "next_question": next_question
+        "next_question": next_question,
+        "reward": reward[0]
     }
 
     return prediction_json
@@ -141,7 +157,16 @@ def fit_model(request: FitModelRequest):
     except:
         pass
 
-    bkt = pybkt.Model(seed=42, num_fits=1)
+    # Check for existence of csv file
+    try:
+        with open('./adaptive-engine-api/models/bkt_data_{course_id}_{module_id}.csv'.format(course_id=request.course_id, module_id=request.module_id), 'r') as f:
+            pass
+    except:
+        with open('./adaptive-engine-api/models/bkt_data_{course_id}_{module_id}.csv'.format(course_id=request.course_id, module_id=request.module_id), 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['user_id', 'skill_name', 'correct'])
+
+
 
     data = pd.DataFrame(
         {
@@ -151,7 +176,11 @@ def fit_model(request: FitModelRequest):
         }
     )
 
-    bkt.fit(data=data)
+    data.to_csv('./adaptive-engine-api/models/bkt_data_{course_id}_{module_id}.csv'.format(course_id=request.course_id, module_id=request.module_id), mode='a', header=False, index=False)
+
+    assignment_data = pd.read_csv('./adaptive-engine-api/models/bkt_data_{course_id}_{module_id}.csv'.format(course_id=request.course_id, module_id=request.module_id))
+
+    bkt.fit(data=assignment_data)
     bkt_filename = './adaptive-engine-api/models/bkt_model_{course_id}_{module_id}.pkl'.format(course_id=request.course_id, module_id=request.module_id)
     bkt.save(bkt_filename)
 

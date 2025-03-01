@@ -44,3 +44,6 @@ register: ## Add a new registration for Templater in a platform
 
 deploy: ## Add a new deployment for Templater to an existing registration
 	${DOCKER_COMPOSE} run --rm web python cli.py add_deployment
+
+test-adaptive-learning-model:
+	$(DOCKER_COMPOSE) run --rm web python ./testing_adaptive_learning.py
