@@ -18,7 +18,7 @@ import LandingPage from './instructor/pages/LandingPage.js';
 import AssignmentLanding from './student/pages/AssignmentLanding.js';
 import ActivityDetails from './student/pages/ActivityDetails.js';
 import Assignment from './student/pages/Assignment.js';
-
+import StudentLanding from './student/pages/LandingPage.js'
 
 
 const App = () => {
@@ -59,7 +59,7 @@ const App = () => {
       <ActivityDetails /> 
       <Assignment /> 
       <CourseOutline/> */}
-      <LandingPage />
+      {IS_PROFESSOR === "True" ? <LandingPage /> : <StudentLanding/>}
     </div>
   );
 }
