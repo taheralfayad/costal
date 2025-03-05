@@ -86,20 +86,6 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         except IndexError:
             return Response({'error': 'No assignments found for this course'}, status=status.HTTP_404_NOT_FOUND)
         
-    @action(detail=False, methods=['get'], url_path='get_assignment/(?P<assignment_id>[^/.]+)')
-    def get_assignment(self, request, assignment_id):
-        try:
-     
-            assignment = Assignment.objects.filter(assignment_id=assignment_id)
-            serializer = AssignmentSerializer(assignment)
-
-            print(serializer.data)
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Assignment.DoesNotExist:
-            return Response({'error': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
-        except IndexError:
-            return Response({'error': 'No assignments found for this course'}, status=status.HTTP_404_NOT_FOUND)
 
 
     @action(detail=False, methods=['post'], url_path='create_assignment')
