@@ -75,8 +75,23 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_course_assignments(self, request):
         try:
             course_id = request.query_params.get('course_id')
-            assignments = Assignment.objects.filter(course_id=course_id)
+            assignments = Assignment.objects.get(course_id=course_id)
             serializer = AssignmentSerializer(assignments, many=True)
+
+            print(serializer.data)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Assignment.DoesNotExist:
+            return Response({'error': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
+        except IndexError:
+            return Response({'error': 'No assignments found for this course'}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['get'], url_path='get_assignment/(?P<assignment_id>[^/.]+)')
+    def get_assignment(self, request, assignment_id):
+        try:
+     
+            assignment = Assignment.objects.filter(assignment_id=assignment_id)
+            serializer = AssignmentSerializer(assignment)
 
             print(serializer.data)
 
@@ -109,7 +124,28 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         assignment.save()
         module.assignments.add(assignment)
         return Response({"message": "Assignment created successfully"}, status=status.HTTP_201_CREATED)
-       
+    
+
+    @action(detail=False, methods=['post'], url_path='edit_assignment/(?P<assignment_id>[^/.]+)')
+    def edit_assignment(self, request, assignment_id):
+        data = request.data
+
+        assignment = Assignment.objects.get(id=assignment_id)
+        
+        if 'name' in data:
+            assignment.name = data['name']
+        if 'course_id' in data:
+            assignment.course_id = data['course_id']
+        if 'start_date' in data:
+            assignment.start_date = datetime.datetime.strptime(data["start_date"], "%Y-%m-%dT%H:%M")
+        if 'end_date' in data:
+            assignment.end_date = datetime.datetime.strptime(data["end_date"], "%Y-%m-%dT%H:%M")
+        if 'assessment_type' in data:
+            assignment.assessment_type = data['assessment_type']
+
+        assignment.save()
+        return Response({"message": "Assignment updated successfully"}, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['post'], url_path='add_question')   
     def add_question(self, request):
         data = request.data
