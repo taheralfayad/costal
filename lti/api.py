@@ -75,10 +75,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_course_assignments(self, request):
         try:
             course_id = request.query_params.get('course_id')
-            assignments = Assignment.objects.get(course_id=course_id)
+            assignments = Assignment.objects.filter(course_id=course_id)
             serializer = AssignmentSerializer(assignments, many=True)
-
-            print(serializer.data)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Assignment.DoesNotExist:
@@ -163,6 +161,13 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         assignment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+    @action(detail=False, methods=['get'], url_path='get_assignment_objectives/(?P<assignment_id>[^/.]+)')
+    def get_assignment_objectives(self, request, assignment_id=None):
+        assignment = Assignment.objects.get(id=assignment_id)
+        questions = assignment.questions
+        print(questions)
+        return Response(status=status.HTTP_200_OK)
 
 class QuestionViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -464,11 +469,11 @@ class SkillViewSet(viewsets.ModelViewSet):
         queryset = Skill.objects.all()
         return queryset
 
-    @action(detail=False, methods=['get'], url_path='get-skill-by-assignment-id/(?P<assignment_id>[^/.]+)')
+    @action(detail=False, methods=['get'], url_path='get_skill_by_assignment_id/(?P<assignment_id>[^/.]+)')
     def get_skill_by_assignment_id(self, request, assignment_id=None):
         try:
-            skills = Skill.objects.filter(assignments__id=assignment_id)
-            serializer = SkillSerializer(skills, many=True)
+            module = Module.objects.filter(assignments__id=assignment_id).first()
+            serializer = SkillSerializer(module.skills, many=True)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Assignment.DoesNotExist:

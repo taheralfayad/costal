@@ -1,24 +1,57 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams  } from "react-router-dom"
 import { Button, Checkbox, Dropdown, Input, RichTextEditor, Title } from '../../design-system';
 import MultipleChoiceConfig from '../components/MultipleChoiceConfig';
 import ShortAnswerConfig from '../components/ShortAnswerConfig';
 
-const CreateQuestion = ({ assignment }) => {
+const CreateQuestion = () => {
+  const navigate = useNavigate()
   const [questionName, setQuestionName] = useState('');
   const [editorValue, setEditorValue] = useState('');
   const [difficulty, setDifficulty] = useState('Easy');
   const [objectives, setObjectives] = useState([]);
+  const [dropdownObjectives, setDropdownObjectives] = useState([]);
   const [objective, setObjective] = useState('');
   const [selectedCheckbox, setSelectedCheckbox] = useState(null);
   const [points, setPoints] = useState(1);
   const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState([{ id: 1, text: '', checked: false }]);
   const [shortAnswerItems, setShortAnswerItems] = useState([]);
 
-  const difficulties = ["Easy", "Medium", "Hard"];
+  const { assignmentId } = useParams()
+
+  const onSelectDifficulty = (value) => {
+    console.log(value)
+    setDifficulty(value)
+  }
+
+  const difficulties = [
+    {"label": "Easy", "onClick": () => onSelectDifficulty("Easy")},
+    {"label": "Medium", "onClick": () => onSelectDifficulty("Medium")},
+    {"label": "Hard", "onClick": () => onSelectDifficulty("Hard")}
+  ]
+
+  const onSelectObjective = (value) => {
+    console.log(value)
+    setObjective(value)
+  }
+
+  const formatObjectivesForDropdown = () => {
+    let formattedObjectivesForDropdown = [] 
+    
+    for(let i = 0; i < objectives.length; i++) {
+      let temp = {
+        "label": objectives[i].name,
+        "onClick": () => onSelectObjective(objectives[i].name)
+      }
+      formattedObjectivesForDropdown.push(temp)
+    }
+
+    setDropdownObjectives(formattedObjectivesForDropdown)
+  }
 
   const fetchObjectives = async () => {
     try {
-      const response = await fetch(`/lti/api/skills/get-skill-by-assignment-id/${assignment.id}`);
+      const response = await fetch(`/lti/api/skills/get_skill_by_assignment_id/${assignmentId}`);
       const data = await response.json();
       console.log(data);
       setObjectives(data);
@@ -31,7 +64,7 @@ const CreateQuestion = ({ assignment }) => {
     const skillID = objectives.find(item => item.name === objective).id;
     const formData = new FormData();
 
-    formData.append('assignment_id', assignment.id);
+    formData.append('assignment_id', assignmentId);
     formData.append('name', questionName);
     formData.append('skill_id', skillID);
     formData.append('difficulty', difficulty);
@@ -60,6 +93,11 @@ const CreateQuestion = ({ assignment }) => {
         method: 'POST',
         body: formData,
       });
+
+      if (response.ok) {
+        navigate(`/lti/add_questions/${assignmentId}`)
+      }
+
     } catch (error) {
       console.error(error);
     }
@@ -93,13 +131,17 @@ const CreateQuestion = ({ assignment }) => {
     fetchObjectives();
   }, []);
 
+  useEffect(() => {
+    formatObjectivesForDropdown();
+  }, [objectives]);
+
   return (
     <div>
       <main className='flex'>
         <section className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
           <Title>Create Question</Title>
           <Input label='Name' placeholder='Great Assignment' value={questionName} onChange={(e) => handleNameChange(e)} />
-          <Dropdown label='Objective' placeholder='Select Objective' value={objective} options={objectives.map(item => item.name)} onSelect={handleObjectiveChange} />
+          <Dropdown label='Objective' placeholder='Select Objective' value={objective} options={dropdownObjectives} />
           <Dropdown label='Difficulty' placeholder='Select Difficulty' value={difficulty} options={difficulties} onSelect={handleDifficultyChange} />
           <RichTextEditor value={editorValue} onChange={handleInputChange} />
           <section className='flex flex-col gap-4'>
@@ -130,7 +172,7 @@ const CreateQuestion = ({ assignment }) => {
       </main>
       <section className='flex justify-end gap-2 pr-4 pb-2'>
         <Button label='Create' onClick={handleSubmit} />
-        <Button label='Cancel' type='outline' />
+        <Button label='Cancel' type='outline' onClick={() => navigate(`/lti/add_questions/${assignmentId}`)}/>
       </section>
     </div>
   );

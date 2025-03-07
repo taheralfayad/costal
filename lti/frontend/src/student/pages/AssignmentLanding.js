@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Badge, Button, CircularProgressChart, Title } from '../../design-system';
 import Arrow from '../../assets/arrow-left.svg';
 import StarDark from '../../assets/star-dark.svg';
@@ -10,6 +11,50 @@ import SideMenu from '../components/SideMenu';
 
 const AssignmentLanding = ({ percentageTotal }) => {
     const [isMenuOpen, setMenuOpen] = useState(false)
+    const [assignment, setAssignment] = useState(null)
+    const navigate = useNavigate()
+    const [isLoading, setIsLoading] = useState(true)
+    const { assignmentId } = useParams()
+
+    const formatTimeStamps = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true
+        });
+    };
+
+    useEffect(() => {
+      const fetchAssignments = async () => {
+        setIsLoading(true);
+        try {
+          let assignment = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`)
+          let data = await assignment.json()
+          setAssignment(data)
+        } catch (error) {
+          console.error('Error fetching assignment:', error)
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      
+      const retrieveAssignmentObjectives = async () => {
+        const objectives = await fetch(`/lti/api/assignments/get_assignment_objectives/${assignmentId}`)
+      }
+
+      fetchAssignments();
+      retrieveAssignmentObjectives();
+    }, [assignmentId])
+
+    const goBackToLanding = () => {
+      console.log(assignmentId)
+      navigate('/lti/student_landing/')
+    }
 
     const renderButtonLabel = () => {
         if (percentageTotal == 0) {
@@ -89,6 +134,15 @@ const AssignmentLanding = ({ percentageTotal }) => {
             percentage: 100
         }
     ]
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <CircularProgressChart />
+            </div>
+        )
+    }
+
     return (
         <main>
             <SideMenu isMenuOpen={isMenuOpen} />
@@ -97,21 +151,24 @@ const AssignmentLanding = ({ percentageTotal }) => {
                     }`}
             >
                 <header className='p-6 pl-10 flex flex-col gap-4'>
-                    <section className='flex gap-2 ml-8'>
-                        <Arrow className='w-5 h-5' />
+                    <section className='flex flex-row gap-2 ml-8'>
+                        <button onClick={() => goBackToLanding()}>
+                          <Arrow className='w-5 h-5' />
+                        </button>
                         <p>Back to Course</p>
                     </section>
                     <section className='flex gap-2 items-center'>
                         <span onClick={() => setMenuOpen(!isMenuOpen)}><Menu /></span>
-                        <Title>Great Assignment</Title>
+                        <Title>{assignment.name}</Title>
                     </section>
                     <section className='ml-8 flex flex-col gap-4'>
-                        <Badge title='Homework' />
+                        {assignment.assessment_type === "Homework" ? <Badge title='Homework'/> : <Badge title='Quiz'/>}
 
                         <section className={`flex justify-between ${(percentageTotal === 100 || percentageTotal === 0) ? 'w-3/4' : 'w-1/2'}`}>
-                            <TaskSummary title='Due' description='October 11, 2024'
+                            <TaskSummary title='Due' description={formatTimeStamps(assignment.end_date)}/>
+                            {/*<TaskSummary title='Due' description='October 11, 2024'
                                 nextLine='12:00pm EST'
-                            />
+                            /> */}
                             <TaskSummary title='Status' description={renderStatus()}
                             />
                             {renderThirdTaskSummary()}
