@@ -15,7 +15,7 @@ if os.path.exists("user_data.sh"):
         user_data = f.read()
     encoded_user_data = base64.b64encode(user_data.encode("utf-8")).decode("utf-8")
 else:
-    print(f"ERROR: user_data.sh not found")
+    print("ERROR: user_data.sh not found")
     encoded_user_data = None
 
 # Use default as base version
