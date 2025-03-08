@@ -9,9 +9,9 @@ LAUNCH_TEMPLATE_ID = os.getenv("LAUNCH_TEMPLATE_ID")
 DESCRIPTION = "COSTAL Webserver Release: " + RELEASE_HASH
 print(f"Using Launch Tepmlate: {LAUNCH_TEMPLATE_ID}")
 
-# Update user_data.sh
-if os.path.exists("user_data.sh"):
-    with open("user_data.sh", "r") as f:
+# Update user-data.sh
+if os.path.exists("devops/user-data.sh"):
+    with open("devops/user-data.sh", "r") as f:
         user_data = f.read()
     encoded_user_data = base64.b64encode(user_data.encode("utf-8")).decode("utf-8")
 else:
