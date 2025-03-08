@@ -8,17 +8,7 @@ date '+%Y-%m-%d %H:%M:%S'
 source /etc/environment
 
 # set env variables
-export ECR_REPOSITORY=
 
-export CANVAS_URL=
-export API_CLIENT_ID=
-export API_CLIENT_ID_SECRET=
-
-export DB_NAME=
-export DB_HOST=
-export DB_USERNAME=
-export DB_PASSWORD=
-export DB_PORT=
 
 # pull release bundle from s3 and cd into project directory
 aws s3 cp s3://costal-release-bucket/$RELEASE_BUNDLE_NAME /home/ec2-user/costal/

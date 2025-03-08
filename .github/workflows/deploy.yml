@@ -84,11 +84,17 @@ jobs:
       - name: Install Boto and AWS CLI
         run: pip install awscli boto3
 
-      - name: Setup Launch Template
-        run: |
-          python devops/setup.py
         env:
           LAUNCH_TEMPLATE_ID: ${{ vars.LAUNCH_TEMPLATE_ID }}
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          CANVAS_URL: ${{ secrets.CANVAS_URL }}
+          API_CLIENT_ID: ${{ secrets.API_CLIENT_ID }}
+          API_CLIENT_ID_SECRET: ${{ secrets.API_CLIENT_ID_SECRET }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.DB_PORT }}
 
       - name: Restart instance
         run: aws autoscaling start-instance-refresh --auto-scaling-group-name costal-asg
