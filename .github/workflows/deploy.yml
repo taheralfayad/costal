@@ -71,10 +71,10 @@ jobs:
         with:
           registry-type: public
 
-      - name: Tag, and push latest docker image to Amazon ECR
-        run: |
-          docker tag backend:$COMMIT_TAG $ECR_REPOSITORY:$COMMIT_TAG
-          docker push $ECR_REPOSITORY:$COMMIT_TAG
+      # - name: Tag, and push latest docker image to Amazon ECR
+      #   run: |
+      #     docker tag backend:$COMMIT_TAG $ECR_REPOSITORY:$COMMIT_TAG
+      #     docker push $ECR_REPOSITORY:$COMMIT_TAG
 
       - name: Build release bundle
         run: |
