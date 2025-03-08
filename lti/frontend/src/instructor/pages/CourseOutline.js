@@ -6,11 +6,12 @@ import ChevronDown from '../../assets/chevron-down.svg';
 import Menu from '../../assets/menu.svg'
 import Arrow from '../../assets/arrow-left.svg';
 import DropdownMenu from '../components/DropdownMenu';
-
+import LoadingPage from '../components/LoadingPage.js';
 
 const CourseOutline = () => {
     const navigate = useNavigate();
     const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true)
     const [modules, setModules] = useState([
         {
             id: 1,
@@ -51,6 +52,8 @@ const CourseOutline = () => {
 
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -380,6 +383,10 @@ const CourseOutline = () => {
                 </section>
             </section>
         )
+    }
+
+    if (loading) {
+      return(<LoadingPage/>)
     }
 
 

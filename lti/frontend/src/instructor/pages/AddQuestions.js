@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Badge, Button, Title } from '../../design-system';
+import LoadingPage from "../components/LoadingPage.js";
 import Arrow from '../../assets/arrow-left.svg';
 import Writing from '../../assets/writing.svg';
 import CalendarIcon from '../../assets/calendar.svg';
@@ -12,6 +13,7 @@ const AddQuestions = () => {
   const [assignment, setAssignment] = useState({});
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [loading, setLoading] = useState(true);
   const { assignmentId } = useParams();
   const navigate = useNavigate();
 
@@ -20,13 +22,17 @@ const AddQuestions = () => {
   }
 
   const getAssignment = async () => {
-    console.log(assignmentId)
-    const response = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
-    const data = await response.json();
-    console.log(data);
-    setAssignment(data);
-    setStartDate(formatDate(data.start_date));
-    setEndDate(formatDate(data.end_date));
+    try {
+      const response = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
+      const data = await response.json();
+      setAssignment(data);
+      setStartDate(formatDate(data.start_date));
+      setEndDate(formatDate(data.end_date));
+    } catch (error) {
+      console.log("Sorry, an error occured, please try again later!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -46,9 +52,15 @@ const AddQuestions = () => {
     return new Intl.DateTimeFormat('en-US', options).format(new Date(dateString));
   };
 
+
+  if (loading) {
+    return(<LoadingPage/>)
+  }
+
+
   return (
     <main className='p-6 pl-10 flex flex-col gap-4'>
-      <section className='flex flex-row gap-2 ml-8'>
+      <section className='flex flex-row gap-2'>
         <button onClick={() => navigate('/lti/course_outline/')}>
           <Arrow className='w-5 h-5' />
         </button>

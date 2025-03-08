@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Title, CircularProgressChart } from '../../design-system';
 import HomeworkGradesChart from '../components/HomeworkGradesChart';
 import CourseInfo from '../components/CourseInfo';
+import LoadingPage from "../components/LoadingPage.js";
 
 const LandingPage = () => {
     const [assignments, setAssignments] = useState([]);
     const [quizzes, setQuizzes] = useState([]);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     const chartsData = [
@@ -21,19 +23,29 @@ const LandingPage = () => {
     ]
 
     const getCourseAssignments = async () => {
-        const response = await fetch(`/lti/api/assignments/get_course_assignments/?course_id=${COURSE_ID}`);
-        const data = await response.json();
-
-        const assignments = data.filter(assignment => assignment.assessment_type === 'Homework');
-        const quizzes = data.filter(assignment => assignment.assessment_type === 'Quiz');
-        setAssignments(assignments);
-        setQuizzes(quizzes);
+        try {
+          const response = await fetch(`/lti/api/assignments/get_course_assignments/?course_id=${COURSE_ID}`);
+          const data = await response.json();
+          const assignments = data.filter(assignment => assignment.assessment_type === 'Homework');
+          const quizzes = data.filter(assignment => assignment.assessment_type === 'Quiz');
+          setAssignments(assignments);
+          setQuizzes(quizzes);
+        } catch (error) {
+          console.log("An error occurred, please try again later!")
+        } finally {
+          setLoading(false)
+        }
     }
 
     useEffect(() => {
         getCourseAssignments();
     }
     , []);
+
+
+    if (loading) {
+      return(<LoadingPage/>)
+    }
 
 
     return (

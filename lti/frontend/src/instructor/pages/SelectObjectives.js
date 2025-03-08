@@ -5,11 +5,13 @@ import Toggle from '../../design-system/Toggle';
 import ChapterDropdown from '../components/ChapterDropdown';
 import StatsCard from '../components/StatsCard';
 import Topic from '../components/Topic';
+import LoadingPage from '../components/LoadingPage.js';
 
 
 const SelectObjectives = () => {
   const [modules, setModules] = useState([]);
   const [moduleObjectives, setModuleObjectives] = useState({});
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const handleInputChange = (moduleId, value) => {
@@ -55,14 +57,25 @@ const SelectObjectives = () => {
   };
 
   const retrieveModules = async () => {
-    const response = await fetch(`/lti/api/modules/get_modules_with_skills/${COURSE_ID}`);;
-    const data = await response.json();
-    setModules(data);
+    try {
+      const response = await fetch(`/lti/api/modules/get_modules_with_skills/${COURSE_ID}`);;
+      const data = await response.json();
+      setModules(data);
+    } catch (error) {
+      console.log("Error time!")
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
     retrieveModules();
   }, []);
+
+
+  if (loading) {
+    return (<LoadingPage/>)
+  }
 
   return (
     <main className='p-4 pl-10 flex flex-col gap-4'>
