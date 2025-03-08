@@ -86,7 +86,7 @@ jobs:
 
       - name: Setup Launch Template
         run: |
-          python scripts/setup.py
+          python devops/setup.py
         env:
           LAUNCH_TEMPLATE_ID: ${{ vars.LAUNCH_TEMPLATE_ID }}
 
