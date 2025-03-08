@@ -84,6 +84,9 @@ jobs:
       - name: Install Boto and AWS CLI
         run: pip install awscli boto3
 
+      - name: Setup Launch Template
+        run: |
+          python devops/setup.py
         env:
           LAUNCH_TEMPLATE_ID: ${{ vars.LAUNCH_TEMPLATE_ID }}
           ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
