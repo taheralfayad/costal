@@ -84,52 +84,11 @@ jobs:
       - name: Install Boto and AWS CLI
         run: pip install awscli boto3
 
-      - name: Deploy new EC2 instance from launch template
+      - name: Setup Launch Template
         run: |
-          USER_DATA=$(cat <<EOF
-          #!/bin/bash
-          echo "Updating release information..."
-          echo "export RELEASE_BUNDLE_NAME=${COMMIT_TAG}.zip" >> /etc/environment
-          echo "export RELEASE=${COMMIT_TAG}" >> /etc/environment
-          source /etc/environment
-          EOF
-          )          
+          python scripts/setup.py
+        env:
+          LAUNCH_TEMPLATE_ID: ${{ vars.LAUNCH_TEMPLATE_ID }}
 
-          INSTANCE_ID=$(aws ec2 run-instances \
-            --launch-template LaunchTemplateId=$LAUNCH_TEMPLATE_ID \
-            --user-data "$USER_DATA" \
-            --query 'Instances[0].InstanceId' --output text)
-
-          echo "Waiting for EC2 instance $INSTANCE_ID to be running..."
-          aws ec2 wait instance-running --instance-ids $INSTANCE_ID
-
-          echo "Deployment triggered. Instance ID: $INSTANCE_ID"
-
-          echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
-
-      - name: Register instance with target group
-        run: |
-          # Get the instance ID from the previous step
-          INSTANCE_ID="${{ steps.deploy-ec2.outputs.instance_id }}"
-          
-          # Wait for instance to pass status checks
-          echo "Waiting for instance $INSTANCE_ID to pass status checks..."
-          aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID
-          
-          INSTANCE_IP=$(aws ec2 describe-instances \
-            --instance-ids $INSTANCE_ID \
-            --query 'Reservations[0].Instances[0].PrivateIpAddress' \
-            --output text)
-          
-          aws elbv2 register-targets \
-            --target-group-arn $TARGET_GROUP_ARN \
-            --targets Id=$INSTANCE_ID
-          
-          echo "Instance $INSTANCE_ID registered with target group $TARGET_GROUP_ARN"
-          
-          echo "Waiting for target to become healthy in target group..."
-          aws elbv2 wait target-in-service \
-            --target-group-arn $TARGET_GROUP_ARN \
-            --targets Id=$INSTANCE_ID
-          
-          echo "Instance $INSTANCE_ID is now healthy in target group $TARGET_GROUP_ARN"
+      - name: Restart instance
+        run: aws autoscaling start-instance-refresh --auto-scaling-group-name costal-asg
