@@ -13,7 +13,7 @@ print(f"Using Launch Tepmlate: {LAUNCH_TEMPLATE_ID}")
 env_vars = {
     "RELEASE_BUNDLE_NAME": f"{RELEASE_HASH}.zip",
     "RELEASE": RELEASE_HASH,
-    "ECR_REPOSITORY": os.getenv('ECR_REPOSITORY'),
+    "ECR_REPOSITORY": os.getenv("ECR_REPOSITORY"),
     "CANVAS_URL": os.getenv("CANVAS_URL", ""),
     "API_CLIENT_ID": os.getenv("API_CLIENT_ID", ""),
     "API_CLIENT_ID_SECRET": os.getenv("API_CLIENT_ID_SECRET", ""),
@@ -33,7 +33,9 @@ else:
 
 # Update user-data.sh
 env_exports = "\n".join([f"export {key}={value}" for key, value in env_vars.items()])
-updated_user_data = user_data.replace("# set env variables", f"# set env variables\n{env_exports}")
+updated_user_data = user_data.replace(
+    "# set env variables", f"# set env variables\n{env_exports}"
+)
 encoded_user_data = base64.b64encode(updated_user_data.encode("utf-8")).decode("utf-8")
 
 # Use default as base version
