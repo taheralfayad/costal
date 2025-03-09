@@ -1,15 +1,10 @@
 import React, { useState } from "react";
 
-const Toggle = ({ color = 'bg-emerald-400' }) => {
-  const [isToggled, setIsToggled] = useState(false);
-
-  const handleToggle = () => {
-    setIsToggled(!isToggled);
-  };
-
+const Toggle = ({ color = 'bg-emerald-400', isToggled, setIsToggled }) => {
+  
   return (
     <article
-      onClick={handleToggle}
+      onClick={() => setIsToggled(!isToggled)}
       className={`w-[55px] h-8 flex items-center rounded-[30px] p-1 cursor-pointer transition-colors duration-300
         ${isToggled ? color : "bg-gray-300"}`}
     >

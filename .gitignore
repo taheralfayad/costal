@@ -9,3 +9,4 @@ webpack-stats.json
 *.pyc
 node_modules
 models/
+lti/static

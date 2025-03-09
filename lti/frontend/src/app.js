@@ -19,10 +19,12 @@ import AssignmentLanding from './student/pages/AssignmentLanding.js';
 import ActivityDetails from './student/pages/ActivityDetails.js';
 import Assignment from './student/pages/Assignment.js';
 import StudentLanding from './student/pages/LandingPage.js'
+import Button from './design-system/Button.js';
+import { useNavigate } from 'react-router-dom';
 
 
 const App = () => {
-
+  const navigate = useNavigate();
   const assignment = {
     "id": 3,
     "name": "The greatest assignment of all time",
@@ -59,7 +61,7 @@ const App = () => {
       <ActivityDetails /> 
       <Assignment /> 
       <CourseOutline/> */}
-      {IS_PROFESSOR === "True" ? <LandingPage /> : <StudentLanding/>}
+      <Button onClick={() => navigate('/lti/course_settings/')}>CLICK</Button>
     </div>
   );
 }

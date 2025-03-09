@@ -1,6 +1,11 @@
 import datetime
-
+from enum import Enum
 from django.db import models
+
+class DeadlineType(Enum):
+    WEEK = 'WEEK'
+    MONTH = 'MONTH'
+    END_OF_SESSION = 'END_OF_SESSION'
 
 class Textbook(models.Model):
     title = models.CharField(max_length=255)
@@ -25,6 +30,14 @@ class Course(models.Model):
     course_id = models.CharField(max_length=200, primary_key=True)
     users = models.ManyToManyField(CanvasUser)
     teachers = models.ManyToManyField(CanvasUser, related_name="teaching_courses")
+    partial_completion = models.BooleanField(default=False) 
+    late_completion = models.BooleanField(default=False)    
+    deadline = models.CharField(
+        max_length=20,
+        choices=[(tag, tag.value) for tag in DeadlineType],
+        default=DeadlineType.WEEK.value
+    )                
+    penalty = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
 
 # Models

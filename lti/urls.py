@@ -1,7 +1,7 @@
 from django.urls import path, re_path, include
 from rest_framework import routers
 
-from lti.api import TextbookViewSet, AssignmentViewSet, QuestionViewSet, SkillViewSet, PossibleAnswersViewSet, GetCourseProfessorName, ModuleViewSet
+from lti.api import TextbookViewSet, AssignmentViewSet, QuestionViewSet, SkillViewSet, PossibleAnswersViewSet, GetCourseProfessorName, ModuleViewSet, CourseViewSet
 from lti.auth_views import oauth_complete, oauth_login
 from lti.views import (
     config,
@@ -15,6 +15,7 @@ app_name = "lti"
 router = routers.DefaultRouter()
 
 router.register(r"textbooks", TextbookViewSet)
+router.register(r"courses", CourseViewSet)
 router.register(r"assignments", AssignmentViewSet)
 router.register(r"questions", QuestionViewSet)
 router.register(r"skills", SkillViewSet)

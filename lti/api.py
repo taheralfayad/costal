@@ -28,6 +28,7 @@ from lti.serializers import (
     PossibleAnswerSerializer,
     SkillSerializer,
     ModuleSerializer,
+    CourseSerializer
 )
 
 class TextbookViewSet(viewsets.ModelViewSet):
@@ -48,6 +49,46 @@ class TextbookViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Textbook.DoesNotExist:
             return Response({'error': 'Textbook not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class CourseViewSet(viewsets.ModelViewSet):
+    """ViewSet for the ReportEntry class"""
+
+    serializer_class = CourseSerializer
+    queryset = Course.objects.all()
+
+    def get_queryset(self):
+        queryset = Course.objects.all()
+        return queryset
+    
+    @action(detail=False, methods=['get'], url_path='get_course_by_id/(?P<course_id>[^/.]+)')
+    def get_course_by_id(self, request, course_id=None):
+        try:
+            course = Course.objects.get(course_id=course_id)
+            course_serializer = CourseSerializer(course)
+            course_data = CourseSerializer(course).data
+            course_data['deadline'] = course.deadline
+
+            return Response(course_data, status=status.HTTP_200_OK)
+        except Course.DoesNotExist:
+            return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['post'], url_path='edit_settings/(?P<course_id>[^/.]+)')
+    def edit_settings(self, request, course_id=None):
+        data = request.data
+        course = Course.objects.get(course_id=course_id)
+        
+        if 'partial_completion' in data:
+            course.partial_completion = data['partial_completion'] == 'true'
+        if 'late_completion' in data:
+            course.late_completion = data['late_completion'] == 'true'
+        if 'deadline' in data:
+            course.deadline = data['deadline']
+        if 'penalty' in data:
+            course.penalty = data['penalty']
+
+        course.save()
+        return Response({"message": "Course updated successfully"}, status=status.HTTP_200_OK)
 
 
 # Need an endpoint to create assignments
