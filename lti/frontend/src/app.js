@@ -61,7 +61,7 @@ const App = () => {
       <ActivityDetails /> 
       <Assignment /> 
       <CourseOutline/> */}
-      <Button onClick={() => navigate('/lti/course_settings/')}>CLICK</Button>
+      {IS_PROFESSOR === "True" ? <LandingPage /> : <StudentLanding/>}
     </div>
   );
 }
