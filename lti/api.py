@@ -65,8 +65,14 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_assignment_by_id(self, request, assignment_id=None):
         try:
             assignment = Assignment.objects.get(id=assignment_id)
-            serializer = AssignmentSerializer(assignment)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            questions = assignment.questions.all()
+            assignment_serializer = AssignmentSerializer(assignment)
+            questions_serializer = QuestionSerializer(questions, many=True)
+
+            data = assignment_serializer.data 
+            data["questions"] = questions_serializer.data
+
+            return Response(data, status=status.HTTP_200_OK)
         except Assignment.DoesNotExist:
             return Response({'error': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -207,6 +213,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         try:
             assignment = Assignment.objects.get(id=data['assignment_id'])
             question.assignments.add(assignment)
+            assignment.questions.add(question)
         except Assignment.DoesNotExist:
             return Response(
                 {"error": f"Assignment with ID {data['assignment_id']} does not exist."},
