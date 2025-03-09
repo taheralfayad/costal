@@ -1,9 +1,6 @@
 services:
   web:
-    image: ${ECR_REPOSITORY}:${RELEASE}
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
+    image: ${ECR_REPOSITORY}:web-${RELEASE}
     volumes:
       - static_volume:/app/lti/static
     env_file:
@@ -15,6 +12,16 @@ services:
     command: /bin/sh -c "npm --prefix ./lti/frontend run dev & gunicorn costal.wsgi:application --bind 0.0.0.0:8000"
     depends_on:
       - redis
+
+  adaptive-engine:
+    image: ${ECR_REPOSITORY}:adaptive-engine-${RELEASE}
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    command: ["uvicorn", "adaptive-engine-api.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
 
   redis:
     image: redis/redis-stack-server:latest
