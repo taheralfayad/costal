@@ -31,13 +31,8 @@ const CourseOutline = () => {
     const formatTimeStamps = (timestamp) => {
         const date = new Date(timestamp);
         return date.toLocaleString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: true
+            month: "short",
+            day: "2-digit",
         });
     };
 
@@ -83,7 +78,7 @@ const CourseOutline = () => {
     const [newModuleName, setNewModuleName] = useState('');
     const [draggedRowIndex, setDraggedRowIndex] = useState(null);
 
-    
+
 
     const handleDragStart = (moduleId, index) => {
         const module = modules.find(m => m.id === moduleId);
@@ -202,7 +197,7 @@ const CourseOutline = () => {
             return module;
         }));
     };
-    
+
 
     const toggleTableVisibility = (moduleId) => {
         setModules(modules.map(module =>
@@ -330,10 +325,10 @@ const CourseOutline = () => {
                         <Button label='Save' onClick={() => handleOrdering(module.id)} />
                         <Button label='Cancel' onClick={() => handleOrdering(module.id, true)} type='outline' />
                         <Dropdown label='' width='w-44' placeholder='Options' margin={false} options={[
-        { label: 'Alphabetically', onClick: () => handleSort(module.id, 'alphabetically') },
-        { label: 'By Due Date', onClick: () => handleSort(module.id, 'dueDate') },
-        { label: 'Cancel', onClick: () => handleSort(module.id, 'cancel') }
-    ]} />
+                            { label: 'Alphabetically', onClick: () => handleSort(module.id, 'alphabetically') },
+                            { label: 'By Due Date', onClick: () => handleSort(module.id, 'dueDate') },
+                            { label: 'Cancel', onClick: () => handleSort(module.id, 'cancel') }
+                        ]} />
                     </section>
                 </section>
             )
@@ -378,7 +373,7 @@ const CourseOutline = () => {
                 </section>
                 <section className='flex gap-4'>
                     <Button label='Add Assignment to Module' onClick={() => navigate(`/lti/create_assignment/${module.id}`)} />
-                    <Button label='Add Objectives to Module' onClick={() => navigate('/lti/select_objectives/')}/>
+                    <Button label='Add Objectives to Module' onClick={() => navigate('/lti/select_objectives/')} />
                     <Button label='Edit Order' onClick={() => handleOrdering(module.id)} type='outline' />
                 </section>
             </section>
@@ -402,7 +397,7 @@ const CourseOutline = () => {
                     </span>
                     <CourseInfo />
                 </article>
-                <Button type='lightGreenOutline' label='Settings' onClick={() => navigate('/lti/course_settings')}/>
+                <Button type='lightGreenOutline' label='Settings' onClick={() => navigate('/lti/course_settings')} />
 
             </header>
             <section className='bg-[#f8f8f8] min-h-screen'>
@@ -449,7 +444,7 @@ const CourseOutline = () => {
                                                 {formatTimeStamps(row.start)} - {formatTimeStamps(row.end)}
                                             </td>
                                             <td className='pr-6'>
-                                                <DropdownMenu editFunction={handleEditAssignment} deleteFunction={handleDeleteAssignment} addQuestionFunction={handleAddQuestion} idOfObject={row.id} nameOfObject={row.topic}/>
+                                                <DropdownMenu editFunction={handleEditAssignment} deleteFunction={handleDeleteAssignment} addQuestionFunction={handleAddQuestion} idOfObject={row.id} nameOfObject={row.topic} />
                                             </td>
                                         </tr>
                                     ))}

@@ -16,7 +16,7 @@ const periods = ['AM', 'PM'];
 
 const TimePickerInput = ({ label = 'input', placeholder = 'Pick a date', value, onChange, id, position }) => {
     const [isVisible, setIsVisible] = useState(false);
-    const [selectedHour, setSelectedHour] = useState('');
+    const [selectedHour, setSelectedHour] = useState('00');
     const [selectedMinute, setSelectedMinute] = useState('00');
     const [selectedPeriod, setSelectedPeriod] = useState('AM');
     const [activePicker, setActivePicker] = useState(null);
@@ -64,7 +64,7 @@ const TimePickerInput = ({ label = 'input', placeholder = 'Pick a date', value, 
             <input
                 type='text'
                 className='h-12 w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500'
-                value={`${selectedHour || '--'}:${selectedMinute} ${selectedPeriod}`}
+                value={value || `${selectedHour}:${selectedMinute} ${selectedPeriod}`}
                 readOnly
                 placeholder={placeholder}
                 onClick={() => setIsVisible(!isVisible)}

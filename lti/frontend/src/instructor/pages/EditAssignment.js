@@ -1,59 +1,97 @@
-import React, {useEffect} from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Checkbox, Input, Title } from '../../design-system';
+import { Button, DatePickerInput, Dropdown, Input, TimePickerInput, Title } from '../../design-system';
 import StatsCard from '../components/StatsCard';
-import Pencil from '../../assets/pencil-line.svg'
+import Pencil from '../../assets/pencil-line.svg';
+import { combineDateTime, revertDateTime } from '../../constants/functions';
 
 
 const EditAssignment = () => {
   const { assignmentId } = useParams();
   const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [assessmentType, setAssessmentType] = useState('');
+
+  const getAssignment = async () => {
+    console.log(assignmentId)
+    const response = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
+    const resData = await response.json();
+    setName(resData.name);
+    setStartDate(revertDateTime(resData.start_date).date)
+    setStartTime(revertDateTime(resData.start_date).time)
+    setEndDate(revertDateTime(resData.end_date).date)
+    setEndTime(revertDateTime(resData.end_date).time)
+    setAssessmentType(resData.assessment_type)
+  };
+
+  useEffect(() => {
+    getAssignment();
+  
+  }, []);
+
+
+  const handleForm = async () => {
+    let start = combineDateTime(startDate, startTime)
+    let end = combineDateTime(endDate, endTime)
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('start_date', start);
+    formData.append('end_date', end);
+    formData.append('assessment_type', assessmentType);
+
+    await fetch(`/lti/api/assignments/edit_assignment/${assignmentId}/`, {
+      method: 'POST',
+      body: formData,
+    }).then((res) => {
+      if (res.status === 200) {
+        console.log("ts")
+
+        navigate('/lti/course_outline');
+      }
+    }).catch(err => {
+      console.log(err.message);
+    })
+  }
 
   return (
     <main className='p-4 pl-10 flex flex-col gap-4'>
       <Title>Edit an Assignment</Title>
       <section className='flex gap-[6rem]'>
-        <section className='w-5/12 flex flex-col gap-4'>
-          <Input label='Name' placeholder='Great Assignment' />
+        <section className='flex flex-col gap-4'>
+          <Input label='Name' placeholder='Great Assignment' value={name} onChange={(e) => setName(e.target.value)} />
           <section className='flex justify-between gap-4'>
-            <Input label='Start Date' placeholder='10/10/2024' />
-            <Input label='Start Time' placeholder='12pm EST' />
+            <DatePickerInput label='Start Date' placeholder={startDate} value={startDate} onChange={(value) => setStartDate(value)} />
+            <TimePickerInput label='Start Time' placeholder={startTime} value={startTime} onChange={(value) => setStartTime(value)} />
           </section>
           <section className='flex justify-between gap-4'>
-            <Input label='End Date' placeholder='10/12/2024' />
-            <Input label='End Time' placeholder='12pm EST' />
+            <DatePickerInput label='End Date' placeholder={endDate} value={endDate} onChange={(value) => setEndDate(value)} />
+            <TimePickerInput label='End Time' placeholder={endTime} value={endTime} onChange={(value) => setEndTime(value)} />
           </section>
-          <label
-            className='block mb-2 text-sm font-medium text-gray-700'
-          >
-            Select a Label
-          </label>
           <section className='flex flex-col gap-4'>
-            <Checkbox label='Homework' />
-            <Checkbox label='Quiz' />
+            <Dropdown label="Assignment Type" placeholder={assessmentType} options={[{
+              "label": 'Homework', "onClick": () => {
+                setAssessmentType('Homework')
+              }
+            }, {
+              "label": 'Quiz', "onClick": () => {
+                setAssessmentType('Quiz')
+              }
+            }]} />
           </section>
         </section>
-        <aside className='w-5/12 border border-slate-300 rounded-lg shadow-sm p-8 flex flex-col gap-2'>
-          <header className='flex justify-between items-center '>
-            <h2 className='text-slate-950 text-lg font-semibold'>Objectives</h2>
-            <Button label='Edit' icon={<Pencil />} />
-          </header>
-          <section>
-            <h3 className='text-slate-950 text-base font-semibold'>Objective</h3>
-            <section className='text-slate-600 text-sm font-medium pl-3 flex flex-col gap-2 pt-2'>
-            <p>Lorem Inpsum</p>
-            <p>Lorem Inpsum</p>
-            </section>
-            
-          </section>
-        </aside>
+
       </section>
 
       <section className='flex justify-between items-center mt-6'>
         <StatsCard objectives={4} questions={4} points={4} />
         <section className='flex justify-end gap-2 pr-4'>
-          <Button label='Save' />
-          <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')}/>
+          <Button label='Save' onClick={handleForm} />
+          <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')} />
         </section>
       </section>
     </main>

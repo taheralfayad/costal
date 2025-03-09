@@ -117,15 +117,12 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     
 
     @action(detail=False, methods=['post'], url_path='edit_assignment/(?P<assignment_id>[^/.]+)')
-    def edit_assignment(self, request, assignment_id):
+    def edit_assignment(self, request, assignment_id=None):
         data = request.data
-
         assignment = Assignment.objects.get(id=assignment_id)
         
         if 'name' in data:
             assignment.name = data['name']
-        if 'course_id' in data:
-            assignment.course_id = data['course_id']
         if 'start_date' in data:
             assignment.start_date = datetime.datetime.strptime(data["start_date"], "%Y-%m-%dT%H:%M")
         if 'end_date' in data:
