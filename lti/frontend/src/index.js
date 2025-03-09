@@ -13,6 +13,7 @@ import AddQuestions from "./instructor/pages/AddQuestions";
 import AssignmentLanding from "./student/pages/AssignmentLanding.js";
 import StudentLandingPage from "./student/pages/LandingPage.js";
 import CreateQuestion from "./instructor/pages/CreateQuestion.js";
+import Assignment from "./student/pages/Assignment.js";
 
 const router = createBrowserRouter([
   {
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
   {
     path: '/lti/student_landing/',
     element: <StudentLandingPage/>
+  },
+  {
+    path: '/lti/assignment/:assignmentId',
+    element: <Assignment/>
   }
 ])
 

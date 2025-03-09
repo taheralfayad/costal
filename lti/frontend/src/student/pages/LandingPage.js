@@ -5,11 +5,13 @@ import CourseInfo from '../../instructor/components/CourseInfo';
 import AlertCircle from '../../assets/alert-circle.svg';
 import CheckCircle from '../../assets/check-circle.svg';
 import ArrowCircle from '../../assets/arrow-circle.svg';
+import LoadingPage from '../../instructor/components/LoadingPage.js';
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
-  
+  const [loading, setLoading] = useState(true);
+
   function formatTimestamp(isoString) {
       const date = new Date(isoString);
       const options = { month: "long", day: "numeric" };
@@ -29,17 +31,33 @@ const LandingPage = () => {
 
   useEffect(() => {
     const retrieveAssignments = async() => {
-      const response = await fetch(`/lti/api/assignments/get_course_assignments?course_id=${COURSE_ID}`, {method: 'GET'})
-      const data = await response.json()
-      for (let i = 0; i < data.length; i++) {
-        data[i].start_date = formatTimestamp(data[i].start_date)
-        data[i].end_date = formatTimestamp(data[i].end_date)
+      try {
+        const response = await fetch(`/lti/api/assignments/get_course_assignments?course_id=${COURSE_ID}`, {method: 'GET'})
+        const data = await response.json()
+        for (let i = 0; i < data.length; i++) {
+          if (new Date(data[i].end_date).valueOf() < new Date().valueOf()) {
+              data[i].assignment_is_late = true;
+          }
+          
+          data[i].start_date = formatTimestamp(data[i].start_date)
+          data[i].end_date = formatTimestamp(data[i].end_date)
+        }
+        console.log(data)
+        setAssignments(data);
+      } catch (error) {
+        console.log("Sorry, an error occurred!")
+      } finally {
+        setLoading(false);
       }
-      setAssignments(data);
     }
 
     retrieveAssignments();
   }, [])
+
+  
+  if (loading) {
+    return (<LoadingPage/>)
+  }
 
   return (
     <main>
@@ -55,7 +73,15 @@ const LandingPage = () => {
             {assignments.map((assignment, index) =>
             <tr className='border-b border-slate-300 text-slate-700 text-sm font-medium'>
               <td className='p-4 text-left'>{assignment.name}</td>
-              <td className='underline decoration-dashed underline-offset-4'> {assignment.end_date} </td> 
+              {assignment.assignment_is_late ?
+                 <td className='align-middle text-center'>
+                  <article className='flex items-center justify-center gap-2 mr-8'>
+                      <AlertCircle />
+                      <p className='underline decoration-dashed decoration-red-500 text-red-500 underline-offset-4 text-sm'>{assignment.end_date}</p>
+                  </article>
+                 </td> : 
+                 <td className='underline decoration-dashed underline-offset-4'>{assignment.end_date}</td>
+              }
               <td>
                 <button onClick={() => navigateToAssignment(assignment.id)}>
                   <ArrowCircle  />
@@ -70,17 +96,6 @@ const LandingPage = () => {
                 <p className='underline decoration-dashed decoration-red-500 text-red-500 underline-offset-4 text-sm'>Feb 29</p>
               </article></td>
               <td><CheckCircle /></td>
-            </tr>
-            <tr className='border-b border-slate-300 text-slate-700 text-sm font-medium'>
-              <td className='p-4 text-left'>Topic</td>
-              <td className='underline decoration-dashed underline-offset-4'>Feb 29</td>
-              <td><ArrowCircle  /></td>
-            </tr>
-
-            <tr className='text-slate-700 text-sm font-medium'>
-              <td className='p-4 text-left'>Topic</td>
-              <td className='underline decoration-dashed underline-offset-4'>Feb 29</td>
-              <td><ArrowCircle /></td>
             </tr>
           </table>
         </section>

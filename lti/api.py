@@ -518,9 +518,17 @@ class SkillViewSet(viewsets.ModelViewSet):
     def get_skill_by_assignment_id(self, request, assignment_id=None):
         try:
             module = Module.objects.filter(assignments__id=assignment_id).first()
-            serializer = SkillSerializer(module.skills, many=True)
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            assignment = Assignment.objects.get(id=assignment_id)
+            questions = assignment.questions
+            skill_serializer = SkillSerializer(module.skills, many=True)
+            questions_serializer = QuestionSerializer(questions, many=True)
+            print(questions_serializer.data)
+            for question in questions_serializer.data:
+                for skill in skill_serializer.data:
+                    if skill["id"] == question["associated_skill"]:
+                        skill["questions"].append(question)
+            print(skill_serializer.data)
+            return Response(skill_serializer.data, status=status.HTTP_200_OK)
         except Assignment.DoesNotExist:
             return Response({'error': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
         except IndexError:

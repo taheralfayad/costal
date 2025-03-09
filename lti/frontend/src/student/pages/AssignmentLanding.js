@@ -5,6 +5,7 @@ import Arrow from '../../assets/arrow-left.svg';
 import StarDark from '../../assets/star-dark.svg';
 import Menu from '../../assets/menu-alt.svg';
 import Cat from '../../assets/cat.svg';
+import LoadingPage from "../../instructor/components/LoadingPage.js"
 import TaskSummary from '../components/TaskSummary';
 import Objective from '../components/Objective';
 import SideMenu from '../components/SideMenu';
@@ -12,6 +13,8 @@ import SideMenu from '../components/SideMenu';
 const AssignmentLanding = ({ percentageTotal }) => {
     const [isMenuOpen, setMenuOpen] = useState(false)
     const [assignment, setAssignment] = useState(null)
+    const [objectivesData, setObjectivesData] = useState({})
+    const [numberOfQuestionsInAssignment, setNumberOfQuestionsInAssignment] = useState(0)
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(true)
     const { assignmentId } = useParams()
@@ -38,18 +41,46 @@ const AssignmentLanding = ({ percentageTotal }) => {
           setAssignment(data)
         } catch (error) {
           console.error('Error fetching assignment:', error)
-        } finally {
+        } 
+        
+      }      
+
+      fetchAssignments();
+    }, [assignmentId])
+
+    useEffect(() => {
+      const retrieveAssignmentObjectives = async () => {
+        try {
+          const request = await fetch(`/lti/api/skills/get_skill_by_assignment_id/${assignmentId}`);
+          let data = await request.json()
+          let objectives = []
+          let numQuestions = 0
+          for (const i in data) {
+            let datum = data[i];
+            if (datum["questions"].length == 0) {
+              continue
+            }
+            numQuestions += datum["questions"].length
+            let tempObjective = {
+              "title": datum["name"],
+              "percentage": 0, // TODO: figure out a way to get a percentage estimate for each objective
+              "numberOfQuestions": datum["questions"].length
+            }
+            objectives.push(tempObjective)
+          }
+          setObjectivesData(objectives)
+          setNumberOfQuestionsInAssignment(numQuestions)
+        }
+        catch (error) {
+          console.log("Sorry, an error occurred!")
+        }
+        finally {
           setIsLoading(false);
         }
       }
-      
-      const retrieveAssignmentObjectives = async () => {
-        const objectives = await fetch(`/lti/api/assignments/get_assignment_objectives/${assignmentId}`)
-      }
 
-      fetchAssignments();
-      retrieveAssignmentObjectives();
-    }, [assignmentId])
+      retrieveAssignmentObjectives()
+    }, [assignment])
 
     const goBackToLanding = () => {
       console.log(assignmentId)
@@ -102,24 +133,22 @@ const AssignmentLanding = ({ percentageTotal }) => {
         }
         else {
             return <section className='flex flex-col w-full'>
+                        <section className='flex w-full justify-between items-center border-b border-slate-300 p-6'>
+                            <section className='flex gap-4'>
+                                <StarDark />
+                                <section>
+                                    <h4 className='text-slate-900 text-base font-medium mb-2'>Assigned Activity</h4>
+                                    <p className='text-slate-700 text-xs font-medium'>Material from Assigned Objectives</p>
+                                </section>
 
-
-                <section className='flex w-full justify-between items-center border-b border-slate-300 p-6'>
-                    <section className='flex gap-4'>
-                        <StarDark />
-                        <section>
-                            <h4 className='text-slate-900 text-base font-medium mb-2'>Assigned Activity</h4>
-                            <p className='text-slate-700 text-xs font-medium'>Material from Assigned Objectives</p>
+                            </section>
+                            <p className='text-slate-900 text-base font-medium'>{numberOfQuestionsInAssignment}</p>
                         </section>
-
+                        <section className='flex w-full justify-between items-center p-4 px-8'>
+                            <p className='text-slate-600 text-base font-medium'>Last active a minute ago</p>
+                            <Button label='View Activity Details' type='outline' className='px-7 py-3' />
+                        </section>
                     </section>
-                    <p className='text-slate-900 text-base font-medium'>10</p>
-                </section>
-                <section className='flex w-full justify-between items-center p-4 px-8'>
-                    <p className='text-slate-600 text-base font-medium'>Last active a minute ago</p>
-                    <Button label='View Activity Details' type='outline' className='px-7 py-3' />
-                </section>
-            </section>
         }
 
     }
@@ -138,7 +167,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <CircularProgressChart />
+              <LoadingPage/>
             </div>
         )
     }
@@ -175,7 +204,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
                         </section>
 
                         <section>
-                            <Button label={renderButtonLabel()} className='px-7 py-3' />
+                            <Button label={renderButtonLabel()} className='px-7 py-3' onClick={() => navigate(`/lti/assignment/${assignmentId}`)}/>
                         </section>
                     </section>
                 </header>
@@ -188,9 +217,8 @@ const AssignmentLanding = ({ percentageTotal }) => {
 
                     <h3 className='text-slate-900 text-lg font-medium ml-12 py-4'>Objectives</h3>
                     <section className='bg-white rounded-xl border border-slate-300 mx-8'>
-                        <Objective title='Objective 1.1' estimateQuestions='1-2 Questions' subObjectives={subObjectives} />
+                        <Objective subObjectives={objectivesData} />
                     </section>
-
                 </section>
             </section>
         </main>

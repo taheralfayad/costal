@@ -1,5 +1,6 @@
 services:
   web:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,6 +18,7 @@ services:
     - "canvas.docker:host-gateway"
   
   adaptive-engine:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
@@ -32,7 +34,7 @@ services:
     hostname: db
     image: ankane/pgvector
     ports:
-      - 5432:5432
+      - 5431:5432
     restart: always
     environment:
       POSTGRES_DB: db
@@ -43,6 +45,7 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   celery:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
