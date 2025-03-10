@@ -1,6 +1,5 @@
 services:
   web:
-    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
@@ -18,7 +17,6 @@ services:
     - "canvas.docker:host-gateway"
   
   adaptive-engine:
-    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
@@ -45,7 +43,6 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   celery:
-    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
