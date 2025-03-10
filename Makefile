@@ -47,3 +47,6 @@ deploy: ## Add a new deployment for Templater to an existing registration
 
 format: ## Run Python code formatter (black) and linter (flake8). Will fix formatting errors.
 	${DOCKER_COMPOSE} run --rm web sh -c "black . && flake8 ."
+
+test-adaptive-learning-model:
+	$(DOCKER_COMPOSE) run --rm web python ./testing_adaptive_learning.py

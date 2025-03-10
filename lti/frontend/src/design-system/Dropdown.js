@@ -1,0 +1,50 @@
+import React, { useState } from 'react';
+import ChevronDown from '../assets/chevron-down.svg';
+
+const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], width = 'w-full', margin=true  }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState(null);
+
+  const toggleDropdown = () => setIsOpen(!isOpen);
+
+  const handleOptionClick = (option) => {
+    setSelected(option.label);
+    setIsOpen(false);
+    option.onClick()
+  };
+
+  return (
+    <article className={`${margin? 'mb-4' : ''}`}>
+      {label && <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label}
+      </label>}
+      <section className="relative">
+        <button
+          className={`${width} px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-left text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+          onClick={toggleDropdown}
+        >
+          {selected || placeholder}
+          <span className="absolute inset-y-0 right-0 flex items-center pr-3">
+            <ChevronDown className="h-4 w-4 text-slate-500" />
+          </span>
+        </button>
+
+        {isOpen && (
+          <ul className={`absolute z-10 mt-1 ${width} bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto focus:outline-none sm:text-sm`}>
+            {options.map((option, index) => (
+              <li
+                key={index}
+                className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-emerald-100"
+                onClick={() => handleOptionClick(option)}
+              >
+                <span className="block truncate text-gray-700">{option.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </article>
+  );
+};
+
+export default Dropdown;
