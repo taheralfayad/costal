@@ -1,6 +1,13 @@
 import datetime
-
+from enum import Enum
 from django.db import models
+
+
+class DeadlineType(Enum):
+    WEEK = "WEEK"
+    MONTH = "MONTH"
+    END_OF_SESSION = "END_OF_SESSION"
+
 
 class Textbook(models.Model):
     title = models.CharField(max_length=255)
@@ -12,7 +19,9 @@ class Textbook(models.Model):
     def __str__(self):
         return self.title
 
+
 # Canvas Models
+
 
 class CanvasUser(models.Model):
     uid = models.CharField(max_length=200)
@@ -21,44 +30,79 @@ class CanvasUser(models.Model):
 
 
 class Course(models.Model):
+    name = models.CharField(max_length=255, default="Course")
     course_id = models.CharField(max_length=200, primary_key=True)
     users = models.ManyToManyField(CanvasUser)
     teachers = models.ManyToManyField(CanvasUser, related_name="teaching_courses")
+    partial_completion = models.BooleanField(default=False)
+    late_completion = models.BooleanField(default=False)
+    deadline = models.CharField(
+        max_length=20,
+        choices=[(tag, tag.value) for tag in DeadlineType],
+        default=DeadlineType.WEEK.value,
+    )
+    penalty = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
 
 # Models
 
-class Assignment(models.Model):
-    assignment_name = models.CharField(max_length=255)
-    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, blank=True, null=True)
-    questions = models.ManyToManyField("Question", blank=True)
+
+class Module(models.Model):
+    name = models.CharField(max_length=255)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
+    assignments = models.ManyToManyField("Assignment", blank=True)
+    skills = models.ManyToManyField("Skill", blank=True)
 
     def __str__(self):
-        return self.assignment_name
+        return self.name
+
+
+class Assignment(models.Model):
+    name = models.CharField(max_length=255)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
+    questions = models.ManyToManyField("Question", blank=True)
+    start_date = models.DateTimeField(default=datetime.datetime.now)
+    end_date = models.DateTimeField(default=datetime.datetime.now)
+    assessment_type = models.TextField(default="Homework")
+    associated_module = models.ForeignKey(
+        Module, on_delete=models.CASCADE, null=True, blank=True
+    )
+
+    def __str__(self):
+        return self.name
 
 
 class Skill(models.Model):
-    skill_name = models.TextField()
-    course = models.ForeignKey(Course, to_field='course_id', on_delete=models.CASCADE, null=True, blank=True)
+    name = models.TextField()
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
     questions = models.ManyToManyField("Question", blank=True)
+    assignments = models.ManyToManyField("Assignment", blank=True)
 
     def __str__(self):
-        return self.skill_name
+        return self.name
 
 
 class Question(models.Model):
-    question_text = models.TextField()
-    associated_skill = models.ForeignKey(Skill, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=255, default="Question")
+    text = models.TextField()
+    associated_skill = models.ForeignKey(
+        Skill, on_delete=models.CASCADE, null=True, blank=True
+    )
     assignments = models.ManyToManyField("Assignment", blank=True)
-    possible_answers = models.ManyToManyField("PossibleAnswers", blank=True)
+    possible_answers = models.ManyToManyField("PossibleAnswer", blank=True)
+    difficulty = models.IntegerField(default=0)
+    num_points = models.IntegerField(default=1)
+    type = models.TextField(default="multiple")
 
     def __str__(self):
-        return self.question_text
+        return self.name
 
 
-class PossibleAnswers(models.Model):
-    related_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
-    possible_answer = models.TextField(default="")
+class PossibleAnswer(models.Model):
+    related_question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, null=True, blank=True
+    )
+    answer = models.TextField(default="")
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
@@ -68,13 +112,18 @@ class PossibleAnswers(models.Model):
 class Response(models.Model):
     user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    response = models.ForeignKey(PossibleAnswers, on_delete=models.CASCADE)
+    response = models.ForeignKey(PossibleAnswer, on_delete=models.CASCADE)
     number_of_seconds_to_answer = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.user} answered {self.response} to {self.question} in {self.number_of_seconds_to_answer} seconds"
+        return (
+            f"{self.user} answered {self.response} to {self.question}\n"
+            f"in {self.number_of_seconds_to_answer} seconds"
+        )
+
 
 # LTI Key Models
+
 
 class Key(models.Model):
     public_key = models.TextField()

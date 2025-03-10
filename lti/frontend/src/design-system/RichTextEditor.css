@@ -1,0 +1,10 @@
+
+.ql-container {
+    @apply w-full h-[200px] rounded-b-md shadow-sm border border-gray-300 !important;
+}
+
+
+.ql-toolbar {
+    @apply rounded-t-md shadow-sm border border-gray-300 !important;
+}
+  

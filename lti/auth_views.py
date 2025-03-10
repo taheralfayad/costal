@@ -11,6 +11,7 @@ from lti.models import CanvasUser, Course
 
 load_dotenv()
 
+
 def oauth_login(request):
     query_params = QueryDict(mutable=True)
     query_params["client_id"] = settings.API_CLIENT_ID
@@ -21,7 +22,7 @@ def oauth_login(request):
         .rstrip("/")
     )
     query_params["redirect_uri"] = redirect_uri
-    query_string = query_params.urlencode() 
+    query_string = query_params.urlencode()
     return redirect(settings.CANVAS_URL + "/login/oauth2/auth?" + query_string)
 
 
@@ -142,6 +143,7 @@ def refresh_access_token(request, user_object):
 
 
 def verify_auth(request, user, expiration_date, response_data):
+
     if int(time.time()) > expiration_date or "api_key" not in request.session:
         print("Expired Key or no API key, refreshing access token.")
         # This line maybe on some kind of race-condition.
@@ -155,7 +157,7 @@ def verify_auth(request, user, expiration_date, response_data):
             )
             response_data["access_token"] = refresh["access_token"]
 
-            return render(request, "index.html")
+            return render(request, "index.html", response_data)
         else:
             print("reAuthenticating due to refresh failure")
             return reauthenticate(request=request)
@@ -169,13 +171,13 @@ def verify_auth(request, user, expiration_date, response_data):
         # check for WWW-Authenticate
         # https://canvas.instructure.com/doc/api/file.oauth.html
         if "WWW-Authenticate" not in r.headers and r.status_code != 401:
-            return render(request, "index.html")
+            return render(request, "index.html", response_data)
         else:
             new_token = refresh_access_token(request, user).get("access_token")
             if new_token:
                 request.session["api_key"] = new_token
                 response_data["access_token"] = new_token
-                return render(request, "index.html")
+                return render(request, "index.html", response_data)
 
             else:
                 print("reAuthenticating due to bad key")

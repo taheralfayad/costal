@@ -1,6 +1,21 @@
 from rest_framework import serializers
 
-from lti.models import Assignment, Textbook, Question, PossibleAnswers, Skill
+from lti.models import (
+    Course,
+    Assignment,
+    Textbook,
+    Question,
+    PossibleAnswer,
+    Skill,
+    Module,
+)
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = "__all__"
+
 
 class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,14 +29,21 @@ class TextbookSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PossibleAnswersSerializer(serializers.ModelSerializer):
+class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PossibleAnswers
+        model = Module
+        fields = "__all__"
+
+
+class PossibleAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PossibleAnswer
         fields = "__all__"
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    possible_answers = PossibleAnswersSerializer(read_only=True, many=True)
+    possible_answers = PossibleAnswerSerializer(read_only=True, many=True)
+
     class Meta:
         model = Question
         fields = "__all__"
