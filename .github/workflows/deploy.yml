@@ -3,7 +3,7 @@ name: Deploy Build to AWS
 on:
   push:
     branches:
-      - aws #TODO: Update to main before merge
+      - main
 
 jobs:
   Format:
