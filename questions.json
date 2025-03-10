@@ -1,0 +1,1227 @@
+{
+    "course_id": 1,
+    "questions": [
+        {
+            "question_text": "Which of the following is a valid variable name in Python?",
+            "category": "Variables",
+            "sub_category": "Naming Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "1_variable",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable_1",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "variable-1",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable 1",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will happen if you try to use a Python keyword, such as for, as a variable name?",
+            "category": "Variables",
+            "sub_category": "Naming Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "Python will throw an error",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Python will automatically rename the variable",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Python will ignore the keyword",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Python will ask you to confirm the variable name",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to create a variable in Python?",
+            "category": "Variables",
+            "sub_category": "Naming Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "variable = value",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "variable: value",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable := value",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "value == variable",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to declare multiple variables in a single line?",
+            "category": "Variables",
+            "sub_category": "Naming Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "variable1, variable2 = value1, value2",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "variable1 = value1, variable2 = value2",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable1 = value1; variable2 = value2",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "variable1 = value1 and variable2 = value2",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output?\n\n```x = 5\ny = 10\nx = y\nprint(x)```",
+            "category": "Variables",
+            "sub_category": "Assigning Variables",
+            "possible_answers": [
+                {
+                    "possible_answer": "5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "10",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "15",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "20",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What type of variable does this statement create?\n\n```x = 5```",
+            "category": "Data Types",
+            "sub_category": "Variable Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "String",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Integer",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Float",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Boolean",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "In Python, you have to declare the data type of a variable before using it.",
+            "category": "Data Types",
+            "sub_category": "Variable Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "True",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "False",
+                    "is_correct": true
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to declare a string in Python?",
+            "category": "Data Types",
+            "sub_category": "Strings",
+            "possible_answers": [
+                {
+                    "possible_answer": "x = 'Hello, World!'",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "string = Hello, World!",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x string = \"Hello, World!\"",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "string x = Hello, World!",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What type of variable does this statement create?\n\n```x = 3.14```",
+            "category": "Data Types",
+            "sub_category": "Floats",
+            "possible_answers": [
+                {
+                    "possible_answer": "String",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Integer",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Float",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Boolean",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is a Boolean variable?",
+            "category": "Data Types",
+            "sub_category": "Booleans",
+            "possible_answers": [
+                {
+                    "possible_answer": "A variable that can only store numbers",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A variable that can only store text",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A variable that can only store true or false values",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "A variable that can store any type of value",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What output will the following code produce?\n\n```x = 5\nprint(type(x))```",
+            "category": "Data Types",
+            "sub_category": "Variable Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "int",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "str",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "float",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "bool",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "You can use the `type()` function to check the data type of a variable in Python.",
+            "category": "Data Types",
+            "sub_category": "Variable Types",
+            "possible_answers": [
+                {
+                    "possible_answer": "True",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "False",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you run a Python script from the command line?",
+            "category": "Program Execution",
+            "sub_category": "Running Scripts",
+            "possible_answers": [
+                {
+                    "possible_answer": "python script.py",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "run script.py",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "execute script.py",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "./script.py",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you pass command line arguments to a Python script?",
+            "category": "Program Execution",
+            "sub_category": "Running Scripts with Arguments",
+            "possible_answers": [
+                {
+                    "possible_answer": "python script.py arg1 arg2",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "python script.py -arg1 -arg2",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "python script.py --arg1 --arg2",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "python script.py -arg1 arg2",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `if` statement in Python?",
+            "category": "Conditional Statements",
+            "sub_category": "If Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To loop through a list",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To check a condition and execute code based on the result",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to write an `if` statement in Python?",
+            "category": "Conditional Statements",
+            "sub_category": "If Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "if x = 5:",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "if x == 5:",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "if x === 5:",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "if x := 5:",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output\n\n```x = 10\n if x > 5:\nprint('x is greater than 5')```",
+            "category": "Conditional Statements",
+            "sub_category": "If Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "x is greater than 5",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "x is less than 5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x is equal to 5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "No output",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `else` statement in Python?",
+            "category": "Conditional Statements",
+            "sub_category": "Else Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To loop through a list",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To execute code when the `if` condition is not met",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the difference between the `if` and `elif` statements in Python?",
+            "category": "Conditional Statements",
+            "sub_category": "Elif Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "`if` is used for the first condition, `elif` is used for subsequent conditions",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`if` is used for subsequent conditions, `elif` is used for the first condition",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`if` is used for all conditions, `elif` is used for the first condition",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`if` is used for the first condition, `elif` is used for all conditions",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What happens if you use an `elif` statement without an `if` statement in Python?",
+            "category": "Conditional Statements",
+            "sub_category": "Elif Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "Python will throw an error",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Python will ignore the `elif` statement",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Python will automatically add an `if` statement",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Python will ask you to confirm the statement",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output\n\n ```x = 5\n if x > 10:\nprint('x is greater than 10')\nelif x > 5:\nprint('x is greater than 5')\nelse:\nprint('x is 5 or less')```",
+            "category": "Conditional Statements",
+            "sub_category": "Chained Conditionals",
+            "possible_answers": [
+                {
+                    "possible_answer": "x is greater than 10",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x is greater than 5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x is 5 or less",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "No output",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which of the following correctly uses a ternary operator in Python?",
+            "category": "Conditional Statements",
+            "sub_category": "Ternary Operator",
+            "possible_answers": [
+                {
+                    "possible_answer": "x = 5 if x > 5 else 10",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "x = 5 ? x > 5 : 10",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x = 5 : x > 5 ? 10",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "x = 5 if x > 5 : 10",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How many else statements can you have in a single if-elif-else block in Python?",
+            "category": "Conditional Statements",
+            "sub_category": "Chained Conditionals",
+            "possible_answers": [
+                {
+                    "possible_answer": "0",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "1",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "As many as you want",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "2",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which of the following is an invalid conditional satatement in Python?",
+            "category": "Conditional Statements",
+            "sub_category": "If Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "if x > 5:",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "if x == 5:",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "if x = 5:",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "if x < 5:",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is a `for` loop used for in Python?",
+            "category": "Loops",
+            "sub_category": "For Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To check a condition and execute code based on the result",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To execute a block of code iteratively for a fixed number of times",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to write a `for` loop in Python?",
+            "category": "Loops",
+            "sub_category": "For Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "`for i in range(5):`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`for i = 0; i < 5; i++:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i = 0 to 5:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i = 0; i < 5; i += 1:`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output\n\n```for i in range(5):\nprint(i)```",
+            "category": "Loops",
+            "sub_category": "For Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "0\n1\n2\n3\n4",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "1\n2\n3\n4\n5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "0\n1\n2\n3\n4\n5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "1\n2\n3\n4",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `while` loop in Python?",
+            "category": "Loops",
+            "sub_category": "While Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To check a condition and execute code based on the result",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To execute a block of code iteratively until a condition is met",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to write a `while` loop in Python?",
+            "category": "Loops",
+            "sub_category": "While Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "`while x < 5:`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`while x = 5:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`while x := 5:`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What will the following code output\n\n```x = 0\nwhile x < 5:\nprint(x)\nx += 1```",
+            "category": "Loops",
+            "sub_category": "While Loops",
+            "possible_answers": [
+                {
+                    "possible_answer": "0\n1\n2\n3\n4",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "1\n2\n3\n4\n5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "0\n1\n2\n3\n4\n5",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "1\n2\n3\n4",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `break` statement in Python?",
+            "category": "Loops",
+            "sub_category": "Break Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To exit a loop prematurely",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To skip the current iteration of a loop",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `continue` statement in Python?",
+            "category": "Loops",
+            "sub_category": "Continue Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To exit a loop prematurely",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To skip the current iteration of a loop",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `pass` statement in Python?",
+            "category": "Loops",
+            "sub_category": "Pass Statements",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To exit a loop prematurely",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To skip the current iteration of a loop",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To do nothing and avoid syntax errors",
+                    "is_correct": true
+                }
+            ]
+        },
+        {
+            "question_text": "What is the primary use of the `range()` function in Python?",
+            "category": "Loops",
+            "sub_category": "Range Function",
+            "possible_answers": [
+                {
+                    "possible_answer": "To define a function",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To exit a loop prematurely",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "To generate a sequence of numbers",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "To import a module",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to use the `range()` function in a loop?",
+            "category": "Loops",
+            "sub_category": "Range Function",
+            "possible_answers": [
+                {
+                    "possible_answer": "`for i in range(5):`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`for i = range(5):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for int i in range(5):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i = range(0, 5):`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which Python data structure allows you to store multiple values in a single variable, while preserving order and allowing modifications?",
+            "category": "Data Structures",
+            "sub_category": "Lists",
+            "possible_answers": [
+                {
+                    "possible_answer": "List",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "Tuple",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Dictionary",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "Set",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is a list",
+            "category": "Lists",
+            "sub_category": "Basic Concepts",
+            "possible_answers": [
+                {
+                    "possible_answer": "A data structure that stores multiple values in a single variable",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "A data structure that stores key-value pairs",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A data structure that stores multiple values in a single variable, but does not allow modifications",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A data structure that stores unique values",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to create a list in Python?",
+            "category": "Lists",
+            "sub_category": "Creating Lists",
+            "possible_answers": [
+                {
+                    "possible_answer": "`my_list = [1, 2, 3]`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`my_list = (1, 2, 3)`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_list = {1, 2, 3}`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_list = {1: 'one', 2: 'two', 3: 'three'}`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access an element in a list by its index in Python?",
+            "category": "Lists",
+            "sub_category": "Accessing Elements",
+            "possible_answers": [
+                {
+                    "possible_answer": "`my_list[0]`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`my_list(0)`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_list{0}`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_list['0']`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access all elements in a list?",
+            "category": "Data Structures",
+            "sub_category": "Accessing Elements",
+            "possible_answers": [
+                {
+                    "possible_answer": "`for item in my_list:`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`for i in range(len(my_list)):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i in my_list:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for item in range(my_list):`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access the first element of a list in Python?",
+            "category": "Data Structures",
+            "sub_category": "Accessing Elements",
+            "possible_answers": [
+                {
+                    "possible_answer": "my_list[0]",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "my_list[1]",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "my_list[first]",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "my_list[-1]",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which method is used to add an element to the end of a list in Python?",
+            "category": "Data Structures",
+            "sub_category": "Adding individual elements to lists",
+            "possible_answers": [
+                {
+                    "possible_answer": "```array = []\n array.append('item')```",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "```array = []\n array.insert('item')```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array = []\n array.extend('item')```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array = []\n array.add('item')```",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you remove a specific element from a list by value?",
+            "category": "Data Structures",
+            "sub_category": "Removing Elements",
+            "possible_answers": [
+                {
+                    "possible_answer": "```array = [1, 2, 3] \n array.remove(2)```",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "```array = [1, 2, 3] \n array.pop(2)```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array = [1, 2, 3] \n del array[2]```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array = [1, 2, 3] \n array.discard(2)",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What does `my_list[1:4]` return?",
+            "category": "Data Structures",
+            "sub_category": "Slicing Lists",
+            "possible_answers": [
+                {
+                    "possible_answer": "A new list containing elements from index 1 to 3",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "A new list containing elements from index 1 to 4",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A single element at index 4",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "An error",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you check if an element exists in a list?",
+            "category": "Data Structures",
+            "sub_category": "Checking for Elements",
+            "possible_answers": [
+                {
+                    "possible_answer": "`if item in my_list:`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`if item == my_list:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`if item.contains(my_list):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`if my_list.has(item):`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "Which method is used to combine another list into an existing list?",
+            "category": "Data Structures",
+            "sub_category": "Combining Lists",
+            "possible_answers": [
+                {
+                    "possible_answer": "```array1 = [1,2]\n array2 = [3,4]\n array1.extend(array2)```",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "```array1 = [1,2]\n array2 = [3,4]\n array1.append(array2)```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array1 = [1,2]\n array2 = [3,4]\n array1.concat(array2)```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```array1 = [1,2]\n array2 = [3,4]\n array1.add(array2)```",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is a tuple?",
+            "category": "Data Structures",
+            "sub_category": "Tuples",
+            "possible_answers": [
+                {
+                    "possible_answer": "A data structure that stores multiple values in a single variable",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A data structure that stores key-value pairs",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A data structure that stores multiple values in a single variable, but does not allow modifications",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "A data structure that stores unique values",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to create a tuple in Python?",
+            "category": "Tuples",
+            "sub_category": "Creating Tuples",
+            "possible_answers": [
+                {
+                    "possible_answer": "`my_tuple = (1, 2, 3)`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`my_tuple = [1, 2, 3]`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_tuple = {1, 2, 3}`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_tuple = {1: 'one', 2: 'two', 3: 'three'}`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access an element in a tuple by its index in Python?",
+            "category": "Tuples",
+            "sub_category": "Accessing Elements",
+            "possible_answers": [
+                {
+                    "possible_answer": "```index = 5\nmy_tuple[index]```",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "```index = 5\nmy_tuple(index)```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```index = 5\nmy_tuple{index}```",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "```index = 5\nmy_tuple['index']```",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access all elements in a tuple?",
+            "category": "Tuples",
+            "sub_category": "Accessing Elements",
+            "possible_answers": [
+                {
+                    "possible_answer": "`for item in my_tuple:`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`for i in range(len(my_tuple)):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i in my_tuple:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for item in range(my_tuple):`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is a dictionary?",
+            "category": "Data Structures",
+            "sub_category": "Dictionaries",
+            "possible_answers": [
+                {
+                    "possible_answer": "A data structure that stores multiple values in a single variable",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A data structure that stores key-value pairs",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "A data structure that stores multiple values in a single variable, but does not allow modifications",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "A data structure that stores unique values",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "What is the correct way to create a dictionary in Python?",
+            "category": "Dictionaries",
+            "sub_category": "Creating Dictionaries",
+            "possible_answers": [
+                {
+                    "possible_answer": "`my_dict = {'key1': 'value1', 'key2': 'value2'}`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`my_dict = ['key1': 'value1', 'key2': 'value2']`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_dict = ('key1': 'value1', 'key2': 'value2')`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_dict = {'key1', 'value1', 'key2', 'value2'}`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access a value in a dictionary by its key in Python?",
+            "category": "Dictionaries",
+            "sub_category": "Accessing Elements",
+            "possible_answers": [
+                {
+                    "possible_answer": "`my_dict['key']`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`my_dict('key')`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_dict{key}`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`my_dict.key`",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "question_text": "How do you access all keys in a dictionary?",
+            "category": "Dictionaries",
+            "sub_category": "Accessing Elements",
+            "possible_answers": [
+                {
+                    "possible_answer": "`for key in my_dict:`",
+                    "is_correct": true
+                },
+                {
+                    "possible_answer": "`for i in range(len(my_dict)):`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for i in my_dict:`",
+                    "is_correct": false
+                },
+                {
+                    "possible_answer": "`for key in range(my_dict):`",
+                    "is_correct": false
+                }
+            ]
+        }
+    ]
+}

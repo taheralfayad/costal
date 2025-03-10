@@ -14,7 +14,7 @@
                         "enabled": true,
                         "placement": "course_navigation",
                         "message_type": "LtiResourceLinkRequest",
-                        "target_link_uri": "https://{{ domain }}/{{hosted_path}}lti/launch/"
+                        "target_link_uri": "https://{{ domain }}/lti/launch/"
                     }
                 ]
             },

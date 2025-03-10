@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   web:
     build:
@@ -15,6 +13,20 @@ services:
     command: /bin/sh -c "npm --prefix ./lti/frontend run dev & python manage.py runserver 0.0.0.0:8000"
     depends_on:
       - redis
+    extra_hosts:
+    - "canvas.docker:host-gateway"
+  
+  adaptive-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    command: ["uvicorn", "adaptive-engine-api.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
 
   qg-service:
     build:
