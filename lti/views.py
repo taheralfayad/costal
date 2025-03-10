@@ -127,12 +127,16 @@ def launch(request):
         "canvas_user_id"
     ]
 
-    course_name = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/context']['title']
+    course_name = message_launch_data[
+        "https://purl.imsglobal.org/spec/lti/claim/context"
+    ]["title"]
 
+    is_professor = (
+        "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor"
+        in message_launch_data["https://purl.imsglobal.org/spec/lti/claim/roles"]
+    )
 
-    is_professor = 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor' in message_launch_data['https://purl.imsglobal.org/spec/lti/claim/roles']
-
-    try: 
+    try:
         course = Course.objects.get(course_id=course_id)
 
         if (
@@ -170,8 +174,9 @@ def launch(request):
         "is_professor": is_professor,
     }
 
-
-    course, created = Course.objects.get_or_create(course_id=course_id, name=course_name)
+    course, created = Course.objects.get_or_create(
+        course_id=course_id, name=course_name
+    )
     if created:
         course.save()
 
