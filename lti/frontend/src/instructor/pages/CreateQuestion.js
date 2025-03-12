@@ -75,7 +75,7 @@ const CreateQuestion = () => {
     console.log(shortAnswerItems);
 
     if (selectedCheckbox === 'multiple') {
-      const multipleChoiceData = multipleChoiceAnswers.map((choice) => {
+      const multipleChoiceData = multipleChoiceAnswers.filter((choice) => choice.text.trim() !== "").map((choice) => {
         return { possible_answer: choice.text, is_correct: choice.checked };
       }
       );
@@ -140,7 +140,7 @@ const CreateQuestion = () => {
       <main className='flex'>
         <section className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
           <Title>Create Question</Title>
-          <Input label='Name' placeholder='Great Assignment' value={questionName} onChange={(e) => handleNameChange(e)} />
+          <Input label='Name' placeholder='Great Question' value={questionName} onChange={(e) => handleNameChange(e)} />
           <Dropdown label='Objective' placeholder='Select Objective' value={objective} options={dropdownObjectives} />
           <Dropdown label='Difficulty' placeholder='Select Difficulty' value={difficulty} options={difficulties} onSelect={handleDifficultyChange} />
           <RichTextEditor value={editorValue} onChange={handleInputChange} />
