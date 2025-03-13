@@ -508,6 +508,31 @@ class ModuleViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
         except IndexError:
             return Response({'error': 'No modules found for this course'}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['post'], url_path='update_assignment_order/(?P<module_id>[^/.]+)')
+    def update_assignment_order(self, request, module_id=None):
+        try:
+            module = Module.objects.get(id=module_id)
+            new_order = request.data['assignment_ids']
+
+            if not isinstance(new_order, list):
+                return Response({'error': 'Invalid format for assignment_ids'}, status=status.HTTP_400_BAD_REQUEST)
+
+            assignments = {assignment.id: assignment for assignment in module.assignments.all()}
+
+            print(assignments)
+
+            for index, assignment_id in enumerate(new_order):
+                if assignment_id in assignments:
+                    assignments[assignment_id].order = index
+                    assignments[assignment_id].save()
+
+            return Response({'message': 'Assignment order updated successfully'}, status=status.HTTP_200_OK)
+
+        except Module.DoesNotExist:
+            return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'], url_path='get_modules_with_skills/(?P<course_id>[^/.]+)')
     def get_modules_with_skills(self, request, course_id=None):
