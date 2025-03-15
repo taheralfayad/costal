@@ -63,6 +63,32 @@ class Assignment(models.Model):
     def __str__(self):
         return self.name
 
+class AssignmentAttempt(models.Model):
+    NOT_STARTED = 0
+    ONGOING = 1
+    COMPLETE = 2
+
+    STATUS_CHOICES = [
+        (NOT_STARTED, "Not Started"),
+        (ONGOING, "Ongoing"),
+        (COMPLETE, "Complete")
+    ]
+
+    user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE, blank=True, null=True)
+    attempted_questions = models.ManyToManyField("QuestionAttempt", blank=True)
+    current_question_attempt = models.ForeignKey("Question", on_delete=models.CASCADE, null=True, blank=True)
+    total_grade = models.IntegerField(default=0)
+    total_time_spent = models.IntegerField(default=0)
+    associated_assignment = models.ForeignKey("Assignment", on_delete=models.CASCADE, null=True, blank=True)
+    status = models.SmallIntegerField(choices=STATUS_CHOICES, default=NOT_STARTED)
+
+class QuestionAttempt(models.Model):
+    user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE, blank=True, null=True)
+    associated_question = models.ForeignKey("Question", blank=True, on_delete=models.CASCADE)
+    grade_for_question_attempt = models.IntegerField(default=0)
+    is_correct = models.BooleanField(default=False)
+    student_response = models.TextField(blank=True)
+    time_spent_on_question= models.IntegerField(default=0)
 
 class Skill(models.Model):
     name = models.TextField()

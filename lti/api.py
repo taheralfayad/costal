@@ -4,6 +4,7 @@ import datetime
 import json
 
 from canvasapi import Canvas
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -19,10 +20,14 @@ from lti.models import (
     Skill,
     Response as StudentResponse,
     Module,
+    AssignmentAttempt,
+    QuestionAttempt,
 )
 
 from lti.serializers import (
     AssignmentSerializer,
+    AssignmentAttemptSerializer,
+    QuestionAttemptSerializer,
     QuestionSerializer,
     TextbookSerializer,
     PossibleAnswerSerializer,
@@ -205,13 +210,26 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         assignment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=False, methods=['get'], url_path='get_current_assignment_attempt/(?P<assignment_id>[^/.]+)')
+    def get_current_assignment_attempt(self, request, assignment_id=None):
+        user_id = request.query_params.get('user_id')
 
-    @action(detail=False, methods=['get'], url_path='get_assignment_objectives/(?P<assignment_id>[^/.]+)')
-    def get_assignment_objectives(self, request, assignment_id=None):
-        assignment = Assignment.objects.get(id=assignment_id)
-        questions = assignment.questions
-        print(questions)
-        return Response(status=status.HTTP_200_OK)
+        user = get_object_or_404(CanvasUser, id=user_id)
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+
+        assignment_attempt = AssignmentAttempt.objects.filter(associated_assignment=assignment, user=user)
+
+        if not assignment_attempt.exists():  
+            assignment_attempt = AssignmentAttempt(user=user, associated_assignment=assignment)
+            assignment_attempt.save()
+        else:
+            assignment_attempt = assignment_attempt.first()
+        
+        assignment_attempt_serializer = AssignmentAttemptSerializer(assignment_attempt)
+
+
+        return Response(assignment_attempt_serializer.data, status=status.HTTP_200_OK)
+
 
 class QuestionViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -357,9 +375,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
 
 
-        print(next_question)
-        print(state_prediction)
-
         json = {
             'next_question': next_question,
             'state_prediction': state_prediction
@@ -392,6 +407,35 @@ class QuestionViewSet(viewsets.ModelViewSet):
             "correct": answer_choice.is_correct
         }
 
+    @action(detail=False, methods=['get'], url_path='get_first_question_for_assignment/(?P<assignment_id>[^/.]+)')
+    def get_first_question_for_assignment(self, request, assignment_id=None):
+        assignment_attempt_id = request.query_params.get('assignment_attempt_id')
+
+        assignment = Assignment.objects.get(id=assignment_id)
+        assignment_attempt = AssignmentAttempt.objects.get(id=assignment_attempt_id)
+
+        question = None
+        
+        if assignment_attempt.status == 0 or assignment_attempt.status == 2:
+            question = assignment.questions.order_by("?").first()
+            assignment_attempt.current_question_attempt = question
+            assignment_attempt.status = 1
+
+            assignment_attempt.save()
+        else:
+            question = assignment_attempt.current_question_attempt
+
+        objective = Skill.objects.get(id=question.associated_skill.id)
+
+        question_serializer = QuestionSerializer(question)
+
+        skill_serializer = SkillSerializer(objective)
+        question_data = question_serializer.data.copy()
+        question_data["associated_skill"] = skill_serializer.data
+
+        return Response(question_data, status=status.HTTP_200_OK)
+        
+        
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -522,18 +566,15 @@ class SkillViewSet(viewsets.ModelViewSet):
             questions = assignment.questions
             skill_serializer = SkillSerializer(module.skills, many=True)
             questions_serializer = QuestionSerializer(questions, many=True)
-            print(questions_serializer.data)
             for question in questions_serializer.data:
                 for skill in skill_serializer.data:
                     if skill["id"] == question["associated_skill"]:
                         skill["questions"].append(question)
-            print(skill_serializer.data)
             return Response(skill_serializer.data, status=status.HTTP_200_OK)
         except Assignment.DoesNotExist:
             return Response({'error': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
         except IndexError:
             return Response({'error': 'No questions found for this assignment'}, status=status.HTTP_404_NOT_FOUND)
-
 
 
 class GetCourseProfessorName(APIView):

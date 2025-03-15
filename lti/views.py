@@ -167,6 +167,7 @@ def launch(request):
         "course_id": course_id,
         "course_name": course_name,
         "is_professor": is_professor,
+        "user_id": user_id,
     }
 
 

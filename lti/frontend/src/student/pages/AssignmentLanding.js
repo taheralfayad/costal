@@ -13,8 +13,9 @@ import SideMenu from '../components/SideMenu';
 const AssignmentLanding = ({ percentageTotal }) => {
     const [isMenuOpen, setMenuOpen] = useState(false)
     const [assignment, setAssignment] = useState(null)
-    const [objectivesData, setObjectivesData] = useState({})
+    const [objectivesData, setObjectivesData] = useState(null)
     const [numberOfQuestionsInAssignment, setNumberOfQuestionsInAssignment] = useState(0)
+    const [assignmentAttempt, setAssignmentAttempt] = useState(null)
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(true)
     const { assignmentId } = useParams()
@@ -74,21 +75,51 @@ const AssignmentLanding = ({ percentageTotal }) => {
         catch (error) {
           console.log("Sorry, an error occurred!")
         }
-        finally {
-          setIsLoading(false);
-        }
       }
 
       retrieveAssignmentObjectives()
     }, [assignment])
 
+    
+    useEffect(() => {
+      const retrieveAssignmentAttempt = async () => {
+        try {
+          const request = await fetch(`/lti/api/assignments/get_current_assignment_attempt/${assignmentId}?user_id=${USER_ID}`)
+          const data = await request.json()
+          console.log(data)
+          setAssignmentAttempt(data)
+        } catch (error) {
+          console.log(data)
+        }
+      }
+
+      retrieveAssignmentAttempt()
+    }, [assignment])
+
+
+    useEffect(() => {
+      if (assignment && objectivesData && assignmentAttempt) {
+        setIsLoading(false);
+      }
+    }, [assignment, objectivesData, assignmentAttempt])
+
     const goBackToLanding = () => {
       console.log(assignmentId)
       navigate('/lti/student_landing/')
     }
+    
+    const goToAssignment = async () => {
+      try {
+        const request = await fetch(`/lti/api/questions/get_first_question_for_assignment/${assignmentId}?assignment_attempt_id=${assignmentAttempt.id}`)
+        const data = await request.json()
+        navigate(`/lti/assignment/${assignmentId}`, { state: data })
+      } catch (error) {
+        console.log("Sorry, this request has failed!")
+      }
+    }
 
     const renderButtonLabel = () => {
-        if (percentageTotal == 0) {
+        if (assignmentAttempt.status == 0) {
             return 'Get Started'
         }
         else if (percentageTotal == 100) {
@@ -204,7 +235,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
                         </section>
 
                         <section>
-                            <Button label={renderButtonLabel()} className='px-7 py-3' onClick={() => navigate(`/lti/assignment/${assignmentId}`)}/>
+                            <Button label={renderButtonLabel()} className='px-7 py-3' onClick={() => goToAssignment()}/>
                         </section>
                     </section>
                 </header>
