@@ -8,6 +8,7 @@ import CourseOutline from "./instructor/pages/CourseOutline";
 import CreateAssignment from "./instructor/pages/CreateAssignment";
 import LandingPage from "./instructor/pages/LandingPage";
 import EditAssignment from "./instructor/pages/EditAssignment";
+import EditQuestion from "./instructor/pages/EditQuestion";
 import CourseSettings from "./instructor/pages/CourseSettings";
 import AddQuestions from "./instructor/pages/AddQuestions";
 import AssignmentLanding from "./student/pages/AssignmentLanding.js";
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
   {
     path: '/lti/assignment_landing/:assignmentId',
     element: <AssignmentLanding/>
+  },
+  {
+    path: '/lti/edit_question/:questionId',
+    element: <EditQuestion/>,
   },
   {
     path: '/lti/student_landing/',

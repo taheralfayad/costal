@@ -36,6 +36,21 @@ const CourseOutline = () => {
         });
     };
 
+    const updateDateOnly = (isoString, newDate) => {
+        const originalDate = new Date(isoString);
+    
+        const parsedNewDate = new Date(newDate);
+        if (isNaN(parsedNewDate.getTime())) {
+            throw new Error(`Invalid date: ${newDate}`);
+        }
+    
+        originalDate.setFullYear(parsedNewDate.getFullYear());
+        originalDate.setMonth(parsedNewDate.getMonth());
+        originalDate.setDate(parsedNewDate.getDate());
+    
+        return originalDate;
+    };
+
 
     const retrieveModules = async () => {
         try {
@@ -44,6 +59,7 @@ const CourseOutline = () => {
             const newData = await response.json();
 
             setData(newData);
+            console.log(newData)
 
         } catch (error) {
             console.error(error);
@@ -183,7 +199,31 @@ const CourseOutline = () => {
         }));
     };
 
-    const handleOrdering = (moduleId, isCancel = false) => {
+    const handleOrdering = async (moduleId, isCancel = false, isSaving = false) => {
+
+        if (isSaving) {
+            const moduleToUpdate = modules.find(module => module.id === moduleId);
+            if (!moduleToUpdate) return;
+
+            await fetch(`/lti/api/modules/update_assignment_order/${moduleId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    assignment_ids: moduleToUpdate.rows.map(row => row.id)
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to save module order');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving module order:', error);
+                });
+        }
+
         setModules(modules.map(module => {
             if (module.id === moduleId) {
                 if (!module.isOrdering) {
@@ -196,6 +236,8 @@ const CourseOutline = () => {
             }
             return module;
         }));
+
+
     };
 
 
@@ -216,6 +258,77 @@ const CourseOutline = () => {
             module.id === moduleId ? { ...module, isEndDateOpen: !module.isEndDateOpen } : module
         ));
     };
+
+    const handleSetStart = async (moduleId, newDate) => {
+        console.log('here')
+        console.log(newDate)
+        const targetModule = modules.find(module => module.id === moduleId);
+        const checkedAssignments = targetModule.rows.filter((_, index) => targetModule.checkedRows[index]);
+        try {
+            const responses = await Promise.all(
+                checkedAssignments.map(async (assignment) => {
+                    const updatedISODate = updateDateOnly(assignment.start_date, newDate);
+                    const response = await fetch(`/lti/api/assignments/edit_assignment/${assignment.id}/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            'start_date': updatedISODate.toISOString().slice(0, 16)
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to update assignment ${assignmentId}`);
+                    }
+
+                    return response.json();
+                })
+            );
+
+            console.log("Updated assignments:", responses);
+
+            handleStartDate(moduleId);
+            retrieveModules();
+        } catch (error) {
+            console.error("Error updating assignments:", error);
+        }
+
+
+    }
+
+    const handleSetEnd = async (moduleId, newDate) => {
+        console.log('here')
+        console.log(newDate)
+        const targetModule = modules.find(module => module.id === moduleId);
+        const checkedAssignments = targetModule.rows.filter((_, index) => targetModule.checkedRows[index]);
+        try {
+            const responses = await Promise.all(
+                checkedAssignments.map(async (assignment) => {
+                    const updatedISODate = updateDateOnly(assignment.start_date, newDate);
+
+                    const response = await fetch(`/lti/api/assignments/edit_assignment/${assignment.id}/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            'end_date': updatedISODate.toISOString().slice(0, 16)
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to update assignment ${assignmentId}`);
+                    }
+
+                    return response.json();
+                })
+            );
+
+            console.log("Updated assignments:", responses);
+
+            handleStartDate(moduleId);
+            retrieveModules();
+        } catch (error) {
+            console.error("Error updating assignments:", error);
+        }
+    }
 
     const handleEditClick = (moduleId) => {
         setModules(modules.map(module =>
@@ -322,7 +435,7 @@ const CourseOutline = () => {
                         {renderModuleName(module)}
                     </section>
                     <section className='flex gap-4'>
-                        <Button label='Save' onClick={() => handleOrdering(module.id)} />
+                        <Button label='Save' onClick={() => handleOrdering(module.id, false, true)} />
                         <Button label='Cancel' onClick={() => handleOrdering(module.id, true)} type='outline' />
                         <Dropdown label='' width='w-44' placeholder='Options' margin={false} options={[
                             { label: 'Alphabetically', onClick: () => handleSort(module.id, 'alphabetically') },
@@ -353,8 +466,8 @@ const CourseOutline = () => {
                         <Button label='Edit End Date' type='outline' onClick={() => handleEndDate(module.id)} />
                     </section>
 
-                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isStartDateOpen} handleCalendarOpen={() => handleStartDate(module.id)} />
-                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isEndDateOpen} handleCalendarOpen={() => handleEndDate(module.id)} />
+                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isStartDateOpen} handleCalendarOpen={() => handleStartDate(module.id)} onDateChange={(date) => handleSetStart(module.id, date)} />
+                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isEndDateOpen} handleCalendarOpen={() => handleEndDate(module.id)} onDateChange={(date) => handleSetEnd(module.id, date)} />
                 </section>
             )
         }
@@ -381,7 +494,7 @@ const CourseOutline = () => {
     }
 
     if (loading) {
-      return(<LoadingPage/>)
+        return (<LoadingPage />)
     }
 
 

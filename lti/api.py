@@ -117,6 +117,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
             data = assignment_serializer.data 
             data["questions"] = questions_serializer.data
+            total_points = sum(question['num_points'] for question in questions_serializer.data)
+            data["total_points"] = total_points
 
             return Response(data, status=status.HTTP_200_OK)
         except Assignment.DoesNotExist:
@@ -240,6 +242,67 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Question.objects.all()
         return queryset
+    
+    @action(detail=False, methods=['get'], url_path='get_question_by_id/(?P<question_id>[^/.]+)')
+    def get_question_by_id(self, request, question_id=None):
+        try:
+            question = Question.objects.get(id=question_id)
+            question_serializer = QuestionSerializer(question)
+
+            return Response(question_serializer.data, status=status.HTTP_200_OK)
+        except Question.DoesNotExist:
+            return Response({'error': 'Question not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['post'], url_path='delete_question')
+    def delete_question(self, request):
+        data = request.data
+        question = Question.objects.get(id=data['question_id'])
+
+        question.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False, methods=['post'], url_path='edit_question/(?P<question_id>[^/.]+)')
+    def edit_question(self, request, question_id):
+        data = request.data
+        question = Question.objects.get(id=question_id)
+        
+        skill = Skill.objects.get(id=data['skill_id'])
+
+        if 'name' in data:
+            question.name = data['name']
+        if 'text' in data:
+            question.text = data['text']
+        if 'difficulty' in data:
+            difficulty_map = {
+                "easy": 1,
+                "medium": 2,
+                "hard": 3
+            }
+
+            difficulty = difficulty_map[data['difficulty'].lower()]
+            question.difficulty = difficulty
+        if 'type' in data:
+            question.type = data['type']
+        if 'num_points' in data:
+            question.num_points = data['num_points']
+        if skill:
+            question.associated_skill = skill
+        if 'possible_answers' in data:
+            possible_answers = json.loads(data['possible_answers'])
+            question.possible_answers.set([])
+
+            for answer in possible_answers:
+                possible_answer = PossibleAnswer(
+                    answer=answer['possible_answer'],
+                    is_correct=answer['is_correct'],
+                    related_question=question
+                )
+                possible_answer.save()
+                question.possible_answers.add(possible_answer)
+        
+
+        question.save()
+        return Response({"message": "Assignment updated successfully"}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'], url_path='create_question')
     def create_question(self, request):
@@ -489,6 +552,31 @@ class ModuleViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
         except IndexError:
             return Response({'error': 'No modules found for this course'}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['post'], url_path='update_assignment_order/(?P<module_id>[^/.]+)')
+    def update_assignment_order(self, request, module_id=None):
+        try:
+            module = Module.objects.get(id=module_id)
+            new_order = request.data['assignment_ids']
+
+            if not isinstance(new_order, list):
+                return Response({'error': 'Invalid format for assignment_ids'}, status=status.HTTP_400_BAD_REQUEST)
+
+            assignments = {assignment.id: assignment for assignment in module.assignments.all()}
+
+            print(assignments)
+
+            for index, assignment_id in enumerate(new_order):
+                if assignment_id in assignments:
+                    assignments[assignment_id].order = index
+                    assignments[assignment_id].save()
+
+            return Response({'message': 'Assignment order updated successfully'}, status=status.HTTP_200_OK)
+
+        except Module.DoesNotExist:
+            return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'], url_path='get_modules_with_skills/(?P<course_id>[^/.]+)')
     def get_modules_with_skills(self, request, course_id=None):

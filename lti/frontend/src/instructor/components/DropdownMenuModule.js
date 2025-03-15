@@ -4,7 +4,7 @@ import DeleteModal from './DeleteModal';
 import DropdownMenuItem from './DropdownMenuItem';
 
 
-const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfObject, nameOfObject, objectType = 'ASSIGNMENT' }) => {
+const DropdownMenuModule = ({ deleteFunction, editFunction, addQuestionFunction, idOfObject, nameOfObject }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -50,10 +50,10 @@ const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfO
 
             {isOpen && (
                 <article className='z-50 py-1 absolute right-2 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200'>
-                    {objectType == 'ASSIGNMENT' && (<><DropdownMenuItem label='View' onClick={handleAddQuestion} />
-                        <DropdownMenuItem label='Add question' onClick={handleAddQuestion} /></>)}
+                    <DropdownMenuItem label='View' onClick={handleAddQuestion} />
+                    <DropdownMenuItem label='Add question' onClick={handleAddQuestion}/>
                     <DropdownMenuItem label='Delete' onClick={handleDeleteItem} />
-                    <DropdownMenuItem label='Edit' onClick={handleEditObject} />
+                    <DropdownMenuItem label='Edit' onClick={handleEditObject}/>
                 </article>
             )}
 
@@ -62,10 +62,9 @@ const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfO
                 onClose={() => setIsModalOpen(false)}
                 onDelete={handleDelete}
                 nameOfObjectToDelete={nameOfObject}
-                objectType={objectType}
             />
         </article>
     );
 };
 
-export default DropdownMenu;
+export default DropdownMenuModule;
