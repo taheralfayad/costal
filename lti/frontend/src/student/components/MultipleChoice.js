@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Checkbox } from '../../design-system';
 import DotsVertical from '../../assets/dots-vertical.svg';
-import RadioGroup from './RadioGroup.js';
 
 const MultipleChoice = ({ title, question, options }) => {
   const [isIncorrect, setIncorrect] = useState(false)
@@ -26,7 +25,12 @@ const MultipleChoice = ({ title, question, options }) => {
         {isIncorrect && (<p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-2 rounded'>Sorry, that's incorrect. Try again?</p>)}
 
         <section className='px-8 pb-8'>
-          <RadioGroup options={options}/>
+          <section className='flex flex-col gap-3'>
+
+            {options.map((option) => {
+              return <Checkbox isIncorrect={isIncorrect} label={option} />
+            })}
+          </section>
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' />
             <Button label='Submit' />
