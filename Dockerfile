@@ -27,7 +27,6 @@ RUN apt-get update && apt-get install -y \
   g++ \
   && rm -rf /var/lib/apt/lists/*
 
-
 RUN apt-get update && apt-get install -y git
 
 COPY ./requirements.txt /app/

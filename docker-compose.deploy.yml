@@ -1,0 +1,27 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    command: /bin/sh -c "npm --prefix ./lti/frontend run dev & python manage.py runserver 0.0.0.0:8000"
+    extra_hosts:
+    - "canvas.docker:host-gateway"
+  
+  adaptive-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    command: ["uvicorn", "adaptive-engine-api.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]

@@ -1,7 +1,16 @@
 from django.urls import path, re_path, include
 from rest_framework import routers
 
-from lti.api import TextbookViewSet, AssignmentViewSet, QuestionViewSet, SkillViewSet, PossibleAnswersViewSet, GetCourseProfessorName, ModuleViewSet, CourseViewSet
+from lti.api import (
+    TextbookViewSet,
+    AssignmentViewSet,
+    QuestionViewSet,
+    SkillViewSet,
+    PossibleAnswersViewSet,
+    GetCourseProfessorName,
+    ModuleViewSet,
+    CourseViewSet,
+)
 from lti.auth_views import oauth_complete, oauth_login
 from lti.views import (
     config,
@@ -24,8 +33,12 @@ router.register(r"modules", ModuleViewSet)
 
 
 urlpatterns = [
-    path('api/', include(router.urls)),
-    path('api/get_course_professor_name/', GetCourseProfessorName.as_view(), name='get_course_professor_name'),
+    path("api/", include(router.urls)),
+    path(
+        "api/get_course_professor_name/",
+        GetCourseProfessorName.as_view(),
+        name="get_course_professor_name",
+    ),
     re_path(r"^login/$", login, name="login"),
     re_path(r"^launch/$", launch, name="launch"),
     re_path(r"^jwks/$", get_jwks, name="jwks"),

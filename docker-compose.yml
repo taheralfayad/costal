@@ -32,7 +32,7 @@ services:
     hostname: db
     image: ankane/pgvector
     ports:
-      - 5431:5432
+      - 5432:5432
     restart: always
     environment:
       POSTGRES_DB: db

@@ -15,6 +15,7 @@ import AssignmentLanding from "./student/pages/AssignmentLanding.js";
 import StudentLandingPage from "./student/pages/LandingPage.js";
 import CreateQuestion from "./instructor/pages/CreateQuestion.js";
 import Assignment from "./student/pages/Assignment.js";
+import CreatePrequiz from "./instructor/pages/CreatePrequiz.js";
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
   {
     path: '/lti/create_assignment/:moduleId',
     element: <CreateAssignment/>,
+  },
+  {
+    path: '/lti/create_prequiz/:moduleId',
+    element: <CreatePrequiz/>,
   },
   {
     path: '/lti/edit_assignment/:assignmentId',
