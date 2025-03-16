@@ -46,12 +46,12 @@ class Course(models.Model):
 
 # Models
 
-
 class Module(models.Model):
     name = models.CharField(max_length=255)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
     assignments = models.ManyToManyField("Assignment", blank=True)
     skills = models.ManyToManyField("Skill", blank=True)
+    prequiz = models.OneToOneField("Prequiz", on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -70,7 +70,17 @@ class Assignment(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Prequiz(Assignment):
 
+    def __str__(self):
+        return self.name
+    
+    def is_valid(self):
+        for skill in self.associated_module.skills.all():
+            if not self.questions.filter(associated_skill=skill).exists():
+                return False
+        return True
 
 class Skill(models.Model):
     name = models.TextField()

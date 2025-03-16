@@ -372,7 +372,11 @@ const CourseOutline = () => {
                     {renderModuleName(module)}
                 </section>
                 <section className='flex gap-4'>
-                    <Button label='Add Assignment to Module' onClick={() => navigate(`/lti/create_assignment/${module.id}`)} />
+                    {module.prequiz && module.prequiz.is_valid ? (
+                        <Button label='Add Assignment to Module' onClick={() => navigate(`/lti/create_assignment/${module.id}`)} />
+                    ) : (
+                        <Button label='Add Prequiz to Module' onClick={() => navigate(`/lti/create_prequiz/${module.id}`)} />
+                    )}
                     <Button label='Add Objectives to Module' onClick={() => navigate('/lti/select_objectives/')} />
                     <Button label='Edit Order' onClick={() => handleOrdering(module.id)} type='outline' />
                 </section>

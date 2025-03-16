@@ -22,6 +22,7 @@ def oauth_login(request):
         .rstrip("/")
     )
     query_params["redirect_uri"] = redirect_uri
+    print(f"Redirect URI: {redirect_uri}")
     query_string = query_params.urlencode()
     return redirect(settings.CANVAS_URL + "/login/oauth2/auth?" + query_string)
 

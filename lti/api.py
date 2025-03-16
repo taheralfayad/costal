@@ -13,6 +13,7 @@ from rest_framework.exceptions import ValidationError, NotFound
 
 from lti.models import (
     Assignment,
+    Prequiz,
     CanvasUser,
     Course,
     Textbook,
@@ -102,7 +103,6 @@ class CourseViewSet(viewsets.ModelViewSet):
             {"message": "Course updated successfully"}, status=status.HTTP_200_OK
         )
 
-
 # Need an endpoint to create assignments
 class AssignmentViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -176,6 +176,34 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         module.assignments.add(assignment)
         return Response(
             {"message": "Assignment created successfully"},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+    @action(detail=False, methods=["post"], url_path="create_prequiz")
+    def create_prequiz(self, request):
+        data = request.data
+
+        start_date = datetime.datetime.strptime(data["start_date"], "%Y-%m-%dT%H:%M")
+        end_date = datetime.datetime.strptime(data["end_date"], "%Y-%m-%dT%H:%M")
+
+        course = Course.objects.get(course_id=data["course_id"])
+        module = Module.objects.get(id=data["module_id"])
+
+        prequiz = Prequiz(
+            name=data["name"],
+            course=course,
+            start_date=start_date,
+            end_date=end_date,
+            assessment_type=data["assessment_type"],
+            associated_module=module,
+        )
+
+        prequiz.save()
+        module.prequiz = prequiz
+        module.save()
+        return Response(
+            {"message": "Prequiz created successfully"},
             status=status.HTTP_201_CREATED,
         )
 
