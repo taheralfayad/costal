@@ -505,18 +505,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
             return Response(status=status.HTTP_200_OK)
 
-<<<<<<< HEAD
 
         json = {
             'next_question': next_question,
             'state_prediction': state_prediction
         }
-=======
-        print(next_question)
-        print(state_prediction)
-
-        json = {"next_question": next_question, "state_prediction": state_prediction}
->>>>>>> aaafbab855e2dd2f7e4b1d8bfc8f2fa8d03cbac8
 
         response.save()
 
@@ -630,7 +623,6 @@ class ModuleViewSet(viewsets.ModelViewSet):
                 {"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND
             )
         except IndexError:
-<<<<<<< HEAD
             return Response({'error': 'No modules found for this course'}, status=status.HTTP_404_NOT_FOUND)
         
     @action(detail=False, methods=['post'], url_path='update_assignment_order/(?P<module_id>[^/.]+)')
@@ -659,18 +651,6 @@ class ModuleViewSet(viewsets.ModelViewSet):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'], url_path='get_modules_with_skills/(?P<course_id>[^/.]+)')
-=======
-            return Response(
-                {"error": "No modules found for this course"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-    @action(
-        detail=False,
-        methods=["get"],
-        url_path="get_modules_with_skills/(?P<course_id>[^/.]+)",
-    )
->>>>>>> aaafbab855e2dd2f7e4b1d8bfc8f2fa8d03cbac8
     def get_modules_with_skills(self, request, course_id=None):
         try:
             response = []
