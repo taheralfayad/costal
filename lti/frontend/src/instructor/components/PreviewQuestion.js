@@ -8,20 +8,20 @@ const PreviewQuestion = ({ title, points, percentage, question, placeholder = 'P
   const renderQuestionType = () => {
     if (type == 'short') {
       return <><div dangerouslySetInnerHTML={{ __html: question }} className="block text-sm font-medium text-gray-700"></div>
-        <p className="w-full h-16 p-4 text-slate-700 text-base mt-4
+        <p className="w-full h-16 p-4 text-slate-700 text-sm mt-4
        rounded-md border border-gray-200 justify-start items-start gap-2.5 inline-flex">{placeholder}</p></>
     } else {
       if (possibleAnswers.filter(ans => ans.is_correct).length < 2) {
-        return <><div dangerouslySetInnerHTML={{ __html: question }} className="block text-sm font-medium text-gray-700"></div>
+        return <><div dangerouslySetInnerHTML={{ __html: question }} className="block text-sm font-medium text-gray-700 mb-4 gap-4"></div>
           {possibleAnswers.map((p) => {
             return <section className="flex items-center space-x-2 cursor-pointer">
               <div className="w-4 h-4 border border-gray-300 rounded-full"></div>
-              <span className="text-black">{p.answer}</span>
+              <span className="text-gray-800 text-sm">{p.answer}</span>
             </section>
           })}
         </>
       } else {
-        return <><div dangerouslySetInnerHTML={{ __html: question }} className="block text-sm font-medium text-gray-700"></div>
+        return <><div dangerouslySetInnerHTML={{ __html: question }} className="block text-sm font-medium text-gray-700 mb-4 gap-4"></div>
           {possibleAnswers.map((p) => {
             return <section className="flex items-center space-x-2 cursor-pointer">
             <div className="w-4 h-4 border border-gray-300 rounded-sm"></div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Input = ({ label = 'Input',  placeholder = '', type = 'text', value, onChange, id, min = null, max = null, width = 'w-full',
+const Input = ({ label = 'Input',  placeholder = '', type = 'text', value, onChange, id, min = null, max = null, width = 'w-full', required = false
   }) => {
     const [isValid, setIsValid] = useState(true);
 
@@ -26,7 +26,7 @@ const Input = ({ label = 'Input',  placeholder = '', type = 'text', value, onCha
         <label
           className='block mb-2 text-sm font-medium text-gray-700'
         >
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <input
@@ -35,6 +35,7 @@ const Input = ({ label = 'Input',  placeholder = '', type = 'text', value, onCha
         value={value}
         onChange={handleInputChange}
         placeholder={placeholder}
+        required={required}
         min={min}
         max={max}
         className={`${width} px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${isValid

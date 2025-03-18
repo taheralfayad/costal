@@ -3,7 +3,7 @@ import Editor from 'quill-editor-math'
 import 'quill-editor-math/dist/index.css'
 import './RichTextEditor.css';
 
-const RichTextEditor = ({ label = 'Rich Text Editor', value, onChange, placeholder = 'Type here' }) => {
+const RichTextEditor = ({ label = 'Rich Text Editor', value, onChange, placeholder = 'Type here', required }) => {
   const [wordCount, setWordCount] = React.useState(0);
   const customOperator = [
     ['\\pm', '\\pm'],
@@ -114,6 +114,7 @@ const RichTextEditor = ({ label = 'Rich Text Editor', value, onChange, placehold
         customOperator={customOperator}
         placeholder={placeholder}
         initialValue={value}
+        required={required}
       />
       <div className="flex justify-end mt-2 text-sm text-gray-500">
         Word Count: {wordCount}

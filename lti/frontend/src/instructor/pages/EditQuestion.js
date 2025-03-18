@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Checkbox, Dropdown, Input, RichTextEditor, Title } from '../../design-system';
 import MultipleChoiceConfig from '../components/MultipleChoiceConfig';
 import ShortAnswerConfig from '../components/ShortAnswerConfig';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 const EditQuestion = () => {
     const { questionId } = useParams();
@@ -20,7 +21,7 @@ const EditQuestion = () => {
     const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState([{ id: 1, text: '', checked: false }]);
     const [shortAnswerItems, setShortAnswerItems] = useState([]);
 
-  
+
 
     const transformMultipleChoiceBack = (answers) => {
         return answers.map((answer, index) => ({
@@ -37,10 +38,8 @@ const EditQuestion = () => {
     }
 
     const getQuestion = async () => {
-        console.log(assignmentId)
         const response = await fetch(`/lti/api/questions/get_question_by_id/${questionId}`);
         const resData = await response.json();
-        console.log(resData)
         setName(resData.name);
         setText(resData.text);
         setAssociatedSkill(resData.associated_skill)
@@ -67,7 +66,6 @@ const EditQuestion = () => {
     }, []);
 
     const onSelectDifficulty = (value) => {
-        console.log(value)
         setDifficulty(value)
     }
 
@@ -78,7 +76,6 @@ const EditQuestion = () => {
     ]
 
     const onSelectObjective = (value) => {
-        console.log(value)
         setObjective(value)
     }
 
@@ -113,7 +110,23 @@ const EditQuestion = () => {
         setSelectedCheckbox((prev) => (prev === checkboxId ? null : checkboxId));
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+
+        if (!selectedCheckbox) {
+            toast.error("Please select a question type (Short Answer or Multiple Choice)");
+            return;
+        }
+        
+        if (selectedCheckbox === 'multiple' && multipleChoiceAnswers.length < 3) {
+            toast.error("Please add more choices to multiple choice");
+            return;
+        }
+
+        if (selectedCheckbox === 'short' && shortAnswerItems.length < 1) {
+            toast.error("Please add more accepted answers");
+            return;
+        }
         const skillID = objectives.find(item => item.name === objective).id;
         const formData = new FormData();
 
@@ -124,8 +137,6 @@ const EditQuestion = () => {
         formData.append('points', points);
         formData.append('text', text);
         formData.append('type', selectedCheckbox);
-
-        console.log(shortAnswerItems);
 
         if (selectedCheckbox === 'multiple') {
             const multipleChoiceData = multipleChoiceAnswers.filter((choice) => choice.text.trim() !== "").map((choice) => {
@@ -165,43 +176,47 @@ const EditQuestion = () => {
 
     return (
         <div>
-            <main className='flex'>
-                <section className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
-                    <Title>Edit Question</Title>
-                    <Input label='Name' placeholder='Great Question' value={name} onChange={(e) => setName(e.target.value)(e)} />
-                    <Dropdown label='Objective' placeholder={objective} value={objective} options={dropdownObjectives} />
-                    <Dropdown label='Difficulty' placeholder={difficulty} value={difficulty} options={difficulties} onSelect={(e) => setDifficulty(e)} />
-                    <RichTextEditor placeholder={text} value={text} onChange={setText} />
-                    <section className='flex flex-col gap-4'>
-                        <label className='block text-sm font-medium text-gray-700'>
-                            Choose your question type
-                        </label>
-                        <Checkbox
-                            label="Short Answer"
-                            checked={selectedCheckbox === 'short'}
-                            onChange={() => handleCheckboxChange('short')}
-                            id="short"
-                        />
-                        <Checkbox
-                            label="Multiple Choice"
-                            checked={selectedCheckbox === 'multiple'}
-                            onChange={() => handleCheckboxChange('multiple')}
-                            id="multiple"
-                        />
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick={false} rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" transition={Bounce}
+            />
+            <form onSubmit={handleSubmit}>
+                <main className='flex'>
+                    <section className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
+                        <Title>Edit Question</Title>
+                        <Input label='Name' placeholder='Great Question' value={name} onChange={(e) => setName(e.target.value)(e)} required />
+                        <Dropdown label='Objective' value={objective} options={dropdownObjectives} required />
+                        <Dropdown label='Difficulty' value={difficulty} options={difficulties} onSelect={(e) => setDifficulty(e)} required />
+                        <RichTextEditor placeholder={text} value={text} onChange={setText} required />
+                        <section className='flex flex-col gap-4'>
+                            <label className='block text-sm font-medium text-gray-700'>
+                                Choose your question type
+                            </label>
+                            <Checkbox
+                                label="Short Answer"
+                                checked={selectedCheckbox === 'short'}
+                                onChange={() => handleCheckboxChange('short')}
+                                id="short"
+                            />
+                            <Checkbox
+                                label="Multiple Choice"
+                                checked={selectedCheckbox === 'multiple'}
+                                onChange={() => handleCheckboxChange('multiple')}
+                                id="multiple"
+                            />
+                        </section>
+                        <Input type='number' label='Points' min={1} max={15} placeholder={1} width='w-1/4' value={points} onChange={(e) => setPoints(e.target.value)} />
                     </section>
-                    <Input type='number' label='Points' min={1} max={15} placeholder={1} width='w-1/4' value={points} onChange={(e) => setPoints(e.target.value)} />
+                    {selectedCheckbox &&
+                        <aside className='mt-16 ml-10 w-2/5 h-1/2 flex flex-col gap-4 border border-slate-300 rounded-lg shadow-sm m-6'>
+                            {selectedCheckbox === 'short' ?
+                                <ShortAnswerConfig items={shortAnswerItems} setItems={setShortAnswerItems} /> :
+                                <MultipleChoiceConfig choices={multipleChoiceAnswers} setChoices={setMultipleChoiceAnswers} />}
+                        </aside>}
+                </main>
+                <section className='flex justify-end gap-2 pr-4 pb-2'>
+                    <Button label='Save' form={true} />
+                    <Button label='Cancel' type='outline' onClick={() => navigate(`/lti/add_questions/${assignmentId}`)} />
                 </section>
-                {selectedCheckbox &&
-                    <aside className='mt-16 ml-10 w-2/5 h-1/2 flex flex-col gap-4 border border-slate-300 rounded-lg shadow-sm m-6'>
-                        {selectedCheckbox === 'short' ?
-                            <ShortAnswerConfig items={shortAnswerItems} setItems={setShortAnswerItems} /> :
-                            <MultipleChoiceConfig choices={multipleChoiceAnswers} setChoices={setMultipleChoiceAnswers} />}
-                    </aside>}
-            </main>
-            <section className='flex justify-end gap-2 pr-4 pb-2'>
-                <Button label='Save' onClick={handleSubmit} />
-                <Button label='Cancel' type='outline' onClick={() => navigate(`/lti/add_questions/${assignmentId}`)} />
-            </section>
+            </form>
         </div>
     );
 }
