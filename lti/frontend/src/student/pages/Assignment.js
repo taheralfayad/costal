@@ -36,8 +36,6 @@ const Assignment = () => {
     }
     else {
       for (let i = 0; i < question.possible_answers.length; i++) {
-        console.log(question.possible_answers[i].answer)
-        console.log(answerChoice)
         if (question.possible_answers[i].answer == answerChoice) {
           formData.append("answer_choice", question.possible_answers[i].id)
         }
@@ -58,8 +56,6 @@ const Assignment = () => {
 
         const data = await response.json()
 
-        console.log(data)
-
         if (response.ok) {
           if (data.assessment_status === 'completed') {
             navigate('/lti/student_landing/')
@@ -77,8 +73,6 @@ const Assignment = () => {
         })
 
         const data = await response.json()
-
-        console.log(data)
 
         if (response.ok) {
           if (data.assessment_status === 'completed') {
