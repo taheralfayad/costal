@@ -20,6 +20,7 @@ const EditAssignment = () => {
     console.log(assignmentId)
     const response = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
     const resData = await response.json();
+    console.log(resData)
     setName(resData.name);
     setStartDate(revertDateTime(resData.start_date).date)
     setStartTime(revertDateTime(resData.start_date).time)

@@ -24,10 +24,13 @@ class AssignmentSerializer(serializers.ModelSerializer):
         model = Assignment
         fields = "__all__"
 
-class Prequiz(serializers.ModelSerializer):
+class PrequizSerializer(serializers.ModelSerializer):
+    topic = serializers.CharField(source='name')
+    start = serializers.DateTimeField(source='start_date')
+    end = serializers.DateTimeField(source='end_date')
     class Meta:
         model = Prequiz
-        fields = "__all__"
+        fields = ['id', 'topic', 'start', 'end', 'assessment_type']
 
 class TextbookSerializer(serializers.ModelSerializer):
     class Meta:

@@ -31,6 +31,18 @@ const AddQuestions = () => {
       const response = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
       const data = await response.json();
       setAssignment(data);
+      for (let i = 0; i < data.questions.length; i++) {
+        let question = data.questions[i];
+        let possibleAnswers = question.possible_answers;
+
+        for (let j = 0; j < possibleAnswers.length; j++) {
+          let possibleAnswer = possibleAnswers[j];
+          const possibleAnswerIsCorrectResponse = await fetch(`/lti/api/questions/possible_answer_is_correct/${possibleAnswer.id}`);
+          const possibleAnswerIsCorrectData = await possibleAnswerIsCorrectResponse.json();
+          possibleAnswers[j].is_correct = possibleAnswerIsCorrectData.is_correct;
+        }
+      }
+
       setQuestions(data.questions);
       setStartDate(formatDate(data.start_date));
       setEndDate(formatDate(data.end_date));

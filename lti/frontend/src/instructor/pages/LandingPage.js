@@ -8,6 +8,7 @@ import LoadingPage from "../components/LoadingPage.js";
 const LandingPage = () => {
     const [assignments, setAssignments] = useState([]);
     const [quizzes, setQuizzes] = useState([]);
+    const [prequizzes, setPrequizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -26,10 +27,13 @@ const LandingPage = () => {
         try {
           const response = await fetch(`/lti/api/assignments/get_course_assignments/?course_id=${COURSE_ID}`);
           const data = await response.json();
+          console.log(data)
           const assignments = data.filter(assignment => assignment.assessment_type === 'Homework');
           const quizzes = data.filter(assignment => assignment.assessment_type === 'Quiz');
+          const prequizzes = data.filter(assignment => assignment.assessment_type === 'prequiz');
           setAssignments(assignments);
           setQuizzes(quizzes);
+          setPrequizzes(prequizzes);
         } catch (error) {
           console.log("An error occurred, please try again later!")
         } finally {
@@ -71,6 +75,10 @@ const LandingPage = () => {
                             <article className='text-center'>
                                 <h4 className='text-6xl font-normal'>{quizzes.length}</h4>
                                 <p className='text-lg font-medium'>Quiz</p>
+                            </article>
+                            <article className='text-center'>
+                                <h4 className='text-6xl font-normal'>{prequizzes.length}</h4>
+                                <p className='text-lg font-medium'>Prequiz</p>
                             </article>
 
                         </section>

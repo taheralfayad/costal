@@ -45,10 +45,10 @@ const Writing = ({ title, question, placeholder, onSubmit, isMath = false }) => 
               }
             }}
             divisionFormat="obelus"
-          /></article> : <TextArea placeholder={placeholder} isIncorrect={isIncorrect} label='' />}
+          /></article> : <TextArea placeholder={placeholder} isIncorrect={isIncorrect} label='' value={value} onChange={(e) => setValue(e.target.value)}/>}
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' />
-            <Button label='Submit' onClick={() => onSubmit()}/>
+            <Button label='Submit' onClick={() => onSubmit(value)}/>
           </section>
         </section>
       </main>

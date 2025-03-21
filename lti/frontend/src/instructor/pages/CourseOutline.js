@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Button, Checkbox, DatePicker, Dropdown, Input, Title } from '../../design-system';
+import { Button, Checkbox, DatePicker, Dropdown, Input, Notification, Title } from '../../design-system';
 import CourseInfo from '../components/CourseInfo';
 import ChevronDown from '../../assets/chevron-down.svg';
 import Menu from '../../assets/menu.svg'
@@ -58,6 +58,16 @@ const CourseOutline = () => {
 
             const newData = await response.json();
 
+
+            for (let i=0 ; i < newData.length; i++) {
+                const prequizResponse = await fetch(`/lti/api/assignments/get_prequiz/${newData[i].id}`);
+                
+                if (prequizResponse.ok) {
+                    const prequizData = await prequizResponse.json();
+                    newData[i].rows.unshift(prequizData);
+                }
+            }
+
             setData(newData);
             console.log(newData)
 
@@ -74,10 +84,12 @@ const CourseOutline = () => {
 
     useEffect(() => {
         if (data) {
+            console.log(data)
             setModules(data.map(d => ({
                 id: d.id,
                 name: d.name,
                 rows: d.rows || [],
+                prequiz: d.prequiz,
                 isOrdering: false,
                 allChecked: false,
                 checkedRows: Array((d.rows || []).length).fill(false),
@@ -485,11 +497,8 @@ const CourseOutline = () => {
                     {renderModuleName(module)}
                 </section>
                 <section className='flex gap-4'>
-                    {module.prequiz && module.prequiz.is_valid ? (
-                        <Button label='Add Assignment to Module' onClick={() => navigate(`/lti/create_assignment/${module.id}`)} />
-                    ) : (
-                        <Button label='Add Prequiz to Module' onClick={() => navigate(`/lti/create_prequiz/${module.id}`)} />
-                    )}
+                    {!module.prequiz && <Button label='Add Prequiz to Module' onClick={() => navigate(`/lti/create_prequiz/${module.id}`)} />}
+                    {module.prequiz && module.prequiz.is_valid && <Button label='Add Assignment to Module' onClick={() => navigate(`/lti/create_assignment/${module.id}`)} />}
                     <Button label='Add Objectives to Module' onClick={() => navigate('/lti/select_objectives/')} />
                     <Button label='Edit Order' onClick={() => handleOrdering(module.id)} type='outline' />
                 </section>
@@ -541,6 +550,8 @@ const CourseOutline = () => {
                 {modules.map(module => (
                     <section key={module.id}>
                         {renderMenu(module)}
+                        {!module.prequiz && <div className='mt-6 mx-16'><Notification type={'error'} message={'Please add a prequiz to this module before adding assignments'} /></div>}
+                        {module.prequiz && !module.prequiz.is_valid && <div className='mt-6 mx-16'><Notification type={'error'} message={`Your prequiz does not cover all the objectives in this module. Missing objectives: ${module.prequiz.missing_skills.map(skill => skill.name).join(', ')}`} /></div>}
                         {module.isTableVisible &&
                             <section className='bg-white rounded-xl border border-slate-300 mt-6 mx-16'>
                                 {module.rows.length > 0 ? <table className='w-full'>

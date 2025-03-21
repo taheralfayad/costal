@@ -93,11 +93,13 @@ class AssignmentAttempt(models.Model):
 
 class QuestionAttempt(models.Model):
     user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE, blank=True, null=True)
-    associated_question = models.ForeignKey("Question", blank=True, on_delete=models.CASCADE)
+    associated_assignment_attempt = models.ForeignKey("AssignmentAttempt", blank=True, null=True, on_delete=models.CASCADE)
+    associated_assignment = models.ForeignKey("Assignment", blank=True, null=True ,on_delete=models.CASCADE)
+    associated_question = models.ForeignKey("Question", blank=True, null=True, on_delete=models.CASCADE)
     grade_for_question_attempt = models.IntegerField(default=0)
-    is_correct = models.BooleanField(default=False)
-    student_response = models.TextField(blank=True)
-    time_spent_on_question= models.IntegerField(default=0)
+    associated_possible_answer = models.ForeignKey("PossibleAnswer", blank=True, null= True, on_delete=models.CASCADE)
+    time_spent_on_question = models.IntegerField(default=0)
+    number_of_hints = models.IntegerField(default=0)
 
 
 class Prequiz(Assignment):
@@ -109,6 +111,13 @@ class Prequiz(Assignment):
             if not self.questions.filter(associated_skill=skill).exists():
                 return False
         return True
+    
+    def missing_skills(self):
+        missing_skills = []
+        for skill in self.associated_module.skills.all():
+            if not self.questions.filter(associated_skill=skill).exists():
+                missing_skills.append(skill)
+        return missing_skills
 
 class Skill(models.Model):
     name = models.TextField()
@@ -144,20 +153,7 @@ class PossibleAnswer(models.Model):
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.possible_answer
-
-
-class Response(models.Model):
-    user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    response = models.ForeignKey(PossibleAnswer, on_delete=models.CASCADE)
-    number_of_seconds_to_answer = models.IntegerField(default=0)
-
-    def __str__(self):
-        return (
-            f"{self.user} answered {self.response} to {self.question}\n"
-            f"in {self.number_of_seconds_to_answer} seconds"
-        )
+        return self.answer
 
 
 # LTI Key Models

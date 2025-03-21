@@ -200,6 +200,34 @@ def add_arm_to_mab(request: AddArmToMABRequest):
     return {"message": "Arm already exists in MAB model"}
 
 
+@app.post("/delete-arm-from-mab/")
+def delete_arm_from_mab(request: AddArmToMABRequest):
+    try:
+        with open(
+            "./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}.pkl".format(
+                course_id=request.course_id, assignment_id=request.assignment_id
+            ),
+            "rb",
+        ) as f:
+            mab = pickle.load(f)
+    except FileNotFoundError:
+        return {"message": "MAB model not found"}
+
+    if request.question_id in mab.arms:
+        mab.remove_arm(request.question_id)
+        with open(
+            "./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}.pkl".format(
+                course_id=request.course_id, assignment_id=request.assignment_id
+            ),
+            "wb",
+        ) as f:
+            pickle.dump(mab, f)
+
+        return {"message": "Arm deleted from MAB model"}
+
+    return {"message": "Arm does not exist in MAB model"}
+
+
 @app.post("/fit-model/")
 def fit_model(request: FitModelRequest):
     """

@@ -33,7 +33,7 @@ const MultipleChoice = ({ title, question, options }) => {
           </section>
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' />
-            <Button label='Submit' />
+            <Button label='Submit' onClick={() => onSubmit(null)}/>
           </section>
         </section>
       </main>

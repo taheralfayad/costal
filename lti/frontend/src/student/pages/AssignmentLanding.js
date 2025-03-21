@@ -104,7 +104,6 @@ const AssignmentLanding = ({ percentageTotal }) => {
     }, [assignment, objectivesData, assignmentAttempt])
 
     const goBackToLanding = () => {
-      console.log(assignmentId)
       navigate('/lti/student_landing/')
     }
     
@@ -112,7 +111,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
       try {
         const request = await fetch(`/lti/api/questions/get_first_question_for_assignment/${assignmentId}?assignment_attempt_id=${assignmentAttempt.id}`)
         const data = await request.json()
-        navigate(`/lti/assignment/${assignmentId}`, { state: data })
+        navigate(`/lti/assignment/${assignmentId}`, { state: {"question": data, "assignmentAttempt": assignmentAttempt, "assignment": assignment} })
       } catch (error) {
         console.log("Sorry, this request has failed!")
       }
@@ -122,7 +121,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
         if (assignmentAttempt.status == 0) {
             return 'Get Started'
         }
-        else if (percentageTotal == 100) {
+        else if (assignmentAttempt.status == 2) {
             return 'Practice'
         }
         else {
