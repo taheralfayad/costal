@@ -216,7 +216,7 @@ const CourseOutline = () => {
         if (isSaving) {
             const moduleToUpdate = modules.find(module => module.id === moduleId);
             if (!moduleToUpdate) return;
-
+            console.log(moduleToUpdate)
             await fetch(`/lti/api/modules/update_assignment_order/${moduleId}/`, {
                 method: 'POST',
                 headers: {
@@ -394,11 +394,13 @@ const CourseOutline = () => {
     };
 
     const handleSort = (moduleId, type) => {
+
         setModules(modules.map(module => {
             if (module.id === moduleId) {
                 let sortedRows = [...module.rows];
                 if (type === 'alphabetically') {
                     sortedRows.sort((a, b) => a.topic.localeCompare(b.topic));
+                    console.log(sortedRows)
                 } else if (type === 'dueDate') {
                     sortedRows.sort((a, b) => new Date(a.end) - new Date(b.end));
                 }

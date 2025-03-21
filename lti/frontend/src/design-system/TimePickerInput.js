@@ -14,7 +14,7 @@ const generateMinutes = (interval) => {
 
 const periods = ['AM', 'PM'];
 
-const TimePickerInput = ({ label = 'input', placeholder = 'Pick a date', value, onChange, id, position }) => {
+const TimePickerInput = ({ label = 'input', placeholder = 'Pick a date', value, onChange, id, position, required = false }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [selectedHour, setSelectedHour] = useState('00');
     const [selectedMinute, setSelectedMinute] = useState('00');
@@ -58,7 +58,7 @@ const TimePickerInput = ({ label = 'input', placeholder = 'Pick a date', value, 
     return (
         <div className='relative w-64'>
             <label className='block mb-2 text-sm font-medium text-gray-700'>
-                {label}
+                {label} {required && <span className="text-red-500">*</span>}
             </label>
 
             <input
@@ -68,6 +68,7 @@ const TimePickerInput = ({ label = 'input', placeholder = 'Pick a date', value, 
                 readOnly
                 placeholder={placeholder}
                 onClick={() => setIsVisible(!isVisible)}
+                required={required}
             />
 
             {isVisible && (

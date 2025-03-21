@@ -868,6 +868,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+<<<<<<< HEAD
         return Response(
             {"error": "No modules found for this course"},
             status=status.HTTP_404_NOT_FOUND,
@@ -878,6 +879,10 @@ class ModuleViewSet(viewsets.ModelViewSet):
         methods=["get"],
         url_path="get_modules_with_skills/(?P<course_id>[^/.]+)",
     )
+=======
+    
+    @action(detail=False, methods=['get'], url_path='get_modules_with_skills/(?P<course_id>[^/.]+)')
+>>>>>>> e1fbe37ca95d75f652792f23700d03f5153fec9d
     def get_modules_with_skills(self, request, course_id=None):
         try:
             response = []

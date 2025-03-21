@@ -5,9 +5,10 @@ const Radio = ({ label = 'Radio', checked, onChange, id, isIncorrect }) => {
         <article className='flex items-center gap-2'>
             <input
                 id={id}
+                name={name}
                 checked={checked}
                 onChange={onChange}
-                type="checkbox"
+                type="radio"
                 className={`${isIncorrect ? 'border-red-500' : 'border-gray-300'} peer bg-white relative appearance-none h-5 w-5 border rounded-full focus:ring-blue-500 focus:ring-2 checked:bg-slate-50 checked:border-emerald-400`}
             />
 
@@ -16,7 +17,7 @@ const Radio = ({ label = 'Radio', checked, onChange, id, isIncorrect }) => {
             />
 
             {label && <label htmlFor={id} className='text-gray-800 text-sm'>
-                {label}
+                {label} {required && <span className="text-red-500">*</span>}
             </label>}
         </article>
     );

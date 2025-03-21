@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Button = ({ label = 'Button', icon = null, onClick, type = 'primary', className = '', }) => {
+const Button = ({ label = 'Button', icon = null, onClick, type = 'primary', className = '', form = false }) => {
   const baseStyle =
     'flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition';
   const customStyles = {
@@ -22,6 +22,7 @@ const Button = ({ label = 'Button', icon = null, onClick, type = 'primary', clas
     <button
       className={`${baseStyle} ${customStyles[type]} ${className}`}
       onClick={onClick}
+      type={form ? 'submit' : 'button'}
     >
       {icon && <span className='text-lg'>{icon}</span>}
       {label}

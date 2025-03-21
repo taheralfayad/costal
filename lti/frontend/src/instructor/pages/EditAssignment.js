@@ -35,7 +35,9 @@ const EditAssignment = () => {
   }, []);
 
 
-  const handleForm = async () => {
+  const handleForm = async (e) => {
+    e.preventDefault();
+    
     let start = combineDateTime(startDate, startTime)
     let end = combineDateTime(endDate, endTime)
 
@@ -62,19 +64,20 @@ const EditAssignment = () => {
   return (
     <main className='p-4 pl-10 flex flex-col gap-4'>
       <Title>Edit an Assignment</Title>
+      <form onSubmit={handleForm}>
       <section className='flex gap-[6rem]'>
         <section className='flex flex-col gap-4'>
-          <Input label='Name' placeholder='Great Assignment' value={name} onChange={(e) => setName(e.target.value)} />
+          <Input label='Name' placeholder='Great Assignment' value={name} onChange={(e) => setName(e.target.value)} required />
           <section className='flex justify-between gap-4'>
-            <DatePickerInput label='Start Date' placeholder={startDate} value={startDate} onChange={(value) => setStartDate(value)} />
-            <TimePickerInput label='Start Time' placeholder={startTime} value={startTime} onChange={(value) => setStartTime(value)} />
+            <DatePickerInput label='Start Date' placeholder={startDate} value={startDate} onChange={(value) => setStartDate(value)} required />
+            <TimePickerInput label='Start Time' placeholder={startTime} value={startTime} onChange={(value) => setStartTime(value)} required />
           </section>
           <section className='flex justify-between gap-4'>
-            <DatePickerInput label='End Date' placeholder={endDate} value={endDate} onChange={(value) => setEndDate(value)} />
-            <TimePickerInput label='End Time' placeholder={endTime} value={endTime} onChange={(value) => setEndTime(value)} />
+            <DatePickerInput label='End Date' placeholder={endDate} value={endDate} onChange={(value) => setEndDate(value)} required />
+            <TimePickerInput label='End Time' placeholder={endTime} value={endTime} onChange={(value) => setEndTime(value)} required />
           </section>
           <section className='flex flex-col gap-4'>
-            <Dropdown label="Assignment Type" placeholder={assessmentType} options={[{
+            <Dropdown required label="Assignment Type" placeholder={assessmentType} options={[{
               "label": 'Homework', "onClick": () => {
                 setAssessmentType('Homework')
               }
@@ -85,16 +88,18 @@ const EditAssignment = () => {
             }]} />
           </section>
         </section>
+       
 
       </section>
 
       <section className='flex justify-between items-center mt-6'>
         <StatsCard objectives={4} questions={4} points={4} />
         <section className='flex justify-end gap-2 pr-4'>
-          <Button label='Save' onClick={handleForm} />
+          <Button label='Save' onClick={handleForm} form={true} />
           <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')} />
         </section>
       </section>
+      </form>
     </main>
   );
 }
