@@ -17,7 +17,7 @@ const Radio = ({ label = 'Radio', checked, onChange, id, isIncorrect }) => {
             />
 
             {label && <label htmlFor={id} className='text-gray-800 text-sm'>
-                {label} {required && <span className="text-red-500">*</span>}
+                {label}
             </label>}
         </article>
     );

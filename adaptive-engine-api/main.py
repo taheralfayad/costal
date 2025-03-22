@@ -150,9 +150,9 @@ def run_model_on_response(request: RunModelOnResponseRequest):
         pickle.dump(mab, f)
 
     prediction_json = {
-        "state_prediction": predictions_after.iloc[0]["state_predictions"],
-        "next_question": next_question,
-        "reward": reward[0],
+        "state_prediction": float(predictions_after.iloc[0]["state_predictions"]),
+        "next_question": int(next_question),
+        "reward": float(reward[0]),
     }
 
     return prediction_json

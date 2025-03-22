@@ -41,6 +41,29 @@ from lti.serializers import (
     CourseSerializer,
 )
 
+def get_assignment_completion_percentage(assignment, user):
+    total_questions = assignment.questions.count()
+    completed_questions = 0
+
+    for question in assignment.questions.all():
+        q_attempts = QuestionAttempt.objects.filter(
+            user=user,
+            associated_assignment=assignment,
+            associated_question=question,
+        )
+        success = q_attempts.filter(grade_for_question_attempt__gt=0).exists()
+        fail = q_attempts.filter(grade_for_question_attempt=0).count() >= 3
+
+        if success or fail:
+            completed_questions += 1
+
+    if total_questions == 0:
+        return 0  # Avoid division by zero, or maybe return 100% if you consider no questions = done
+
+    percentage = (completed_questions / total_questions) * 100
+    return round(percentage, 2)  # Round to 2 decimal places
+
+
 def check_if_assignment_is_completed(assignment, user):
     completed = True
 
@@ -637,6 +660,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
         successful_attempt = question_attempts.filter(grade_for_question_attempt__gt=0).exists()
         failed_attempts = question_attempts.filter(grade_for_question_attempt=0).count() >= 3
 
+        assignment_completion_percentage = get_assignment_completion_percentage(assignment, user)
+
         if check_if_assignment_is_completed(assignment, user):
             assignment_attempt.status = 2
             assignment_attempt.save()
@@ -647,14 +672,27 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 return Response({"message": "No more questions to ask", "assessment_status": "completed"}, status=status.HTTP_200_OK)
             assignment_attempt.current_question_attempt = random_question
             assignment_attempt.save()
-            return Response(QuestionSerializer(random_question).data, status=status.HTTP_200_OK)
+            data = {
+                "question": QuestionSerializer(random_question).data,
+                "assignment_completion_percentage": assignment_completion_percentage
+            }
+
+            return Response(data, status=status.HTTP_200_OK)
+
 
 
         assignment_attempt.current_question_attempt = next_question
+        assignment_attempt.completion_percentage = assignment_completion_percentage
         assignment_attempt.save()
 
 
-        return Response(QuestionSerializer(next_question).data, status=status.HTTP_200_OK)
+        data = {
+            "question": QuestionSerializer(next_question).data,
+            "assignment_completion_percentage": assignment_completion_percentage,
+        }
+
+
+        return Response(data, status=status.HTTP_200_OK)
 
 
     @action(detail=False, methods=["post"], url_path="answer_quiz_question")
@@ -745,7 +783,18 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question_data = question_serializer.data.copy()
         question_data["associated_skill"] = skill_serializer.data
 
-        return Response(question_data, status=status.HTTP_200_OK)
+        assignment_completion_percentage = get_assignment_completion_percentage(assignment, user)
+
+        assignment_attempt.current_question_attempt = next_question
+        assignment_attempt.completion_percentage = assignment_completion_percentage
+        assignment_attempt.save()
+
+        data = {
+            "question": question_data,
+            "assignment_completion_percentage": assignment_completion_percentage,
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
 
 
     @action(detail=False, methods=['get'], url_path='get_first_question_for_assignment/(?P<assignment_id>[^/.]+)')

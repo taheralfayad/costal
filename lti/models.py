@@ -89,6 +89,7 @@ class AssignmentAttempt(models.Model):
     total_grade = models.IntegerField(default=0)
     total_time_spent = models.IntegerField(default=0)
     associated_assignment = models.ForeignKey("Assignment", on_delete=models.CASCADE, null=True, blank=True)
+    completion_percentage = models.FloatField(default=0.0)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=NOT_STARTED)
 
 class QuestionAttempt(models.Model):

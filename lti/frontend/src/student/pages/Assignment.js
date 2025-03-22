@@ -20,6 +20,7 @@ const Assignment = () => {
   const [question, setQuestion] = useState(location.state.question)
   const [assignmentAttempt, setAssignmentAttempt] = useState(location.state.assignmentAttempt)
   const [assignment, setAssignment] = useState(location.state.assignment)
+  const [assignmentCompletionPercentage, setAssignmentCompletionPercentage] = useState(location.state.assignmentAttempt.completion_percentage)
   const [answerChoices, setAnswerChoices] = useState([])
   const [answerChoice, setAnswerChoice] = useState(null);
 
@@ -56,12 +57,16 @@ const Assignment = () => {
 
         const data = await response.json()
 
+        const question = data.question
+        const assignment_completion_percentage = data.assignment_completion_percentage
+
         if (response.ok) {
           if (data.assessment_status === 'completed') {
             navigate('/lti/student_landing/')
           }
 
-          setQuestion(data)
+          setQuestion(question)
+          setAssignmentCompletionPercentage(assignment_completion_percentage)         
           setAnswerChoice(null)
           setSeconds(0)
         }
@@ -74,12 +79,24 @@ const Assignment = () => {
 
         const data = await response.json()
 
+        console.log(data)
+
+        let question = null
+        let assignment_completion_percentage = null
+
+
+        if (data.question) {
+          question = data.question
+          assignment_completion_percentage = data.assignment_completion_percentage
+        }
+
         if (response.ok) {
           if (data.assessment_status === 'completed') {
             navigate('/lti/student_landing/')
           }
 
-          setQuestion(data)
+          setQuestion(question)
+          setAssignmentCompletionPercentage(assignment_completion_percentage)
           setAnswerChoice(null)
           setSeconds
        } 
@@ -135,7 +152,7 @@ useEffect(() => {
             <span onClick={() => setMenuOpen(!isMenuOpen)}><Menu /></span>
             <Title>{question.associated_skill.name}</Title>
           </section>
-          <ProgressBar percentage={20} />
+          <ProgressBar percentage={assignmentCompletionPercentage} />
         </header>
 
         <section className='bg-[#f8f8f8] h-full py-8'>
