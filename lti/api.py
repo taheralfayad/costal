@@ -654,7 +654,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question_attempts = QuestionAttempt.objects.filter(
             user=user,
             associated_assignment=assignment,
-            associated_question=question,
+            associated_question=next_question,
         )
 
         successful_attempt = question_attempts.filter(grade_for_question_attempt__gt=0).exists()
