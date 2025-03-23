@@ -367,8 +367,13 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         
         assignment_attempt_serializer = AssignmentAttemptSerializer(assignment_attempt)
 
+        total_assignment_points = sum(question.num_points for question in assignment.questions.all())
 
-        return Response(assignment_attempt_serializer.data, status=status.HTTP_200_OK)
+        data = assignment_attempt_serializer.data
+        data["possible_points"] = total_assignment_points
+
+
+        return Response(data, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -669,6 +674,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
         elif successful_attempt or failed_attempts:
             random_question = get_valid_random_question(assignment, user)
             if random_question is None:
+                assignment_attempt.status = 2
+                assignment_attempt.save()
                 return Response({"message": "No more questions to ask", "assessment_status": "completed"}, status=status.HTTP_200_OK)
             assignment_attempt.current_question_attempt = random_question
             assignment_attempt.save()
@@ -740,7 +747,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         assignment_attempt.attempted_questions.add(question_attempt)
         assignment_attempt.total_time_spent += question_attempt.time_spent_on_question
-        assignment_attempt.total_grade += question.num_points
+        assignment_attempt.total_grade += question.num_points if answer_choice.is_correct else 0
 
         assignment_attempt.save()
 

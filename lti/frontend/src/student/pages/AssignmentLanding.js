@@ -129,15 +129,17 @@ const AssignmentLanding = ({ percentageTotal }) => {
         }
     }
 
+    const calculatePercentage = () => {
+      var round = Math.round
+      return round(assignmentAttempt.total_grade / assignmentAttempt.possible_points * 100)
+    }
+
     const renderStatus = () => {
-        if (percentageTotal == 0) {
+        if (assignmentAttempt.status == 0) {
             return 'Not Started'
         }
-        else if (percentageTotal == 100) {
-            return 'Completed'
-        }
         else {
-            return `${percentageTotal}% Mastery`
+            return `${calculatePercentage()}% `
         }
     }
 
@@ -183,17 +185,6 @@ const AssignmentLanding = ({ percentageTotal }) => {
 
     }
 
-    const subObjectives = [
-        {
-            title: 'Objective 1.1.1',
-            percentage: 10
-        },
-        {
-            title: 'Objective 1.1.2',
-            percentage: 100
-        }
-    ]
-
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -228,7 +219,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
                             {/*<TaskSummary title='Due' description='October 11, 2024'
                                 nextLine='12:00pm EST'
                             /> */}
-                            <TaskSummary title='Status' description={renderStatus()}
+                            <TaskSummary title='Assignment Grade' description={renderStatus()}
                             />
                             {renderThirdTaskSummary()}
                         </section>
