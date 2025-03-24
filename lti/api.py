@@ -322,6 +322,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="add_question")
     def add_question(self, request):
+        
         data = request.data
         assignment = Assignment.objects.get(id=data["assignment_id"])
         question = Question.objects.get(id=data["question_id"])
@@ -452,6 +453,23 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["post"], url_path="delete_question_from_assignment")
+    def delete_question_from_assignment(self, request):
+        data = request.data
+        try:
+            assignment = Assignment.objects.get(id=data["assignment_id"])
+            question = Question.objects.get(id=data["question_id"])
+            
+            if question in assignment.questions.all():
+                assignment.questions.remove(question)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response({"error": "Question not found in the assignment"}, status=status.HTTP_400_BAD_REQUEST)
+        except Assignment.DoesNotExist:
+            return Response({"error": "Assignment not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found"}, status=status.HTTP_404_NOT_FOUND)
     
     @action(detail=False, methods=['post'], url_path='edit_question/(?P<question_id>[^/.]+)')
     def edit_question(self, request, question_id):
@@ -966,6 +984,38 @@ class ModuleViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+    @action(detail=False, methods=["get"], url_path="get_questions_by_module/(?P<module_id>[^/.]+)/(?P<assignment_id>[^/.]+)?")
+    def get_questions_by_module(self, request, module_id=None, assignment_id=None):
+        try:
+            module = Module.objects.get(id=module_id)
+            response = {
+                "id": module.id,
+                "name": module.name,
+                "questions": [],
+            }
+
+            assignment_filter = None
+            selected_question_ids = set()
+
+            if assignment_id:
+                assignment_filter = Assignment.objects.filter(id=assignment_id, associated_module=module).first()
+                response['assignment_name'] = assignment_filter.name
+                if not assignment_filter:
+                    return Response({"error": "Assignment not found in this module"}, status=status.HTTP_404_NOT_FOUND)
+                selected_question_ids = set(assignment_filter.questions.values_list("id", flat=True))
+
+            for assignment in module.assignments.all():
+                serializer = QuestionSerializer(assignment.questions.all(), many=True)
+                for question in serializer.data:
+                    question["is_selected"] = question["id"] in selected_question_ids
+                    response["questions"].append(question)
+
+            return Response(response, status=status.HTTP_200_OK)
+        except Module.DoesNotExist:
+            return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
     @action(detail=False, methods=["post"], url_path="create_module")
     def create_module(self, request):
         data = request.data

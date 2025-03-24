@@ -130,7 +130,6 @@ const EditQuestion = () => {
         const skillID = objectives.find(item => item.name === objective).id;
         const formData = new FormData();
 
-        formData.append('assignment_id', assignmentId);
         formData.append('name', name);
         formData.append('skill_id', skillID);
         formData.append('difficulty', difficulty);

@@ -47,7 +47,7 @@ class ModuleSerializer(serializers.ModelSerializer):
 class PossibleAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = PossibleAnswer
-        fields = ('id', 'answer', 'related_question')
+        fields = ('id', 'answer', 'is_correct', 'related_question')
 
 
 class QuestionSerializer(serializers.ModelSerializer):

@@ -3,7 +3,7 @@ import DotsVertical from '../../assets/dots-vertical.svg';
 import { CorrectAnswer } from '../../design-system';
 import DropdownMenu from './DropdownMenu';
 
-const PreviewQuestion = ({ title, points, percentage, question, placeholder = 'Placeholder', correctAnswer, type, possibleAnswers, handleDeleteQuestion, handleEditQuestion, id }) => {
+const PreviewQuestion = ({ title, points, percentage, question, placeholder = 'Placeholder', correctAnswer, type, possibleAnswers, handleDeleteQuestion, handleEditQuestion, id, handleDeleteFromAssignment }) => {
 
   const renderQuestionType = () => {
     if (type == 'short') {
@@ -39,7 +39,7 @@ const PreviewQuestion = ({ title, points, percentage, question, placeholder = 'P
         <h3 className="text-slate-900 font-medium text-base">{title}</h3>
         <button className="text-slate-400">
           <div className="flex flex-col space-y-1">
-          <DropdownMenu editFunction={handleEditQuestion} deleteFunction={handleDeleteQuestion} idOfObject={id} nameOfObject={title} objectType='QUESTION' />
+          <DropdownMenu editFunction={handleEditQuestion} deleteFunction={handleDeleteQuestion} idOfObject={id} nameOfObject={title} objectType='QUESTION' handleDeleteFromAssignment={handleDeleteFromAssignment} />
           </div>
         </button>
       </header>

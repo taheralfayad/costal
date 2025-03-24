@@ -12,6 +12,7 @@ import PlusGIcon from '../../assets/plus-green.svg';
 
 const AddQuestions = () => {
   const [assignment, setAssignment] = useState({});
+  const [moduleId, setModuleId] = useState('')
   const [startDate, setStartDate] = useState('');
   const [questions, setQuestions] = useState([]);
   const [endDate, setEndDate] = useState('');
@@ -24,13 +25,16 @@ const AddQuestions = () => {
     navigate(`/lti/create_question/${assignmentId}`)
   }
 
-
+  const navigateToSelectQuestions = () => {
+    navigate(`/lti/select_questions/${moduleId}/${assignmentId}/`)
+  }
 
   const getAssignment = async () => {
     try {
       const response = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
       const data = await response.json();
       setAssignment(data);
+      setModuleId(data.associated_module)
       for (let i = 0; i < data.questions.length; i++) {
         let question = data.questions[i];
         let possibleAnswers = question.possible_answers;
@@ -84,6 +88,25 @@ const AddQuestions = () => {
     return (<LoadingPage />)
   }
 
+  const handleDeleteFromAssignment = async (questionId) => {
+    try {
+      const formData = new FormData();
+      formData.append('question_id', questionId);
+      formData.append('assignment_id', assignmentId);
+
+      const response = await fetch(`/lti/api/questions/delete_question_from_assignment/`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.status === 204) {
+        getAssignment()
+      }
+
+    } catch (error) {
+      console.error('Error deleting question:', error);
+    }
+  }
 
   const handleDeleteQuestion = async (questionId) => {
     try {
@@ -145,7 +168,8 @@ const AddQuestions = () => {
           </section>
           <section className='flex gap-2 pr-4'>
             <Button label='Add a question' icon={<PlusIcon />} onClick={() => navigateToCreateQuestion()} />
-            <Button label='Add an LLM generated question' type='outline' icon={<PlusGIcon />} />
+            <Button label='Add an LLM generated question' icon={<PlusIcon />} />
+            <Button label='Question Bank' type='outline' onClick={() => navigateToSelectQuestions()} />
           </section>
         </section>
       </header>
@@ -166,16 +190,13 @@ const AddQuestions = () => {
       </section></>)
   }
 
-  const renderBody = () => {
-
-  }
 
   return (
     <main className='p-6 pl-10 flex flex-col gap-4'>
       {renderHeader()}
 
       {assignment.questions.length > 0 ?
-        <section className='flex flex-col gap-4 h-full bg-gray-100'><QuestionList questions={questions} handleDeleteQuestion={handleDeleteQuestion} /></section>
+        <section className='flex flex-col gap-4 h-full bg-gray-100'><QuestionList questions={questions} handleDeleteQuestion={handleDeleteQuestion} handleDeleteFromAssignment={handleDeleteFromAssignment} /></section>
         : <section className="flex flex-col gap-4 justify-center items-center">
           <span className='flex flex-col justify-center items-center'>
             <Writing />
@@ -186,6 +207,7 @@ const AddQuestions = () => {
             <Button label='Add a question' icon={<PlusIcon />} onClick={() => navigateToCreateQuestion()} />
             <Button label='Add an LLM generated question' type='outline' icon={<PlusGIcon />} />
           </section>
+          <Button label='Search Question Bank' type='gray' onClick={() => navigateToSelectQuestions()} />
         </section>}
     </main>
   );
