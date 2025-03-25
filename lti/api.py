@@ -113,6 +113,62 @@ from qgservice.engine import LLMEngine  # Import LLM service
 llm_service = LLMEngine()
 
 
+
+def add_assignment_to_canvas(course_id, assignment, api_key):
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        course = canvas.get_course(course_id)
+
+        created_assignment = course.create_assignment({
+            'name': assignment.name,
+            'points_possible': 100,
+            'due_at': assignment.end_date,
+            'description': 'This assignment has been automatically created by COSTAL.',
+        })
+
+        assignment.canvas_id = created_assignment.id
+        assignment.save()
+
+    except Exception as e:
+        print(f"Error creating assignment: {assignment.name} in Canvas: {e}")
+
+
+def update_assignment_in_canvas(course_id, assignment, api_key):
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        course = canvas.get_course(course_id)
+
+        canvas_assignment = course.get_assignment(assignment.canvas_id)
+        update_params = {}
+        
+        if canvas_assignment.name != assignment.name:
+            update_params['name'] = assignment.name
+        
+        if canvas_assignment.due_at != assignment.end_date:
+            update_params['due_at'] = assignment.end_date
+        
+        if update_params:
+            canvas_assignment.edit(assignment=update_params)
+        
+    except Exception as e:
+        print(f"Error updating assignment: {assignment.name} in Canvas: {e}")
+
+
+def submit_grade_to_canvas(course_id, assignment, api_key, grade):
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        course = canvas.get_course(course_id)
+
+        canvas_assignment = course.get_assignment(assignment.canvas_id) 
+        canvas_assignment.submit(
+            submission={
+                'posted_grade': grade
+            }
+        )
+    except Exception as e:
+        print(f"Error submitting grade for assignment: {assignment.name} in Canvas: {e}")
+    
+
 class TextbookViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
 
@@ -241,8 +297,10 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         start_date = datetime.datetime.strptime(data["start_date"], "%Y-%m-%dT%H:%M")
         end_date = datetime.datetime.strptime(data["end_date"], "%Y-%m-%dT%H:%M")
 
-        course = Course.objects.get(course_id=data["course_id"])
-        module = Module.objects.get(id=data["module_id"])
+        course_id, module_id = data["course_id"], data["module_id"]
+        canvas_api_key = request.session["api_key"]
+        course = Course.objects.get(course_id=course_id)
+        module = Module.objects.get(id=module_id)
 
         assignment = Assignment(
             name=data["name"],
@@ -252,6 +310,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             assessment_type=data["assessment_type"],
             associated_module=module,
         )
+        add_assignment_to_canvas(course_id, assignment, canvas_api_key)
 
         assignment.save()
         module.assignments.add(assignment)
@@ -321,7 +380,10 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         if "assessment_type" in data:
             assignment.assessment_type = data["assessment_type"]
 
-        assignment.save()
+        assignment.save()            
+        if assignment.assessment_type != "prequiz":
+            update_assignment_in_canvas(assignment.course_id, assignment, request.session["api_key"])
+
         return Response(
             {"message": "Assignment updated successfully"}, status=status.HTTP_200_OK
         )
@@ -361,7 +423,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_current_assignment_attempt(self, request, assignment_id=None):
         user_id = request.query_params.get('user_id')
 
-        user = get_object_or_404(CanvasUser, id=user_id)
+        user = get_object_or_404(CanvasUser, uid=user_id)
         assignment = get_object_or_404(Assignment, id=assignment_id)
 
         assignment_attempt = AssignmentAttempt.objects.filter(associated_assignment=assignment, user=user)
@@ -397,7 +459,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='student_has_completed_prequizzes/(?P<user_id>[^/.]+)')
     def student_has_completed_prequizzes(self, request, user_id=None):
-        user = CanvasUser.objects.get(id=user_id)
+        user = CanvasUser.objects.get(uid=user_id)
         course_id = request.query_params.get('course_id')
         course = Course.objects.get(course_id=course_id)
         course_modules = Module.objects.filter(course=course)
@@ -641,7 +703,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def answer_question(self, request):
         data = request.data
         assignment = Assignment.objects.get(id=data['assignment_id'])
-        user = CanvasUser.objects.get(id=data['user_id'])
+        user = CanvasUser.objects.get(uid=data['user_id'])
         question = Question.objects.get(id=data['question_id'])
         number_of_seconds_to_answer = int(data['number_of_seconds_to_answer'])
         assignment_attempt = AssignmentAttempt.objects.get(id=data['assignment_attempt_id'])
@@ -721,6 +783,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
         if check_if_assignment_is_completed(assignment, user):
             assignment_attempt.status = 2
             assignment_attempt.save()
+
+            if assignment.assessment_type != "prequiz":
+                submit_grade_to_canvas(assignment.course_id, assignment, assignment_completion_percentage)
             return Response({"message": "Assignment completed", "assessment_status": "completed"}, status=status.HTTP_200_OK)
         elif successful_attempt or failed_attempts:
             random_question = get_valid_random_question(assignment, user)
@@ -758,7 +823,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         data = request.data
         assignment = Assignment.objects.get(id=data["assignment_id"])
         assignment_attempt = AssignmentAttempt.objects.get(id=data["assignment_attempt_id"])
-        user = CanvasUser.objects.get(id=data["user_id"])
+        user = CanvasUser.objects.get(uid=data["user_id"])
         question = Question.objects.get(id=data["question_id"])
 
         if "answer_choice" in data:
