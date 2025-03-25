@@ -1,11 +1,9 @@
-import React, { useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Title } from '../../design-system';
-import Toggle from '../../design-system/Toggle';
 import ChapterDropdown from '../components/ChapterDropdown';
-import StatsCard from '../components/StatsCard';
-import Topic from '../components/Topic';
 import LoadingPage from '../components/LoadingPage.js';
+import Trash from '../../assets/trash-can.svg';
 
 
 const SelectObjectives = () => {
@@ -20,14 +18,13 @@ const SelectObjectives = () => {
       [moduleId]: value,
     }));
   };
-  
+
 
   const handleAddObjective = async (moduleId) => {
     const newObjective = moduleObjectives[moduleId]?.trim();
     if (!newObjective) return; // Prevent empty submissions
-  
-    console.log(moduleId, newObjective);
-  
+
+
     try {
       const response = await fetch(`/lti/api/modules/add_objective_to_module/${moduleId}/`, {
         method: 'POST',
@@ -36,19 +33,14 @@ const SelectObjectives = () => {
         },
         body: JSON.stringify({ title: newObjective }),
       });
-  
+
       if (response.ok) {
-        const updatedModules = modules.map((module) =>
-          module.id === moduleId
-            ? { ...module, skills: [...module.skills, { id: Date.now(), chapter: '', name: newObjective, description: '' }] }
-            : module
-        );
-        setModules(updatedModules);
+        retrieveModules()
       }
     } catch (error) {
       console.error('Error adding objective:', error);
     }
-  
+
     // Clear the input field for this module
     setModuleObjectives((prev) => ({
       ...prev,
@@ -72,9 +64,29 @@ const SelectObjectives = () => {
     retrieveModules();
   }, []);
 
+  const handleDeleteObjective = async (id) => {
+    console.log(id)
+    try {
+      const formData = new FormData();
+      formData.append('skill_id', id);
 
+      const response = await fetch(`/lti/api/skills/delete_skill/`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.status === 204) {
+        retrieveModules()
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
+  }
+
+  console.log(module.skills)
   if (loading) {
-    return (<LoadingPage/>)
+    return (<LoadingPage />)
   }
 
   return (
@@ -83,57 +95,38 @@ const SelectObjectives = () => {
 
       <section className='flex justify-between items-top'>
         <section className='w-3/5'>
-          {/* <ChapterDropdown chapterTitle='Chapter 1:'>
+          {modules && modules.map((module) => {
 
-            <Topic chapter='1.1 Lorem Ipsum' title='Lorem Ipsum' description='Lorem Ipsum' />
-          </ChapterDropdown>
-          <ChapterDropdown chapterTitle='Chapter 2:'>
+            return (
+              <ChapterDropdown chapterTitle={module.name} key={module.id}>
+                {module.skills &&
+                  module.skills.map((topic) => (
+                    <section className='flex gap-2 justify-between'>
+                      <article className='border w-[90%] rounded-lg p-4 shadow-sm bg-white mb-4'>
+                        <p className='text-gray-800 text-sm font-medium'>{topic.name}</p>
+                      </article>
+                      <span className='pt-4'>
+                        <Trash onClick={() => handleDeleteObjective(topic.id)}
+                          className='text-slate-500 hover:text-red-600' />
+                      </span>
+                    </section>
+                  ))}
 
-            <Topic chapter='2.1 Lorem Ipsum' title='Lorem Ipsum' description='Lorem Ipsum' />
-          </ChapterDropdown>
-          <ChapterDropdown chapterTitle='Chapter 3:'>
-
-            <Topic chapter='3.1 Lorem Ipsum' title='Lorem Ipsum' description='Lorem Ipsum' />
-          </ChapterDropdown>
-
-
-          <ChapterDropdown chapterTitle='Chapter 4:'>
-            <Topic chapter='4.1 Linear Regression' title='Gradient Descent' description='Lorem Ipsum' />
-
-            <Topic chapter='4.2 Logistic Regression' title='Lorem Ipsum' description='Lorem Ipsum' />
-          </ChapterDropdown> */}
-        {modules && modules.map((module) => {
-
-          return (
-            <ChapterDropdown chapterTitle={module.name} key={module.id}>
-              {module.skills &&
-                module.skills.map((topic) => (
-                  <Topic topic={topic.name} />
-                ))}
-
-              <Input label="Add Objective" value={moduleObjectives[module.id] || ''} onChange={(e) => handleInputChange(module.id, e.target.value)} />
-              <Button label="Save" onClick={() => handleAddObjective(module.id)} />
-            </ChapterDropdown>
-          );
-        })}
+                <Input label="Add Objective" value={moduleObjectives[module.id] || ''} onChange={(e) => handleInputChange(module.id, e.target.value)} />
+                <Button label="Save" onClick={() => handleAddObjective(module.id)} />
+              </ChapterDropdown>
+            );
+          })}
 
         </section>
-        <aside className='w-1/4 h-60 border border-slate-300 rounded-lg shadow-sm p-6'>
-          <Input label='Questions Per Objective' type='number' min={1} max={15} />
-          <section className='flex justify-between items-top'>
-            <Toggle />
-            <p className='w-4/5 text-slate-900 text-sm font-medium pl-1'>Toggle Only Objectives Not Assigned</p>
-          </section>
-        </aside>
+
       </section>
 
-      <section className='flex justify-between items-center mt-6'>
-        <StatsCard objectives={4} questions={4} points={4} />
-        <section className='flex justify-end gap-2 pr-4'>
-          <Button label='Save' />
-          <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')}/>
-        </section>
+
+      <section className='flex justify-end gap-2 pr-4'>
+        <Button label='Go back' onClick={() => navigate('/lti/course_outline')} />
       </section>
+
     </main>
   );
 }

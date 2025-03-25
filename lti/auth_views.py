@@ -11,6 +11,7 @@ from lti.models import CanvasUser, Course
 
 load_dotenv()
 
+
 def oauth_login(request):
     query_params = QueryDict(mutable=True)
     query_params["client_id"] = settings.API_CLIENT_ID
@@ -21,7 +22,8 @@ def oauth_login(request):
         .rstrip("/")
     )
     query_params["redirect_uri"] = redirect_uri
-    query_string = query_params.urlencode() 
+    print(f"Redirect URI: {redirect_uri}")
+    query_string = query_params.urlencode()
     return redirect(settings.CANVAS_URL + "/login/oauth2/auth?" + query_string)
 
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Button, Checkbox, DatePicker, Dropdown, Input, Title } from '../../design-system';
+import { Button, Checkbox, DatePicker, Dropdown, Input, Notification, Title } from '../../design-system';
 import CourseInfo from '../components/CourseInfo';
 import ChevronDown from '../../assets/chevron-down.svg';
 import Menu from '../../assets/menu.svg'
 import Arrow from '../../assets/arrow-left.svg';
 import DropdownMenu from '../components/DropdownMenu';
 import LoadingPage from '../components/LoadingPage.js';
+import DeleteModal from '../components/DeleteModal';
 
 const CourseOutline = () => {
     const navigate = useNavigate();
@@ -26,7 +27,9 @@ const CourseOutline = () => {
             isTableVisible: true,
             isEditing: false
         }]);
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedModule, setSelectedModule] = useState(null);
+    const [selectedModuleName, setSelectedModuleName] = useState('')
 
     const formatTimeStamps = (timestamp) => {
         const date = new Date(timestamp);
@@ -36,6 +39,51 @@ const CourseOutline = () => {
         });
     };
 
+    const updateDateOnly = (isoString, newDate) => {
+        const originalDate = new Date(isoString);
+    
+        const parsedNewDate = new Date(newDate);
+        if (isNaN(parsedNewDate.getTime())) {
+            throw new Error(`Invalid date: ${newDate}`);
+        }
+    
+        originalDate.setFullYear(parsedNewDate.getFullYear());
+        originalDate.setMonth(parsedNewDate.getMonth());
+        originalDate.setDate(parsedNewDate.getDate());
+    
+        return originalDate;
+    };
+
+
+    const handleOpenModal = (id, name) => {
+        
+        setSelectedModule(id);
+        setSelectedModuleName(name)
+          
+        setIsModalOpen(true);
+        
+    }
+
+    const handleDeleteModule = async (id) => {
+        console.log(id)
+        try {
+          const formData = new FormData();
+          formData.append('module_id', id);
+    
+          const response = await fetch(`/lti/api/modules/delete_module/`, {
+            method: 'POST',
+            body: formData
+          });
+    
+          if (response.status === 204) {
+            retrieveModules()
+            setIsModalOpen(false)
+          }
+        }
+        catch (error) {
+          console.error(error);
+        }
+      }
 
     const retrieveModules = async () => {
         try {
@@ -43,7 +91,19 @@ const CourseOutline = () => {
 
             const newData = await response.json();
 
+
+            for (let i=0 ; i < newData.length; i++) {
+                const prequizResponse = await fetch(`/lti/api/assignments/get_prequiz/${newData[i].id}`);
+                
+                if (prequizResponse.ok) {
+                    const prequizData = await prequizResponse.json();
+                    newData[i].rows.unshift(prequizData);
+                }
+            }
+            
+            console.log(newData)
             setData(newData);
+            console.log(newData)
 
         } catch (error) {
             console.error(error);
@@ -58,10 +118,13 @@ const CourseOutline = () => {
 
     useEffect(() => {
         if (data) {
+            console.log(data)
             setModules(data.map(d => ({
                 id: d.id,
                 name: d.name,
                 rows: d.rows || [],
+                prequiz: d.prequiz,
+                skills: d.skills,
                 isOrdering: false,
                 allChecked: false,
                 checkedRows: Array((d.rows || []).length).fill(false),
@@ -112,21 +175,7 @@ const CourseOutline = () => {
     };
 
     const handleSaveNewModule = async () => {
-        const newModule = {
-            id: modules.length + 1,
-            name: newModuleName,
-            rows: [],
-            isOrdering: false,
-            allChecked: false,
-            checkedRows: [],
-            isStartDateOpen: false,
-            isEndDateOpen: false,
-            isTableVisible: true,
-            isEditing: false
-        };
-        setModules([...modules, newModule]);
         setIsAddingModule(false);
-        setNewModuleName('');
 
         try {
             const response = await fetch('/lti/api/modules/create_module/', {
@@ -139,13 +188,13 @@ const CourseOutline = () => {
                     name: newModuleName
                 })
             });
-
-            const data = await response.json();
-            console.log(data);
+            if (response.ok) {
+                setNewModuleName('')
+                retrieveModules(); 
+            }
         }
         catch (error) {
-            console.error(error
-            );
+            console.error(error);
         }
     };
 
@@ -183,7 +232,31 @@ const CourseOutline = () => {
         }));
     };
 
-    const handleOrdering = (moduleId, isCancel = false) => {
+    const handleOrdering = async (moduleId, isCancel = false, isSaving = false) => {
+
+        if (isSaving) {
+            const moduleToUpdate = modules.find(module => module.id === moduleId);
+            if (!moduleToUpdate) return;
+            console.log(moduleToUpdate)
+            await fetch(`/lti/api/modules/update_assignment_order/${moduleId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    assignment_ids: moduleToUpdate.rows.map(row => row.id)
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to save module order');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving module order:', error);
+                });
+        }
+
         setModules(modules.map(module => {
             if (module.id === moduleId) {
                 if (!module.isOrdering) {
@@ -196,6 +269,8 @@ const CourseOutline = () => {
             }
             return module;
         }));
+
+
     };
 
 
@@ -216,6 +291,77 @@ const CourseOutline = () => {
             module.id === moduleId ? { ...module, isEndDateOpen: !module.isEndDateOpen } : module
         ));
     };
+
+    const handleSetStart = async (moduleId, newDate) => {
+        console.log('here')
+        console.log(newDate)
+        const targetModule = modules.find(module => module.id === moduleId);
+        const checkedAssignments = targetModule.rows.filter((_, index) => targetModule.checkedRows[index]);
+        try {
+            const responses = await Promise.all(
+                checkedAssignments.map(async (assignment) => {
+                    const updatedISODate = updateDateOnly(assignment.start_date, newDate);
+                    const response = await fetch(`/lti/api/assignments/edit_assignment/${assignment.id}/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            'start_date': updatedISODate.toISOString().slice(0, 16)
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to update assignment ${assignmentId}`);
+                    }
+
+                    return response.json();
+                })
+            );
+
+            console.log("Updated assignments:", responses);
+
+            handleStartDate(moduleId);
+            retrieveModules();
+        } catch (error) {
+            console.error("Error updating assignments:", error);
+        }
+
+
+    }
+
+    const handleSetEnd = async (moduleId, newDate) => {
+        console.log('here')
+        console.log(newDate)
+        const targetModule = modules.find(module => module.id === moduleId);
+        const checkedAssignments = targetModule.rows.filter((_, index) => targetModule.checkedRows[index]);
+        try {
+            const responses = await Promise.all(
+                checkedAssignments.map(async (assignment) => {
+                    const updatedISODate = updateDateOnly(assignment.start_date, newDate);
+
+                    const response = await fetch(`/lti/api/assignments/edit_assignment/${assignment.id}/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            'end_date': updatedISODate.toISOString().slice(0, 16)
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to update assignment ${assignmentId}`);
+                    }
+
+                    return response.json();
+                })
+            );
+
+            console.log("Updated assignments:", responses);
+
+            handleStartDate(moduleId);
+            retrieveModules();
+        } catch (error) {
+            console.error("Error updating assignments:", error);
+        }
+    }
 
     const handleEditClick = (moduleId) => {
         setModules(modules.map(module =>
@@ -269,11 +415,13 @@ const CourseOutline = () => {
     };
 
     const handleSort = (moduleId, type) => {
+
         setModules(modules.map(module => {
             if (module.id === moduleId) {
                 let sortedRows = [...module.rows];
                 if (type === 'alphabetically') {
                     sortedRows.sort((a, b) => a.topic.localeCompare(b.topic));
+                    console.log(sortedRows)
                 } else if (type === 'dueDate') {
                     sortedRows.sort((a, b) => new Date(a.end) - new Date(b.end));
                 }
@@ -322,7 +470,7 @@ const CourseOutline = () => {
                         {renderModuleName(module)}
                     </section>
                     <section className='flex gap-4'>
-                        <Button label='Save' onClick={() => handleOrdering(module.id)} />
+                        <Button label='Save' onClick={() => handleOrdering(module.id, false, true)} />
                         <Button label='Cancel' onClick={() => handleOrdering(module.id, true)} type='outline' />
                         <Dropdown label='' width='w-44' placeholder='Options' margin={false} options={[
                             { label: 'Alphabetically', onClick: () => handleSort(module.id, 'alphabetically') },
@@ -353,8 +501,8 @@ const CourseOutline = () => {
                         <Button label='Edit End Date' type='outline' onClick={() => handleEndDate(module.id)} />
                     </section>
 
-                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isStartDateOpen} handleCalendarOpen={() => handleStartDate(module.id)} />
-                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isEndDateOpen} handleCalendarOpen={() => handleEndDate(module.id)} />
+                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isStartDateOpen} handleCalendarOpen={() => handleStartDate(module.id)} onDateChange={(date) => handleSetStart(module.id, date)} />
+                    <DatePicker position='bottom-1 right-12' isCalendarOpen={module.isEndDateOpen} handleCalendarOpen={() => handleEndDate(module.id)} onDateChange={(date) => handleSetEnd(module.id, date)} />
                 </section>
             )
         }
@@ -372,16 +520,18 @@ const CourseOutline = () => {
                     {renderModuleName(module)}
                 </section>
                 <section className='flex gap-4'>
-                    <Button label='Add Assignment to Module' onClick={() => navigate(`/lti/create_assignment/${module.id}`)} />
+                    {(module.skills && !module.prequiz) && <Button label='Add Prequiz to Module' onClick={() => navigate(`/lti/create_prequiz/${module.id}`)} />}
+                    {module.prequiz && module.prequiz.is_valid && <Button label='Add Assignment to Module' onClick={() => navigate(`/lti/create_assignment/${module.id}`)} />}
                     <Button label='Add Objectives to Module' onClick={() => navigate('/lti/select_objectives/')} />
                     <Button label='Edit Order' onClick={() => handleOrdering(module.id)} type='outline' />
+                    <Button label='Delete Module' onClick={() => handleOpenModal(module.id, module.name)} />
                 </section>
             </section>
         )
     }
 
     if (loading) {
-      return(<LoadingPage/>)
+        return (<LoadingPage />)
     }
 
 
@@ -424,6 +574,9 @@ const CourseOutline = () => {
                 {modules.map(module => (
                     <section key={module.id}>
                         {renderMenu(module)}
+                        {!module.skills && <div className='mt-6 mx-16'><Notification type={'error'} message={'Please add an objective to this module before adding assignments'} /></div>}
+                        {(module.skills && !module.prequiz) && <div className='mt-6 mx-16'><Notification type={'error'} message={'Please add a prequiz to this module before adding assignments'} /></div>}
+                        {module.prequiz && !module.prequiz.is_valid && <div className='mt-6 mx-16'><Notification type={'error'} message={`Your prequiz does not cover all the objectives in this module. Missing objectives: ${module.prequiz.missing_skills.map(skill => skill.name).join(', ')}`} /></div>}
                         {module.isTableVisible &&
                             <section className='bg-white rounded-xl border border-slate-300 mt-6 mx-16'>
                                 {module.rows.length > 0 ? <table className='w-full'>
@@ -456,6 +609,14 @@ const CourseOutline = () => {
                     </section>
                 ))}
             </section>
+            <DeleteModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onDelete={() => handleDeleteModule(selectedModule)}
+        nameOfObjectToDelete={selectedModuleName}
+        objectType='MODULE'
+        modalType='DELETE_ITEM'
+      />
 
         </main>
     );

@@ -5,6 +5,7 @@ import Arrow from '../../assets/arrow-left.svg';
 import StarDark from '../../assets/star-dark.svg';
 import Menu from '../../assets/menu-alt.svg';
 import Cat from '../../assets/cat.svg';
+import LoadingPage from "../../instructor/components/LoadingPage.js"
 import TaskSummary from '../components/TaskSummary';
 import Objective from '../components/Objective';
 import SideMenu from '../components/SideMenu';
@@ -12,6 +13,9 @@ import SideMenu from '../components/SideMenu';
 const AssignmentLanding = ({ percentageTotal }) => {
     const [isMenuOpen, setMenuOpen] = useState(false)
     const [assignment, setAssignment] = useState(null)
+    const [objectivesData, setObjectivesData] = useState(null)
+    const [numberOfQuestionsInAssignment, setNumberOfQuestionsInAssignment] = useState(0)
+    const [assignmentAttempt, setAssignmentAttempt] = useState(null)
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(true)
     const { assignmentId } = useParams()
@@ -38,29 +42,86 @@ const AssignmentLanding = ({ percentageTotal }) => {
           setAssignment(data)
         } catch (error) {
           console.error('Error fetching assignment:', error)
-        } finally {
-          setIsLoading(false);
-        }
-      }
-      
-      const retrieveAssignmentObjectives = async () => {
-        const objectives = await fetch(`/lti/api/assignments/get_assignment_objectives/${assignmentId}`)
-      }
+        } 
+        
+      }      
 
       fetchAssignments();
-      retrieveAssignmentObjectives();
     }, [assignmentId])
 
+    useEffect(() => {
+      const retrieveAssignmentObjectives = async () => {
+        try {
+          const request = await fetch(`/lti/api/skills/get_skill_by_assignment_id/${assignmentId}`);
+          let data = await request.json()
+          let objectives = []
+          let numQuestions = 0
+          for (const i in data) {
+            let datum = data[i];
+            if (datum["questions"].length == 0) {
+              continue
+            }
+            numQuestions += datum["questions"].length
+            let tempObjective = {
+              "title": datum["name"],
+              "percentage": 0, // TODO: figure out a way to get a percentage estimate for each objective
+              "numberOfQuestions": datum["questions"].length
+            }
+            objectives.push(tempObjective)
+          }
+          setObjectivesData(objectives)
+          setNumberOfQuestionsInAssignment(numQuestions)
+        }
+        catch (error) {
+          console.log("Sorry, an error occurred!")
+        }
+      }
+
+      retrieveAssignmentObjectives()
+    }, [assignment])
+
+    
+    useEffect(() => {
+      const retrieveAssignmentAttempt = async () => {
+        try {
+          const request = await fetch(`/lti/api/assignments/get_current_assignment_attempt/${assignmentId}?user_id=${USER_ID}`)
+          const data = await request.json()
+          console.log(data)
+          setAssignmentAttempt(data)
+        } catch (error) {
+          console.log(data)
+        }
+      }
+
+      retrieveAssignmentAttempt()
+    }, [assignment])
+
+
+    useEffect(() => {
+      if (assignment && objectivesData && assignmentAttempt) {
+        setIsLoading(false);
+      }
+    }, [assignment, objectivesData, assignmentAttempt])
+
     const goBackToLanding = () => {
-      console.log(assignmentId)
       navigate('/lti/student_landing/')
+    }
+    
+    const goToAssignment = async () => {
+      try {
+        const request = await fetch(`/lti/api/questions/get_first_question_for_assignment/${assignmentId}?assignment_attempt_id=${assignmentAttempt.id}`)
+        const data = await request.json()
+        navigate(`/lti/assignment/${assignmentId}`, { state: {"question": data, "assignmentAttempt": assignmentAttempt, "assignment": assignment} })
+      } catch (error) {
+        console.log("Sorry, this request has failed!")
+      }
     }
 
     const renderButtonLabel = () => {
-        if (percentageTotal == 0) {
+        if (assignmentAttempt.status == 0) {
             return 'Get Started'
         }
-        else if (percentageTotal == 100) {
+        else if (assignmentAttempt.status == 2) {
             return 'Practice'
         }
         else {
@@ -68,15 +129,17 @@ const AssignmentLanding = ({ percentageTotal }) => {
         }
     }
 
+    const calculatePercentage = () => {
+      var round = Math.round
+      return round(assignmentAttempt.total_grade / assignmentAttempt.possible_points * 100)
+    }
+
     const renderStatus = () => {
-        if (percentageTotal == 0) {
+        if (assignmentAttempt.status == 0) {
             return 'Not Started'
         }
-        else if (percentageTotal == 100) {
-            return 'Completed'
-        }
         else {
-            return `${percentageTotal}% Mastery`
+            return `${calculatePercentage()}% `
         }
     }
 
@@ -102,43 +165,30 @@ const AssignmentLanding = ({ percentageTotal }) => {
         }
         else {
             return <section className='flex flex-col w-full'>
+                        <section className='flex w-full justify-between items-center border-b border-slate-300 p-6'>
+                            <section className='flex gap-4'>
+                                <StarDark />
+                                <section>
+                                    <h4 className='text-slate-900 text-base font-medium mb-2'>Assigned Activity</h4>
+                                    <p className='text-slate-700 text-xs font-medium'>Material from Assigned Objectives</p>
+                                </section>
 
-
-                <section className='flex w-full justify-between items-center border-b border-slate-300 p-6'>
-                    <section className='flex gap-4'>
-                        <StarDark />
-                        <section>
-                            <h4 className='text-slate-900 text-base font-medium mb-2'>Assigned Activity</h4>
-                            <p className='text-slate-700 text-xs font-medium'>Material from Assigned Objectives</p>
+                            </section>
+                            <p className='text-slate-900 text-base font-medium'>{numberOfQuestionsInAssignment}</p>
                         </section>
-
+                        <section className='flex w-full justify-between items-center p-4 px-8'>
+                            <p className='text-slate-600 text-base font-medium'>Last active a minute ago</p>
+                            <Button label='View Activity Details' type='outline' className='px-7 py-3' />
+                        </section>
                     </section>
-                    <p className='text-slate-900 text-base font-medium'>10</p>
-                </section>
-                <section className='flex w-full justify-between items-center p-4 px-8'>
-                    <p className='text-slate-600 text-base font-medium'>Last active a minute ago</p>
-                    <Button label='View Activity Details' type='outline' className='px-7 py-3' />
-                </section>
-            </section>
         }
 
     }
 
-    const subObjectives = [
-        {
-            title: 'Objective 1.1.1',
-            percentage: 10
-        },
-        {
-            title: 'Objective 1.1.2',
-            percentage: 100
-        }
-    ]
-
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <CircularProgressChart />
+              <LoadingPage/>
             </div>
         )
     }
@@ -169,13 +219,13 @@ const AssignmentLanding = ({ percentageTotal }) => {
                             {/*<TaskSummary title='Due' description='October 11, 2024'
                                 nextLine='12:00pm EST'
                             /> */}
-                            <TaskSummary title='Status' description={renderStatus()}
+                            <TaskSummary title='Assignment Grade' description={renderStatus()}
                             />
                             {renderThirdTaskSummary()}
                         </section>
 
                         <section>
-                            <Button label={renderButtonLabel()} className='px-7 py-3' />
+                            <Button label={renderButtonLabel()} className='px-7 py-3' onClick={() => goToAssignment()}/>
                         </section>
                     </section>
                 </header>
@@ -188,9 +238,8 @@ const AssignmentLanding = ({ percentageTotal }) => {
 
                     <h3 className='text-slate-900 text-lg font-medium ml-12 py-4'>Objectives</h3>
                     <section className='bg-white rounded-xl border border-slate-300 mx-8'>
-                        <Objective title='Objective 1.1' estimateQuestions='1-2 Questions' subObjectives={subObjectives} />
+                        <Objective subObjectives={objectivesData} />
                     </section>
-
                 </section>
             </section>
         </main>

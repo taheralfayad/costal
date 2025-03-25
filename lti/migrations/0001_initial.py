@@ -8,33 +8,56 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='CanvasUser',
+            name="CanvasUser",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uid', models.CharField(max_length=200)),
-                ('refresh_token', models.CharField(max_length=255, null=True)),
-                ('expires_in', models.BigIntegerField(default=0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("uid", models.CharField(max_length=200)),
+                ("refresh_token", models.CharField(max_length=255, null=True)),
+                ("expires_in", models.BigIntegerField(default=0)),
             ],
         ),
         migrations.CreateModel(
-            name='Deployment',
+            name="Deployment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('deployment_id', models.CharField(max_length=255)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("deployment_id", models.CharField(max_length=255)),
             ],
         ),
         migrations.CreateModel(
-            name='Key',
+            name="Key",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('public_key', models.TextField()),
-                ('private_key', models.TextField()),
-                ('alg', models.TextField(default='RS256')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("public_key", models.TextField()),
+                ("private_key", models.TextField()),
+                ("alg", models.TextField(default="RS256")),
             ],
         ),
         migrations.CreateModel(
@@ -145,7 +168,9 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='lti.skill'),
         ),
         migrations.AddConstraint(
-            model_name='registration',
-            constraint=models.UniqueConstraint(fields=('issuer', 'client_id'), name='unique_issuer_client_id'),
+            model_name="registration",
+            constraint=models.UniqueConstraint(
+                fields=("issuer", "client_id"), name="unique_issuer_client_id"
+            ),
         ),
     ]

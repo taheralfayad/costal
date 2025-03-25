@@ -98,6 +98,7 @@ def get_launch_url(request):
         raise Exception('Missing "target_link_uri" param')
     return target_link_uri
 
+
 @csrf_exempt
 def login(request):
     get_token(request)
@@ -126,12 +127,16 @@ def launch(request):
         "canvas_user_id"
     ]
 
-    course_name = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/context']['title']
+    course_name = message_launch_data[
+        "https://purl.imsglobal.org/spec/lti/claim/context"
+    ]["title"]
 
+    is_professor = (
+        "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor"
+        in message_launch_data["https://purl.imsglobal.org/spec/lti/claim/roles"]
+    )
 
-    is_professor = 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor' in message_launch_data['https://purl.imsglobal.org/spec/lti/claim/roles']
-
-    try: 
+    try:
         course = Course.objects.get(course_id=course_id)
 
         if (
@@ -167,10 +172,12 @@ def launch(request):
         "course_id": course_id,
         "course_name": course_name,
         "is_professor": is_professor,
+        "user_id": user_id,
     }
 
-
-    course, created = Course.objects.get_or_create(course_id=course_id, name=course_name)
+    course, created = Course.objects.get_or_create(
+        course_id=course_id, name=course_name
+    )
     if created:
         course.save()
 
@@ -178,7 +185,6 @@ def launch(request):
     user_exists = CanvasUser.objects.filter(uid=user_id).exists()
     if not user_exists:
         return HttpResponseRedirect(reverse("lti:oauth_login"))
-
 
     # Get the expiration date
     try:

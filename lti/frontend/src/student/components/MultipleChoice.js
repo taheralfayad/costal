@@ -3,7 +3,7 @@ import { Button, Checkbox } from '../../design-system';
 import DotsVertical from '../../assets/dots-vertical.svg';
 
 const MultipleChoice = ({ title, question, options }) => {
-  const [isIncorrect, setIncorrect] = useState(true)
+  const [isIncorrect, setIncorrect] = useState(false)
 
   return (
     <article className='w-[90%] mx-auto'>
@@ -20,7 +20,7 @@ const MultipleChoice = ({ title, question, options }) => {
           <h4 className="text-slate-900 font-medium uppercase text-base">
             Question
           </h4>
-          <label className='block mb-2 text-sm font-medium text-gray-700'>{question}</label>
+          <div className='block mb-2 text-sm font-medium text-gray-700' dangerouslySetInnerHTML={{ __html: question }}></div>
         </section>
         {isIncorrect && (<p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-2 rounded'>Sorry, that's incorrect. Try again?</p>)}
 
@@ -33,7 +33,7 @@ const MultipleChoice = ({ title, question, options }) => {
           </section>
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' />
-            <Button label='Submit' />
+            <Button label='Submit' onClick={() => onSubmit(null)}/>
           </section>
         </section>
       </main>

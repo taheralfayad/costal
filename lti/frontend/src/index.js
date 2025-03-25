@@ -8,11 +8,15 @@ import CourseOutline from "./instructor/pages/CourseOutline";
 import CreateAssignment from "./instructor/pages/CreateAssignment";
 import LandingPage from "./instructor/pages/LandingPage";
 import EditAssignment from "./instructor/pages/EditAssignment";
+import EditQuestion from "./instructor/pages/EditQuestion";
 import CourseSettings from "./instructor/pages/CourseSettings";
 import AddQuestions from "./instructor/pages/AddQuestions";
 import AssignmentLanding from "./student/pages/AssignmentLanding.js";
 import StudentLandingPage from "./student/pages/LandingPage.js";
 import CreateQuestion from "./instructor/pages/CreateQuestion.js";
+import Assignment from "./student/pages/Assignment.js";
+import CreatePrequiz from "./instructor/pages/CreatePrequiz.js";
+import SelectQuestions from "./instructor/pages/SelectQuestions";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +30,10 @@ const router = createBrowserRouter([
   {
     path: '/lti/add_questions/:assignmentId',
     element: <AddQuestions/>,
+  },
+  {
+    path: '/lti/select_questions/:moduleId/:assignmentId',
+    element: <SelectQuestions/>,
   },
   {
     path: '/lti/select_objectives/',
@@ -44,6 +52,10 @@ const router = createBrowserRouter([
     element: <CreateAssignment/>,
   },
   {
+    path: '/lti/create_prequiz/:moduleId',
+    element: <CreatePrequiz/>,
+  },
+  {
     path: '/lti/edit_assignment/:assignmentId',
     element: <EditAssignment/>,
   },
@@ -60,8 +72,16 @@ const router = createBrowserRouter([
     element: <AssignmentLanding/>
   },
   {
+    path: '/lti/edit_question/:questionId',
+    element: <EditQuestion/>,
+  },
+  {
     path: '/lti/student_landing/',
     element: <StudentLandingPage/>
+  },
+  {
+    path: '/lti/assignment/:assignmentId',
+    element: <Assignment/>
   }
 ])
 
