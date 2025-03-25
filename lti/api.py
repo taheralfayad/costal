@@ -108,11 +108,17 @@ def get_valid_random_question(assignment, user):
     random_question_id = random.choice(valid_question_ids)
     return assignment.questions.get(id=random_question_id)
 
+from qgservice.engine import LLMEngine  # Import LLM service
+
+llm_service = LLMEngine()
+
+
 class TextbookViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
 
     serializer_class = TextbookSerializer
     queryset = Textbook.objects.all()
+
 
     def get_queryset(self):
         queryset = Textbook.objects.all()
@@ -385,6 +391,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         assignment = Assignment.objects.get(id=assignment_id)
         questions = assignment.questions
         return Response(status=status.HTTP_200_OK)
+    
+        
 
     
     @action(detail=False, methods=['get'], url_path='student_has_completed_prequizzes/(?P<user_id>[^/.]+)')
@@ -603,6 +611,31 @@ class QuestionViewSet(viewsets.ModelViewSet):
             question.save()
 
         return Response(status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['post'], url_path='generate_question')
+    def generate_question(self, request):
+        try:
+            data = request.data
+            print(data)
+            course_name = data.get('course_name')
+            text = data.get('text')
+            num_questions = int(data.get('num_questions', 1))
+            previous_questions = data.get('previous_questions', [])
+
+            if not course_name or not text:
+                return Response({'error': 'course_name and text are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            questions_json = llm_service.generate_questions(
+                course_name=course_name,
+                topic=text,
+                num_questions=num_questions,
+                previous_questions=previous_questions
+            )
+
+            return Response(json.loads(questions_json), status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=["post"], url_path="answer_question")
     def answer_question(self, request):

@@ -1,9 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from "react-router-dom"
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams, useLocation} from "react-router-dom"
 import { Button, Checkbox, Dropdown, Input, RichTextEditor, Title } from '../../design-system';
 import MultipleChoiceConfig from '../components/MultipleChoiceConfig';
 import ShortAnswerConfig from '../components/ShortAnswerConfig';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
+import LoadingPage from '../components/LoadingPage';
+
+
+// for use in gen question using llm
+
+// Objectives:
+/* 
+  1. Implement a way for this component to know if it's being called with LLM gen or without.
+  2. If it's being called with LLM gen, we need to call the LLM API to generate a question.
+    2a. We need to pass the generated question to the RichTextEditor and the possible answers to the MultipleChoiceConfig.
+  3. If it's being called without LLM gen, we need to render the component as usual.
+*/
+
 
 const CreateQuestion = () => {
   const navigate = useNavigate()
@@ -17,6 +30,17 @@ const CreateQuestion = () => {
   const [points, setPoints] = useState(1);
   const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState([{ id: 1, text: '', checked: false }]);
   const [shortAnswerItems, setShortAnswerItems] = useState([]);
+  const isLLMGen = new URLSearchParams(location.search).get('llm') === 'true';
+  const [isLoading, setIsLoading] = useState(true);
+  const [previousQuestions, setPreviousQuestions] = useState([]);
+  const [data, setData] = useState(null);
+  const [courseName, setCourseName] = useState('');
+  const [editorKey, setEditorKey] = useState(0); // Force re-render key
+  const [objectiveSelected, setObjectiveSelected] = useState(false);
+  const [isConfirmingObjective, setIsConfirmingObjective] = useState(true);
+
+
+  const editorRef = useRef(null)
 
   const { assignmentId } = useParams()
 
@@ -57,6 +81,69 @@ const CreateQuestion = () => {
       console.error(error);
     }
   };
+
+  
+
+
+  useEffect(() => {
+    console.log("isLLMGen:", isLLMGen);
+    console.log("objectiveSelected:", objectiveSelected);
+    console.log("assignmentId:", assignmentId);
+    const fetchData = async () => {
+      if (!isLLMGen || !objectiveSelected) return;
+      try {
+        const prevResponse = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
+        const prevData = await prevResponse.json();
+        setPreviousQuestions(prevData.questions);
+  
+        const courseResponse = await fetch(`/lti/api/modules/get_modules_by_course_id/${COURSE_ID}`);
+        const courseData = await courseResponse.json();
+        setCourseName(courseData[0].name);
+  
+        const llmResponse = await fetch(`/lti/api/questions/generate_question/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            course_name: courseData[0].name,
+            text: objective,
+            numQuestions: 1,
+            previousQuestions: prevData.questions,
+          }),
+        });
+  
+        const llmData = await llmResponse.json();
+        console.log("LLM Data:", llmData);
+        if (llmData.question) {
+          setEditorValue(llmData.question);
+          setEditorKey(prevKey => prevKey + 1);
+        }
+  
+        if (llmData.options) {
+          const formattedOptions = Object.entries(llmData.options).map(([key, value]) => ({
+            id: key,
+            text: value,
+            checked: key === llmData.answer,
+          }));
+          setMultipleChoiceAnswers(formattedOptions);
+          handleCheckboxChange('multiple');
+        }
+  
+        setDifficulty('Easy');
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [isLLMGen, objectiveSelected, assignmentId]);
+  
+
+  useEffect(() => {
+  }, [editorValue]);
+  
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -149,51 +236,88 @@ const CreateQuestion = () => {
     formatObjectivesForDropdown();
   }, [objectives]);
 
-  return (
-    <div>
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick={false} rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" transition={Bounce}
+  if (isLLMGen && isConfirmingObjective) {
+    return (
+      <div className="p-10 flex flex-col gap-6 items-center">
+      <Title>Select Objective for LLM Question</Title>
+      <p className="text-red-500">Warning: The LLM may behave unexpectedly if there are fewer than 5 human-made questions.</p>
+      <Dropdown
+        label="Objective"
+        placeholder="Select Objective"
+        value={objective}
+        options={dropdownObjectives}
+      />
+      <Button
+        label="Generate Question with this Objective"
+        onClick={() => {
+        if (!objective) {
+          toast.error("Please select an objective first");
+          return;
+        }
+        setObjectiveSelected(true);
+        setIsConfirmingObjective(false);
+        setIsLoading(true);
+        }}
+      />
+      <Button
+        type="outline"
+        label="Cancel"
+        onClick={() => navigate(`/lti/add_questions/${assignmentId}`)}
+      />
+      </div>
+    );
+  }
+  else if (isLoading && isLLMGen) {
+    return <div className='text-center mt-[20%]'>Sit tight as we generate your question!<LoadingPage></LoadingPage></div>
+  }
+  else {
+    return (
+      <div>
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick={false} rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" transition={Bounce}
       />
       <form onSubmit={handleSubmit}>
         <main className='flex'>
-          <section className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
-            <Title>Create Question</Title>
-            <Input required label='Name' placeholder='Great Question' value={questionName} onChange={(e) => handleNameChange(e)} />
-            <Dropdown required label='Objective' placeholder='Select Objective' value={objective} options={dropdownObjectives} />
-            <Dropdown required label='Difficulty' placeholder='Select Difficulty' value={difficulty} options={difficulties} onSelect={handleDifficultyChange} />
-            <RichTextEditor required value={editorValue} onChange={handleInputChange} />
-            <section className='flex flex-col gap-4'>
-              <label className='block text-sm font-medium text-gray-700'>
-                Choose your question type
-              </label>
-              <Checkbox
-                label="Short Answer"
-                checked={selectedCheckbox === 'short'}
-                onChange={() => handleCheckboxChange('short')}
-                id="short"
-              />
-              <Checkbox
-                label="Multiple Choice"
-                checked={selectedCheckbox === 'multiple'}
-                onChange={() => handleCheckboxChange('multiple')}
-                id="multiple"
-              />
+            <section className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
+              <Title>Create Question</Title>
+              <Input required label='Name' placeholder='Great Question' value={questionName} onChange={(e) => handleNameChange(e)} />
+              <Dropdown required label='Objective' placeholder='Select Objective' value={objective} options={dropdownObjectives} />
+              <Dropdown required label='Difficulty' placeholder='Select Difficulty' value={difficulty} options={difficulties} onSelect={handleDifficultyChange} />
+              <RichTextEditor required placeholder={editorValue} value={editorValue} onChange={handleInputChange} />
+
+              <section className='flex flex-col gap-4'>
+                <label className='block text-sm font-medium text-gray-700'>
+                  Choose your question type
+                </label>
+                <Checkbox
+                  label="Short Answer"
+                  checked={selectedCheckbox === 'short'}
+                  onChange={() => handleCheckboxChange('short')}
+                  id="short"
+                />
+                <Checkbox
+                  label="Multiple Choice"
+                  checked={selectedCheckbox === 'multiple'}
+                  onChange={() => handleCheckboxChange('multiple')}
+                  id="multiple"
+                />
+              </section>
+              <Input type='number' label='Points' min={1} max={15} placeholder={1} width='w-1/4' onChange={(e) => handlePointsChange(e)} />
             </section>
-            <Input type='number' label='Points' min={1} max={15} placeholder={1} width='w-1/4' onChange={(e) => handlePointsChange(e)} />
+            {selectedCheckbox &&
+              <aside className='mt-16 ml-10 w-2/5 h-1/2 flex flex-col gap-4 border border-slate-300 rounded-lg shadow-sm m-6'>
+                {selectedCheckbox === 'short' ?
+                  <ShortAnswerConfig items={shortAnswerItems} setItems={setShortAnswerItems} /> :
+                  <MultipleChoiceConfig choices={multipleChoiceAnswers} setChoices={setMultipleChoiceAnswers} />}
+              </aside>}
+          </main>
+          <section className='flex justify-end gap-2 pr-4 pb-2'>
+            <Button label='Create' form={true} />
+            <Button label='Cancel' type='outline' onClick={() => navigate(`/lti/add_questions/${assignmentId}`)} />
           </section>
-          {selectedCheckbox &&
-            <aside className='mt-16 ml-10 w-2/5 h-1/2 flex flex-col gap-4 border border-slate-300 rounded-lg shadow-sm m-6'>
-              {selectedCheckbox === 'short' ?
-                <ShortAnswerConfig items={shortAnswerItems} setItems={setShortAnswerItems} /> :
-                <MultipleChoiceConfig choices={multipleChoiceAnswers} setChoices={setMultipleChoiceAnswers} />}
-            </aside>}
-        </main>
-        <section className='flex justify-end gap-2 pr-4 pb-2'>
-          <Button label='Create' form={true} />
-          <Button label='Cancel' type='outline' onClick={() => navigate(`/lti/add_questions/${assignmentId}`)} />
-        </section>
-      </form>
+        </form>
     </div>
-  );
+    );
+  };
 };
 
 export default CreateQuestion;

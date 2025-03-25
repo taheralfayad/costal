@@ -3,7 +3,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from engine import LLMEngine
+from qgservice.engine import LLMEngine
 
 app = FastAPI()
 llm_service = LLMEngine()
@@ -42,6 +42,7 @@ async def generate(request: QuestionGenerationRequest):
         return json.loads(questions_json)
 
     except Exception as e:
+        print("ERROR IN GENERATE ENDPOINT")
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.post("/chat")
