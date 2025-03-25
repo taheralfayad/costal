@@ -733,7 +733,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
             assignment_attempt.status = 2
             assignment_attempt.save()
 
-            submit_grade_to_canvas(assignment.course_id, assignment, assignment_completion_percentage)
+            if assignment.assessment_type != "prequiz":
+                submit_grade_to_canvas(assignment.course_id, assignment, assignment_completion_percentage)
             return Response({"message": "Assignment completed", "assessment_status": "completed"}, status=status.HTTP_200_OK)
         elif successful_attempt or failed_attempts:
             random_question = get_valid_random_question(assignment, user)
