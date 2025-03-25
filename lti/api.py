@@ -872,6 +872,19 @@ class ModuleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Module.objects.all()
         return queryset
+    
+    @action(detail=False, methods=["post"], url_path="delete_module")
+    def delete_module(self, request):
+        try:
+            data = request.data
+            module = Module.objects.get(id=data['module_id'])
+            module.delete()
+            return Response({"message": "Module deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except Module.DoesNotExist:
+            return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
     @action(
         detail=False,
@@ -883,6 +896,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
             response = []
 
             modules = Module.objects.filter(course_id=course_id)
+            
 
             for module in modules:
                 module_response = {
@@ -896,6 +910,9 @@ class ModuleViewSet(viewsets.ModelViewSet):
                         "is_valid": module.prequiz.is_valid(),
                         "missing_skills": SkillSerializer(module.prequiz.missing_skills(), many=True).data,
                     }
+                
+                if module.skills.exists():
+                    module_response["skills"] = SkillSerializer(module.skills.all(), many=True).data
 
                 module_response["rows"] = []
 
@@ -942,10 +959,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(
-            {"error": "No modules found for this course"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        
 
     @action(
         detail=False,
@@ -1052,6 +1066,18 @@ class SkillViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Skill.objects.all()
         return queryset
+
+    @action(detail=False, methods=["post"], url_path="delete_skill")
+    def delete_skill(self, request):
+        try:
+            data = request.data
+            skill = Skill.objects.get(id=data['skill_id'])
+            skill.delete()
+            return Response({"message": "Skill deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except Skill.DoesNotExist:
+            return Response({"error": "Skill not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,
