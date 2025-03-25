@@ -1,192 +1,211 @@
 import json
-from llama_cpp import Llama
-from huggingface_hub import hf_hub_download
-
-DEFAULT_MODEL_ID = "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF"
-DEFAULT_FILE_NAME = "Meta-Llama-3.1-8B-Instruct-Q5_K_M.gguf"
+import os
+import boto3
 
 
 class LLMEngine:
+    def __init__(self, model_id="meta.llama3-8b-instruct-v1:0", region="us-east-1"):
+        """
+        Initializes AWS Bedrock client for calling LLaMA-3 or another Bedrock-supported model.
+        Uses environment variables for AWS credentials if available.
+        """
+        print("Initializing LLM Engine")
+        if os.getenv("AWS_ACCESS_KEY") is None:
+            self.boto3_client = boto3.client(
+                "bedrock-runtime",
+                region_name=os.getenv("AWS_REGION", region),
+            )
+        else:
+            self.boto3_client = boto3.client(
+                "bedrock-runtime",
+                aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
+                aws_secret_access_key=os.getenv("AWS_SECRET_KEY"),
+                region_name=os.getenv("AWS_REGION"),
+            )
 
-    def __init__(
-        self,
-        repo_id: str = DEFAULT_MODEL_ID,  # Huggingface repoID
-        filename: str = DEFAULT_FILE_NAME,  # Must be .gguf
-        gpu: bool = False,  # True to use GPU acceleration
-        window: int = 2048,  # Num of tokens in context window
-    ):
-        self.model_path = hf_hub_download(repo_id=repo_id, filename=filename)
-        self.llm = llm = Llama(
-            model_path=self.model_path, n_gpu_layers=-1 if gpu else 0, n_ctx=window
+        self.model_id = model_id
+        self.conversation_history = []
+        print("LLM Engine Initialized")
+
+    def __format_prompt(self, system_prompt, user_message):
+        """
+        Formats the prompt with structured LLM markup for Bedrock.
+        """
+        formatted_prompt = f"""
+            <|begin_of_text|><|start_header_id|>system<|end_header_id|>
+                {system_prompt}
+            <|eot_id|>
+            <|start_header_id|>user<|end_header_id|>
+                {user_message}
+            <|eot_id|>
+            <|start_header_id|>assistant<|end_header_id|>
+        """
+        return formatted_prompt
+
+    def __parse_boto_response_stream(self, stream):
+        """
+        Parses the response stream from AWS Bedrock.
+        """
+        response_content = ""
+        for event in stream:
+            chunk = event.get("chunk")
+            if chunk:
+                message = json.loads(chunk.get("bytes").decode())
+                response_content += message["generation"]
+
+        return response_content.strip()
+
+    def __call__(self, prompt: str, temperature: float = 0.7):
+        """
+        Calls the LLM model with a simple text prompt.
+        """
+        request_body = json.dumps(
+            {
+                "prompt": prompt,
+                "temperature": temperature,
+            }
+        )
+        
+
+        response = self.boto3_client.invoke_model_with_response_stream(
+            modelId=self.model_id, body=request_body, performanceConfigLatency="standard"
         )
 
-        self.question_schema = {
-            "type": "object",
-            "required": ["question", "options", "answer"],
-            "properties": {
-                "question": {"type": "string"},
-                "options": {
-                    "type": "object",
-                    "required": ["A", "B", "C", "D"],
-                    "properties": {
-                        "A": {"type": "string"},
-                        "B": {"type": "string"},
-                        "C": {"type": "string"},
-                        "D": {"type": "string"},
-                    },
-                },
-                "answer": {"type": "string"},
-            },
-        }
-
-        self.conversation_history = []
-
-    def __call__(self, prompt: str, max_tokens: int, temperature: float):
-        return self.llm(prompt=prompt, max_tokens=max_tokens, temperature=temperature)
-
+        return self.__parse_boto_response_stream(response.get("body"))
 
     def extract_concepts(self, course_name: str, text: str, num_concepts: int = 3):
-        concept_schema = {
-            "type": "object",
-            "properties": {
-                "concepts": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "minItems": num_concepts,
-                    "maxItems": num_concepts,
-                }
-            },
-            "required": ["concepts"],
-        }
+        """
+        Extracts key concepts from a given text, ensuring structured JSON output.
+        """
+        system_prompt = f"You are an expert in {course_name}. Extract {num_concepts} key concepts from the provided text that are fundamental, clear, relevant, and suitable for challenging students."
 
-        prompt = f"""You are an expert in {course_name}. Extract {num_concepts} key concepts from the provided text that are fundamental, clear, relevant, and suitable for challenging students on the course material. Focus on core ideas and avoid minor details.
-        Text: '''{text}'''"""
+        user_message = f"Extract {num_concepts} key concepts from the following text:\n\n{text}\n\nReturn a valid JSON array of strings."
 
-        # Use llama_cpp for text generation with JSON schema
-        response = self.llm.create_chat_completion(
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an expert course content analyzer.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-            response_format={"type": "json_object", "schema": concept_schema},
-            temperature=0.0,
-            max_tokens=200,
-        )
+        formatted_prompt = self.__format_prompt(system_prompt, user_message)
 
-        # Extract and parse the content
-        content = response["choices"][0]["message"]["content"]
-        parsed_response = json.loads(content)
+        response_text = self.__call__(formatted_prompt, temperature=0.0)
 
-        return parsed_response["concepts"]
+        try:
+            parsed_response = json.loads(response_text)
+            if isinstance(parsed_response, list):
+                return parsed_response
+            else:
+                raise ValueError("Invalid JSON format received.")
+        except json.JSONDecodeError:
+            return {"error": "Failed to parse response as JSON."}
 
-    def generate_questions(self, course_name: str, topic: str, previous_questions: list, num_questions: int) -> str:
-        system_instruction = (
-            f"You are an expert in {course_name}. Based on the topic '{topic}' and the previously provided questions, generate new challenging multiple-choice questions suitable for assessing student understanding. Ensure the new questions are distinct from previously asked ones. Always provide 4 options (A, B, C, D) in the following JSON Schema: \n"
-            "{\"type\": \"object\", \"required\": [\"question\", \"options\", \"answer\"], \"properties\": {\"question\": {\"type\": \"string\"}, \"options\": {\"type\": \"object\", \"required\": [\"A\", \"B\", \"C\", \"D\"], \"properties\": {\"A\": {\"type\": \"string\"}, \"B\": {\"type\": \"string\"}, \"C\": {\"type\": \"string\"}, \"D\": {\"type\": \"string\"}}}, \"answer\": {\"type\": \"string\"}}}"
-        )
+    def generate_questions(self, course_name: str, topic: str, previous_questions: list, num_questions: int = 1) -> str:
+        """
+        Chained 3-step generation:
+        1. Extract concept
+        2. Draft question with options (avoiding previous ones)
+        3. Identify correct answer
+        Returns: JSON with question, options, and correct answer letter.
+        """
 
-        previous_questions_text = "\n".join(
-            [
-                f"Q: {q['question']}\nOptions: A: {q['options']['A']}, B: {q['options']['B']}, C: {q['options']['C']}, D: {q['options']['D']}\nCorrect Answer: {q['answer']}"
-                for q in previous_questions
-            ]
-        )
-
-        questions = {}
-
-        for idx in range(num_questions):
-            print("Prev given questions")
-            print(previous_questions_text)
-            print("Current gen questions:")
-            print(questions)
-            prompt = (
-                f"Topic: {topic}\n\n"
-                f"Previously Asked Questions:\n{previous_questions_text}\n\n"
-                f"Previously Generated Questions:\n{questions}\n\n"
-                f"Generate a new question for this topic, while refraining from repeating your previously generated questions."
+        try:
+            system_prompt_1 = f"You are an expert in {course_name}."
+            user_message_1 = (
+                f"From the following topic or objective, extract the most relevant concept to base a multiple choice question on:\n\n"
+                f"{topic}\n\n"
+                "Return a single concept as a JSON string."
             )
 
-            response = self.llm.create_chat_completion(
-                messages=[
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": prompt},
-                ],
-                response_format={"type": "json_object", "schema": self.question_schema},
-                temperature=0.7,
-                max_tokens=300,
-            )
-
-            # Process the response
-            content = response["choices"][0]["message"]["content"]
+            concept_prompt = self.__format_prompt(system_prompt_1, user_message_1)
+            concept_response = self.__call__(concept_prompt, temperature=0.3)
 
             try:
-                parsed_response = json.loads(content)
-                # Validate the response matches the schema
-                if "question" in parsed_response and "options" in parsed_response and "answer" in parsed_response:
-                    questions[idx] = parsed_response
-                    previous_questions_text += json.dumps(parsed_response)
-                else:
-                    raise ValueError("Generated question does not match the required schema.")
+                concept = json.loads(concept_response)
+            except Exception:
+                raise ValueError("Concept extraction failed or did not return a valid JSON string.", concept_response)
 
-            except (json.JSONDecodeError, ValueError) as e:
-                print(f"Error processing response: {e}")
-                print(f"Raw response: {content}")
-                return json.dumps({"error": "Failed to generate a valid question."}, indent=4)
+            prev_q_texts = "\n".join(
+                [f"- {q['question']}" for q in previous_questions if 'question' in q]
+            )
 
-        return json.dumps(questions, indent=4)
-    
+            system_prompt_2 = f"You are a skilled educator in {course_name}."
+            user_message_2 = (
+                f"Write a unique multiple-choice question based on this concept: \"{concept}\"\n\n"
+                f"Do NOT reuse any of the following previously asked questions:\n{prev_q_texts}\n\n"
+                "The question should include 4 answer choices labeled A–D.\n"
+                "Return the result in JSON format:\n"
+                "{"
+                "\"question\": \"string\", "
+                "\"options\": {\"A\": \"\", \"B\": \"\", \"C\": \"\", \"D\": \"\"}"
+                "}"
+            )
+
+            question_prompt = self.__format_prompt(system_prompt_2, user_message_2)
+            question_response = self.__call__(question_prompt, temperature=0.7)
+
+            try:
+                draft = json.loads(question_response)
+                question_text = draft["question"]
+                options = draft["options"]
+            except Exception:
+                raise ValueError("Question drafting failed or did not return valid JSON.")
+            
+            system_prompt_3 = (
+                "You are an expert grader. You will be shown a multiple choice question with 4 options.\n"
+                "Return only the correct letter (A, B, C, or D) in JSON format like:\n\"B\""
+            )
+
+            options_text = "\n".join([f"{key}: {val}" for key, val in options.items()])
+            user_message_3 = f"{question_text}\n\nOptions:\n{options_text}"
+            answer_prompt = self.__format_prompt(system_prompt_3, user_message_3)
+            answer_response = self.__call__(answer_prompt, temperature=0.0)
+
+            try:
+                correct_letter = json.loads(answer_response)
+                if correct_letter not in options:
+                    raise ValueError
+            except Exception:
+                raise ValueError("Answer identification failed or returned invalid option.")
+
+            return json.dumps({
+                "question": question_text,
+                "options": options,
+                "answer": correct_letter
+            }, indent=4)
+
+        except Exception as e:
+            return json.dumps({"error": str(e)}, indent=4)
+
+
+
     def generate_chat_response(self, user_message: str) -> str:
+        """
+        Generates a chat response while maintaining conversation history.
+        """
         system_instruction = (
             "You are a helpful assistant capable of answering a wide range of questions. "
-            "Please respond succinctly providing only the information the user requests. "
-            "Do not give the exact answer, your goal is to help guide the user to the answer."
+            "Provide concise and accurate responses, guiding the user without directly giving away answers."
         )
 
         self.conversation_history.append({"role": "user", "content": user_message})
 
         messages = [{"role": "system", "content": system_instruction}] + self.conversation_history
 
-        response = self.llm.create_chat_completion(
-            messages=messages,
-            temperature=0.7,
-            max_tokens=150,
-        )
+        formatted_prompt = self.__format_prompt(system_instruction, user_message)
 
-        chatbot_reply = response["choices"][0]["message"]["content"]
+        response_text = self.__call__(formatted_prompt, temperature=0.7)
 
-        self.conversation_history.append({"role": "assistant", "content": chatbot_reply})
+        self.conversation_history.append({"role": "assistant", "content": response_text})
 
-        return chatbot_reply
-    
+        return response_text
+
     def generate_hint(self, question: str) -> str:
+        """
+        Generates a hint for a given question without giving away the answer.
+        """
         system_instruction = (
-            "You are an assistant in a very sensitive learning environment for quizzes and tests."
-            "Your responsibility is to generate an appropriate hint for the user without giving away the answer."
-            "Omit all filler words. Keep the hint as concise as possible without giving the answer."
+            "You are an assistant in a sensitive learning environment. "
+            "Your responsibility is to generate a concise hint for the given question, "
+            "helping the user without revealing the correct answer."
         )
 
-        messages = [
-            {"role": "system", "content": system_instruction},
-            {"role": "user", "content": question},
-        ]
+        formatted_prompt = self.__format_prompt(system_instruction, question)
 
-        response = self.llm.create_chat_completion(
-            messages=messages,
-            temperature=0.7,
-            max_tokens=150,
-        )
+        return self.__call__(formatted_prompt, temperature=0.7)
 
-        chatbot_reply = response["choices"][0]["message"]["content"]
 
-        return chatbot_reply
-
-# llm_engine = LLMEngine()
-# user_message = "What color is the sky?"
-# chatbot_reply = llm_engine.generate_chat_response(user_message)
-# print(chatbot_reply)
-# user_message = "What did i most recently ask you?"
-# chatbot_reply = llm_engine.generate_chat_response(user_message)
-# print(chatbot_reply)   - SHOULD know the answer.
