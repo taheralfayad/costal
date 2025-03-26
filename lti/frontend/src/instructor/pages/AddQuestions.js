@@ -71,6 +71,7 @@ const AddQuestions = () => {
   }, []);
 
   const formatDate = (dateString) => {
+    dateString = dateString.replace(/Z$/, '');
     const options = {
       month: 'long',
       day: 'numeric',
