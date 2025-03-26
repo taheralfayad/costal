@@ -1134,6 +1134,7 @@ class GetCourseProfessorName(APIView):
             # Fetch the course using Canvas API
             course = canvas.get_course(course_id)
 
+
             # Fetch enrollments with TeacherEnrollment type
             teacher_names = []
             enrollments = course.get_enrollments(type=["TeacherEnrollment"])
@@ -1149,7 +1150,7 @@ class GetCourseProfessorName(APIView):
                     }
                 )
 
-            return Response({"course_id": course_id, "professors": teacher_names})
+            return Response({"course_id": course_id, "professors": teacher_names, "start": course.start_at, "end": course.end_at})
 
         except Exception as e:
             raise NotFound({"error": str(e)})
