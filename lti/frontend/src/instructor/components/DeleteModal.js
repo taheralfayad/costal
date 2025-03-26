@@ -2,7 +2,7 @@ import React from 'react';
 import Alert from '../../assets/alert.svg';
 import { Button } from '../../design-system';
 
-const DeleteModal = ({ isOpen, onClose, onDelete, nameOfObjectToDelete, objectType, modalType }) => {
+const DeleteModal = ({ isOpen, onClose, onDelete, name, objectType, modalType }) => {
     if (!isOpen) return null;
 
     const handleBackdropClick = (e) => {
@@ -20,8 +20,8 @@ const DeleteModal = ({ isOpen, onClose, onDelete, nameOfObjectToDelete, objectTy
                 </h2>
                 <p className='text-base text-slate-600'>
                     {modalType === 'DELETE_FROM_ASSIGNMENT' 
-                        ? `Are you sure you want to remove ${nameOfObjectToDelete} from this assignment? The question will still be available in the question bank.`
-                        : `Are you sure you want to delete ${nameOfObjectToDelete}? All student data related to this ${objectType.toLowerCase()} will be lost. You and your students will not be able to access this ${objectType.toLowerCase()} or related data again.`}
+                        ? `Are you sure you want to remove ${name} from this assignment? The question will still be available in the question bank.`
+                        : `Are you sure you want to delete ${name}? All student data related to this ${objectType.toLowerCase()} will be lost. You and your students will not be able to access this ${objectType.toLowerCase()} or related data again.`}
                 </p>
                 <section className='flex gap-4'>
                     <Button type='softGray' label='Cancel' className='px-10' onClick={onClose} />

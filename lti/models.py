@@ -51,7 +51,7 @@ class Module(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
     assignments = models.ManyToManyField("Assignment", blank=True)
     skills = models.ManyToManyField("Skill", blank=True)
-    prequiz = models.OneToOneField("Prequiz", on_delete=models.CASCADE, null=True, blank=True)
+    prequiz = models.OneToOneField("Prequiz", null=True, on_delete=models.SET_NULL, blank=True)
 
     def __str__(self):
         return self.name
