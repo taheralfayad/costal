@@ -3,7 +3,7 @@ import requests
 import datetime
 import json
 import random
-
+from django.utils import timezone
 from canvasapi import Canvas
 from django.shortcuts import get_object_or_404
 from django.db.models import Count, Q
@@ -186,6 +186,95 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Assignment.objects.all()
         return queryset
+    
+
+    @action(detail=False, methods=["get"], url_path="get_weekly_homework_average")
+    def get_weekly_homework_average(self, request):
+        course_id = request.query_params.get("course_id")
+        today = timezone.now()
+        start_of_week = today - datetime.timedelta(days=today.weekday())
+        end_of_week = start_of_week + datetime.timedelta(days=6)
+    
+
+        print(start_of_week)
+        print(end_of_week)
+        
+        weekly_homework = Assignment.objects.filter(
+            course_id=course_id,
+            start_date__gte=start_of_week,
+            end_date__lte=end_of_week,
+            assessment_type="Homework"
+        )
+        
+        if not weekly_homework.exists():
+            return Response({"message": "No homework assignments found for this week", "average_grade": 0}, status=status.HTTP_200_OK)
+        
+        total_grade = 0
+        total_attempts = 0
+        result = []
+        
+        for assignment in weekly_homework:
+            attempts = AssignmentAttempt.objects.filter(associated_assignment=assignment)
+            if attempts.exists():
+                assignment_total_grade = sum(attempt.total_grade for attempt in attempts)
+                assignment_average = assignment_total_grade / attempts.count()
+                total_grade += assignment_total_grade
+                total_attempts += attempts.count()
+            else:
+                assignment_average = 0
+            
+            result.append({
+                "assignment_id": assignment.id,
+                "name": assignment.name,
+                "grade": assignment_average
+            })
+        
+        overall_average_grade = total_grade / total_attempts if total_attempts > 0 else 0
+        
+        return Response({"overall_average_grade": overall_average_grade, "assignments": result}, status=status.HTTP_200_OK)
+
+
+    @action(detail=False, methods=["get"], url_path="get_overall_grade")
+    def get_overall_grade(self, request):
+        course_id = request.query_params.get("course_id")
+        type = request.query_params.get("type")
+        
+        now = datetime.datetime.now()
+        assignments = Assignment.objects.filter(course_id=course_id, assessment_type=type, start_date__lte=now)
+        assignments = Assignment.objects.filter()
+        current_total_assignments = assignments.count()
+        total_assignments = Assignment.objects.filter(course_id=course_id, assessment_type=type).count()
+        
+        total_grade = 0
+        total_attempts = 0
+        result = []
+        
+        for assignment in assignments:
+            attempts = AssignmentAttempt.objects.filter(associated_assignment=assignment)
+            if attempts.exists():
+                assignment_total_grade = sum(attempt.total_grade for attempt in attempts)
+                assignment_average = assignment_total_grade / attempts.count()
+                total_grade += assignment_total_grade
+                total_attempts += attempts.count()
+            else:
+                assignment_average = 0
+            
+            result.append({
+                "assignment_id": assignment.id,
+                "assignment_name": assignment.name,
+                "average_grade": assignment_average
+            })
+        
+        overall_average_grade = total_grade / total_attempts if total_attempts > 0 else 0
+        
+        return Response({
+            "overall_average_grade": overall_average_grade,
+            "assignments": result,
+            "current_total_assignments": current_total_assignments,
+            "total_assignments": total_assignments
+        }, status=status.HTTP_200_OK)
+
+
 
     @action(
         detail=False,

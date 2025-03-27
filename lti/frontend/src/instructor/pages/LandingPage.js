@@ -10,18 +10,49 @@ const LandingPage = () => {
     const [quizzes, setQuizzes] = useState([]);
     const [prequizzes, setPrequizzes] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [weeklyData, setWeeklyData] = useState([]);
+    const [chartsData, setChartsData] = useState([]);
     const navigate = useNavigate();
 
-    const chartsData = [
-        {
-            percentage: 85,
-            label: 'Homework Avg',
-        },
-        {
-            percentage: 75,
-            label: 'Quiz Avg',
-        },
-    ]
+
+    const getWeeklyHomeworkAverage = async () => {
+        try {
+            const response = await fetch(`/lti/api/assignments/get_weekly_homework_average/?course_id=${COURSE_ID}`);
+            const data = await response.json();
+            console.log(data.assignments)
+            setWeeklyData(data.assignments);
+
+        } catch (error) {
+            console.log("Error fetching weekly homework average");
+        }
+    };
+
+    const getOverallGrade = async () => {
+        try {
+            let response = await fetch(`/lti/api/assignments/get_overall_grade/?course_id=${COURSE_ID}&type=Quiz`)
+            const quizData = await response.json();
+
+            let charts = [{
+                percentage: quizData.overall_average_grade,
+                label: 'Quiz Avg',
+            }]
+            
+            response = await fetch(`/lti/api/assignments/get_overall_grade/?course_id=${COURSE_ID}&type=Homework`)
+            
+            const hwData = await response.json();
+
+            charts.push({
+                percentage: hwData.overall_average_grade,
+                label: 'Homework Avg',
+            })
+            
+
+            setChartsData(charts)
+            
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     const getCourseAssignments = async () => {
         try {
@@ -43,6 +74,8 @@ const LandingPage = () => {
 
     useEffect(() => {
         getCourseAssignments();
+        getWeeklyHomeworkAverage()
+        getOverallGrade()
     }
     , []);
 
@@ -88,7 +121,7 @@ const LandingPage = () => {
 
             </section>
             <section className='flex gap-8 items-center'>
-                <HomeworkGradesChart />
+                {weeklyData && <HomeworkGradesChart data={weeklyData} /> }
                 <article className='flex gap-10'>
                     {chartsData.map((chart, index) => (
                         <CircularProgressChart
