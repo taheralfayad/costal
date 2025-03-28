@@ -12,6 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError, NotFound
+from lti.auth_views import refresh_access_token
 
 
 from lti.models import (
@@ -119,6 +120,8 @@ def add_assignment_to_canvas(course_id, assignment, api_key):
             'points_possible': 100,
             'due_at': assignment.end_date,
             'description': 'This assignment has been automatically created by COSTAL.',
+            'submission_types': ['external_tool'],
+            'published': True
         })
 
         assignment.canvas_id = created_assignment.id
@@ -149,20 +152,64 @@ def update_assignment_in_canvas(course_id, assignment, api_key):
         print(f"Error updating assignment: {assignment.name} in Canvas: {e}")
 
 
-def submit_grade_to_canvas(course_id, assignment, api_key, grade):
+def submit_grade_to_canvas(request, course_id, assignment, api_key, grade, student_id):
+    prof_token = get_professor_access_token(request, course_id, api_key)
+
+    if not prof_token:
+        print(f"No professor found in course {course_id}. Not submitting grade to Canvas")
+        return
+
     try:
-        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        canvas = Canvas(os.environ.get("CANVAS_URL"), prof_token)
         course = canvas.get_course(course_id)
 
         canvas_assignment = course.get_assignment(assignment.canvas_id) 
         canvas_assignment.submit(
             submission={
-                'posted_grade': grade
+                'user_id': student_id,
+                'submission_type': 'basic_lti_launch',
+                'url': "https://localhost/lti/login",
             }
         )
+        submission = canvas_assignment.get_submission(student_id)
+        submission.edit(submission={'posted_grade': str(grade)})
+
     except Exception as e:
         print(f"Error submitting grade for assignment: {assignment.name} in Canvas: {e}")
-    
+
+
+def get_professor_access_token(request, course_id, api_key):
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        course = canvas.get_course(course_id)
+        users = course.get_users(enrollment_type=['teacher'])
+        if not users:
+            print("No teachers found", flush=True)
+            return None
+        
+        prof_usr_obj = CanvasUser.objects.get(uid=users[0].id)
+        res = refresh_access_token(request, prof_usr_obj)
+
+        if not res or "access_token" not in res:
+            print("Failed to refresh access token.")
+            return None
+
+        return res["access_token"]
+
+    except Exception as e:
+        print(f"Error getting professor ID: in Canvas: {e}")
+        return None
+
+
+def delete_assignment_from_canvas(course_id, assignment, api_key):
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        course = canvas.get_course(course_id)
+
+        canvas_assignment = course.get_assignment(assignment.canvas_id)
+        canvas_assignment.delete()
+    except Exception as e:
+        print(f"Error deleting assignment: {assignment.name} in Canvas: {e}")
 
 class TextbookViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -410,6 +457,9 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         data = request.data
         assignment = Assignment.objects.get(id=data["assignment_id"])
         assignment.delete()
+
+        if assignment.assessment_type != "prequiz":
+            delete_assignment_from_canvas(assignment.course_id, assignment, request.session["api_key"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'], url_path='get_current_assignment_attempt/(?P<assignment_id>[^/.]+)')
@@ -734,7 +784,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
             assignment_attempt.save()
 
             if assignment.assessment_type != "prequiz":
-                submit_grade_to_canvas(assignment.course_id, assignment, assignment_completion_percentage)
+                submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], assignment_completion_percentage, data['user_id'])
+
             return Response({"message": "Assignment completed", "assessment_status": "completed"}, status=status.HTTP_200_OK)
         elif successful_attempt or failed_attempts:
             random_question = get_valid_random_question(assignment, user)
