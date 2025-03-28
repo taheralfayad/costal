@@ -1,84 +1,46 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, {useState, useEffect} from 'react';
+import { useNavigate } from 'react-router-dom';
+import Button from '../../design-system/Button.js';
+
 
 // TODO: Make a change to call from the API endpoint TextbookViewSet.get_queryset() instead of using the hardcoded data.
-const textbooks = [
-    {
-      isbn: 1,
-      title: 'Introduction to Python Programming',
-      author: 'Thomas H. Cormen',
-      published_date: '2009-07-31',
-      file: '/path-to-pdf/algorithms.pdf',
-    },
-    {
-      isbn: 2,
-      title: 'Advanced Engineering Mathematics',
-      author: 'Erwin Kreyszig',
-      published_date: '2011-08-20',
-      file: '/path-to-pdf/engineering-math.pdf',
-    },
-    {
-      isbn: 3,
-      title: 'Modern Physics',
-      author: 'Kenneth S. Krane',
-      published_date: '2012-05-12',
-      file: '/path-to-pdf/modern-physics.pdf',
-    },
-    {
-      isbn: 4,
-      title: 'Principles of Microeconomics',
-      author: 'N. Gregory Mankiw',
-      published_date: '2018-01-10',
-      file: '/path-to-pdf/microeconomics.pdf',
-    },
-    {
-      isbn: 5,
-      title: 'Organic Chemistry',
-      author: 'Paula Yurkanis Bruice',
-      published_date: '2016-09-25',
-      file: '/path-to-pdf/organic-chemistry.pdf',
-    },
-    {
-      isbn: 6,
-      title: 'Discrete Mathematics and Its Applications',
-      author: 'Kenneth H. Rosen',
-      published_date: '2012-03-15',
-      file: '/path-to-pdf/discrete-mathematics.pdf',
-    },
-    {
-      isbn: 7,
-      title: 'Biology',
-      author: 'Neil A. Campbell',
-      published_date: '2014-05-01',
-      file: '/path-to-pdf/biology.pdf',
-    },
-    {
-      isbn: 8,
-      title: 'Physics for Scientists and Engineers',
-      author: 'Raymond A. Serway',
-      published_date: '2016-01-20',
-      file: '/path-to-pdf/physics-engineers.pdf',
-    },
-    {
-      isbn: 9,
-      title: 'The Art of Computer Programming',
-      author: 'Donald E. Knuth',
-      published_date: '2011-07-15',
-      file: '/path-to-pdf/art-of-programming.pdf',
-    },
-    {
-      isbn: 10,
-      title: 'Calculus: Early Transcendentals',
-      author: 'James Stewart',
-      published_date: '2015-11-10',
-      file: '/path-to-pdf/calculus.pdf',
-    },
-  ];
 
 const TextbookList = () => {
+  const [textbooks, setTextbooks] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchTextbooks = async () => {
+      try {
+        const response = await fetch(`/lti/api/textbooks/course/${COURSE_ID}/`);
+
+        console.log(COURSE_ID);
+        const data = await response.json();
+        setTextbooks(data);
+      } catch (error) {
+        console.error("Failed to fetch textbooks:", error);
+      } finally {
+        console.log("Textbooks fetched successfully");
+        console.log(textbooks);
+      }
+    };
+
+    fetchTextbooks();
+  }, []);
+
+  useEffect(() => {
+    console.log("Updated textbooks:", textbooks);
+  }, [textbooks]);
+  
+
+
+  const handleOpenTextbook = (isbn) => {
+    console.log("Opening textbook with ISBN:", isbn);
+    navigate(`/lti/textbook/${isbn}`);
+  };
     return (
         <div className=" pb-6 bg-backgroundGray min-h-screen">
-          <header className="w-full bg-green-700 text-white py-4 shadow-md mb-4">
+          <header className="w-full bg-emerald-400 text-white py-4 shadow-md mb-4">
             <div className="max-w-6xl mx-auto flex justify-center items-center px-6">
               <h1 className="text-2xl font-bold">My Textbooks</h1>
             </div>
@@ -98,14 +60,12 @@ const TextbookList = () => {
                     Published on: {new Date(textbook.published_date).toLocaleDateString()}
                   </p>
                 </div>
-                <Link
-                  to={`/textbook/${textbook.isbn}`}
-                  className="mt-4 bg-primaryGreen text-white text-center py-2 px-4 rounded-lg hover:bg-green-600 transition"
-
+                <Button
+                  onClick ={() => handleOpenTextbook(textbook.isbn)}
+                  label='View'
                   >
-                    
                   View
-                </Link>
+                </Button>
               </div>
             ))}
           </div>

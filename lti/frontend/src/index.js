@@ -17,6 +17,9 @@ import CreateQuestion from "./instructor/pages/CreateQuestion.js";
 import Assignment from "./student/pages/Assignment.js";
 import CreatePrequiz from "./instructor/pages/CreatePrequiz.js";
 import SelectQuestions from "./instructor/pages/SelectQuestions";
+import TextbookList from "./components/TextbookView/TextbookList.js";
+import TextbookView from "./components/TextbookView/TextbookView.js";
+
 
 const router = createBrowserRouter([
   {
@@ -82,6 +85,14 @@ const router = createBrowserRouter([
   {
     path: '/lti/assignment/:assignmentId',
     element: <Assignment/>
+  },
+  {
+    path: 'lti/textbook_list/:courseId',
+    element: <TextbookList/>
+  },
+  {
+    path: '/lti/textbook/:isbn',
+    element: <TextbookView/>,
   }
 ])
 

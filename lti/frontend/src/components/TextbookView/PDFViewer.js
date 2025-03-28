@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+// import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+// import 'react-pdf/dist/esm/Page/TextLayer.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const PDFViewer = ({ pdfFile }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(0.5);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
@@ -16,10 +16,12 @@ const PDFViewer = ({ pdfFile }) => {
 
   const goToNextPage = () => {
     setPageNumber((prevPage) => Math.min(prevPage + 1, numPages));
+    setScale(0.5);
   };
 
   const goToPrevPage = () => {
     setPageNumber((prevPage) => Math.max(prevPage - 1, 1));
+    setScale(0.5);
   };
 
   const zoomIn = () => {
@@ -27,7 +29,7 @@ const PDFViewer = ({ pdfFile }) => {
   };
 
   const zoomOut = () => {
-    setScale((prevScale) => Math.max(1, prevScale - 0.2));
+    setScale((prevScale) => Math.max(0.5, prevScale - 0.2));
   };
 
   return (

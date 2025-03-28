@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError, NotFound
 
+from qgservice.engine import LLMEngine  # Import LLM service
 
 from lti.models import (
     Assignment,
@@ -40,6 +41,8 @@ from lti.serializers import (
     ModuleSerializer,
     CourseSerializer,
 )
+
+llm_service = LLMEngine()
 
 def get_assignment_completion_percentage(assignment, user):
     total_questions = assignment.questions.count()
@@ -108,9 +111,7 @@ def get_valid_random_question(assignment, user):
     random_question_id = random.choice(valid_question_ids)
     return assignment.questions.get(id=random_question_id)
 
-from qgservice.engine import LLMEngine  # Import LLM service
 
-llm_service = LLMEngine()
 
 
 
@@ -170,7 +171,7 @@ def submit_grade_to_canvas(course_id, assignment, api_key, grade):
     
 
 class TextbookViewSet(viewsets.ModelViewSet):
-    """ViewSet for the ReportEntry class"""
+    """ViewSet for managing textbooks"""
 
     serializer_class = TextbookSerializer
     queryset = Textbook.objects.all()
@@ -179,7 +180,12 @@ class TextbookViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Textbook.objects.all()
         return queryset
-
+    
+    @action(detail=False, methods=["get"], url_path="course/(?P<course_id>[^/.]+)")
+    def get_by_course(self, request, course_id=None):
+        textbooks = Textbook.objects.filter(course=course_id)
+        serializer = self.get_serializer(textbooks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=["get"], url_path="isbn/(?P<isbn>[^/.]+)")
     def get_by_isbn(self, request, isbn=None):
         try:

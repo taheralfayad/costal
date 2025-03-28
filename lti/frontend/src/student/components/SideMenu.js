@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import ChevronDown from '../../assets/chevron-down.svg';
+import { useNavigate } from 'react-router-dom';
 
 const SideMenu = ({ isMenuOpen }) => {
   const [isExpanded, setExpanded] = useState(false)
+  const navigate = useNavigate()
 
   const toggleSubMenu = () => {
     setExpanded(!isExpanded)
   }
+
+  const handleOpenTextbookList = () => {
+    navigate(`/lti/textbook_list/${COURSE_ID}`);
+  };
 
   return (
     <aside
@@ -18,7 +24,9 @@ const SideMenu = ({ isMenuOpen }) => {
         <a className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'>
           Home
         </a>
-        <a className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'>
+        <a className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'
+          // send this to textbookbook view js
+          onClick={handleOpenTextbookList}>
           Textbook
         </a>
         <section>
