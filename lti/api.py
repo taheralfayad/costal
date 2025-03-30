@@ -5,6 +5,7 @@ import json
 import random
 from django.utils import timezone
 from canvasapi import Canvas
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db.models import Count, Q
 from rest_framework import status, viewsets
@@ -444,7 +445,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_current_assignment_attempt(self, request, assignment_id=None):
         user_id = request.query_params.get('user_id')
 
-        user = get_object_or_404(CanvasUser, id=user_id)
+        user = get_object_or_404(CanvasUser, uid=user_id)
         assignment = get_object_or_404(Assignment, id=assignment_id)
 
         assignment_attempt = AssignmentAttempt.objects.filter(associated_assignment=assignment, user=user)
@@ -478,7 +479,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='student_has_completed_prequizzes/(?P<user_id>[^/.]+)')
     def student_has_completed_prequizzes(self, request, user_id=None):
-        user = CanvasUser.objects.get(id=user_id)
+        user = CanvasUser.objects.get(uid=user_id)
         course_id = request.query_params.get('course_id')
         course = Course.objects.get(course_id=course_id)
         course_modules = Module.objects.filter(course=course)
@@ -493,7 +494,40 @@ class AssignmentViewSet(viewsets.ModelViewSet):
                     modules_with_completed_prequizzes.append(module.id)
         
         return Response(modules_with_completed_prequizzes, status=status.HTTP_200_OK)
-             
+
+    @action(detail=False, methods=['get'], url_path='get_mastery_level_per_objective/(?P<user_id>[^/.]+)')
+    def get_mastery_level_per_objective(self, request, user_id=None):
+        user = CanvasUser.objects.get(uid=user_id)
+        assignment_id = request.query_params.get('assignment_id')
+        assignment = Assignment.objects.get(id=assignment_id)
+
+        assignment_objectives = assignment.questions.values_list('associated_skill', flat=True).distinct()
+
+        mastery = {}
+
+        for objective in assignment_objectives:
+            request_to_adaptive_engine = {
+                "user_id": user.id,
+                "course_id": assignment.course_id,
+                "module_id": assignment.associated_module.id,
+                "skill_name": objective,
+            }
+
+            response_from_adaptive_engine = requests.post(
+                os.environ.get("ADAPTIVE_ENGINE_URL") + "/get-mastery-level/",
+                json=request_to_adaptive_engine,
+            )
+
+            response = response_from_adaptive_engine.json()
+
+            if response_from_adaptive_engine.status_code == 200:
+                if "message" in response and response["message"] == "Model not found":
+                    return Response({"message": "No data found for module"}, status=status.HTTP_200_OK)
+                else:
+                    mastery[objective] = response["mastery"]
+
+        return Response(mastery, status=status.HTTP_200_OK)
+
 
 class QuestionViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -697,7 +731,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def answer_question(self, request):
         data = request.data
         assignment = Assignment.objects.get(id=data['assignment_id'])
-        user = CanvasUser.objects.get(id=data['user_id'])
+        user = CanvasUser.objects.get(uid=data['user_id'])
         question = Question.objects.get(id=data['question_id'])
         number_of_seconds_to_answer = int(data['number_of_seconds_to_answer'])
         assignment_attempt = AssignmentAttempt.objects.get(id=data['assignment_attempt_id'])
@@ -775,25 +809,57 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment_completion_percentage = get_assignment_completion_percentage(assignment, user)
 
         if check_if_assignment_is_completed(assignment, user):
+            course = assignment.course
+
+            print(course.__dict__)
+
+            if course.deadline == "WEEK" or course.deadline == "MONTH":
+                current_date = timezone.now()
+                end_date = assignment.end_date
+                if current_date > end_date:
+                    assignment_attempt.total_grade -= (assignment_attempt.total_grade * float(course.penalty))
+                    assignment_attempt.save()
+
             assignment_attempt.status = 2
             assignment_attempt.save()
-            return Response({"message": "Assignment completed", "assessment_status": "completed"}, status=status.HTTP_200_OK)
+            return Response({"message": "Assignment completed", "assessment_status": "completed", "is_correct": answer_choice.is_correct}, status=status.HTTP_200_OK)
         elif successful_attempt or failed_attempts:
             random_question = get_valid_random_question(assignment, user)
             if random_question is None:
+                course = assignment.course
+                if course.deadline == "WEEK" or course.deadline == "MONTH":
+                    current_date = timezone.now()
+                    end_date = assignment.end_date
+                    if current_date > end_date:
+                        assignment_attempt.total_grade -= (assignment_attempt.total_grade * float(course.penalty))
+                        assignment_attempt.save()
                 assignment_attempt.status = 2
                 assignment_attempt.save()
-                return Response({"message": "No more questions to ask", "assessment_status": "completed"}, status=status.HTTP_200_OK)
+                return Response({"message": "No more questions to ask", "assessment_status": "completed", "is_correct": answer_choice.is_correct}, status=status.HTTP_200_OK)
             assignment_attempt.current_question_attempt = random_question
             assignment_attempt.save()
+            question_serializer = QuestionSerializer(random_question)
+            objective = Skill.objects.get(id=random_question.associated_skill.id)
+            skill_serializer = SkillSerializer(objective)
+            question_data = question_serializer.data.copy()
+            question_data["associated_skill"] = skill_serializer.data
+
+            assignment_attempt.current_question_attempt = next_question
+            assignment_attempt.completion_percentage = assignment_completion_percentage
+            assignment_attempt.save()
             data = {
-                "question": QuestionSerializer(random_question).data,
-                "assignment_completion_percentage": assignment_completion_percentage
+                "question": question_data,
+                "assignment_completion_percentage": assignment_completion_percentage,
+                "is_correct": answer_choice.is_correct,
             }
 
             return Response(data, status=status.HTTP_200_OK)
-
-
+        
+        question_serializer = QuestionSerializer(next_question)
+        objective = Skill.objects.get(id=next_question.associated_skill.id)
+        skill_serializer = SkillSerializer(objective)
+        question_data = question_serializer.data.copy()
+        question_data["associated_skill"] = skill_serializer.data
 
         assignment_attempt.current_question_attempt = next_question
         assignment_attempt.completion_percentage = assignment_completion_percentage
@@ -801,8 +867,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
 
         data = {
-            "question": QuestionSerializer(next_question).data,
+            "question": question_data,
             "assignment_completion_percentage": assignment_completion_percentage,
+            "is_correct": answer_choice.is_correct,
         }
 
 
@@ -814,7 +881,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         data = request.data
         assignment = Assignment.objects.get(id=data["assignment_id"])
         assignment_attempt = AssignmentAttempt.objects.get(id=data["assignment_attempt_id"])
-        user = CanvasUser.objects.get(id=data["user_id"])
+        user = CanvasUser.objects.get(uid=data["user_id"])
         question = Question.objects.get(id=data["question_id"])
 
         if "answer_choice" in data:
@@ -883,6 +950,17 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         # If there are no more questions to ask, return a message
         if next_question is None:
+            course = assignment.course
+
+            if course.deadline == "WEEK" or course.deadline == "MONTH":
+                current_date = timezone.now()
+                end_date = assignment.end_date
+                if current_date > end_date:
+                    print(course.penalty)
+                    assignment_attempt.total_grade -= (assignment_attempt.total_grade * float(course.penalty))
+                    print(assignment_attempt.total_grade)
+                    assignment_attempt.save()
+
             assignment_attempt.status = 2
             assignment_attempt.current_question_attempt = None
             assignment_attempt.save()
@@ -938,7 +1016,37 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question_data["associated_skill"] = skill_serializer.data
 
         return Response(question_data, status=status.HTTP_200_OK)
-        
+
+    @action(detail=False, methods=['get'], url_path='retrieve_question_attempts/(?P<assignment_id>[^/.]+)')
+    def retrieve_question_attempts(self, request, assignment_id=None):
+        assignment = Assignment.objects.get(id=assignment_id)
+        user_id = request.query_params.get('user_id')
+
+        user = CanvasUser.objects.get(uid=user_id)
+
+        question_attempts = QuestionAttempt.objects.filter(
+            user=user,
+            associated_assignment=assignment
+        )
+
+        serializer = QuestionAttemptSerializer(question_attempts, many=True)
+
+        data = serializer.data
+
+        data = data.copy()
+
+        for question_attempt in data:
+            question = Question.objects.get(id=question_attempt["associated_question"])
+            question_serializer = QuestionSerializer(question)
+            question_attempt["associated_question"] = question_serializer.data
+
+        for question_attempt in data:
+            possible_answer = PossibleAnswer.objects.get(id=question_attempt["associated_possible_answer"])
+            possible_answer_serializer = PossibleAnswerSerializer(possible_answer)
+            question_attempt["associated_possible_answer"] = possible_answer_serializer.data
+            question_attempt["associated_possible_answer"]["is_correct"] = possible_answer.is_correct
+
+        return Response(data, status=status.HTTP_200_OK)
         
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):

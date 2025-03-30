@@ -122,7 +122,6 @@ const SelectObjectives = () => {
 
       </section>
 
-
       <section className='flex justify-end gap-2 pr-4'>
         <Button label='Go back' onClick={() => navigate('/lti/course_outline')} />
       </section>
