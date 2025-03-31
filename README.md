@@ -12,22 +12,22 @@ $ ngrok http 8000
 $ cp .env.template .env
 ```
 
-3. Build the project with `make build`
+3. Build the project with `./manage.sh build`
 ```
-$ make build
+$ ./manage.sh build
 Building Costal images
 ```
 
-4. Run COSTAL and it's services with `make start-attached`.
+4. Run COSTAL and it's services with `./manage.sh start-attached`.
 ```
-$ make start-attached
+$ ./manage.sh start-attached
 Starting Costal in attached mode
 docker compose -f docker-compose.yml up
 ```
 
-5. Run database migrations with `make migrate`.
+5. Run database migrations with `./manage.sh migrate`.
 ```
-$ make migrate
+$ ./manage.sh migrate
 docker compose -f docker-compose.yml run --rm web python manage.py migrate
 ```
 
@@ -52,7 +52,7 @@ https://<use-your-unique-number-here>.ngrok-free.app/oauth/oauth_complete/
 As part of the LTI 1.3 process, COSTAL uses a public and private keypair in order to authenticate into the canvas LMS. To generate a new keypair, use the command below to start the key generation CLI. The first time you generate keys, choose the option to create a new key set. Later, this key set will be associated with a registration of COSTAL into a platform.
 
 ```sh
-make generate-keys 
+./manage.sh generate-keys 
 ```
 
 Take note of the ID of the key set that was created or used. You will need this value later.
@@ -64,7 +64,7 @@ If you create additional keys in the future, you may create new key sets or add 
 To register COSTAL as an LTI 1.3 tool into a platform, run the following command:
 
 ```sh
-make register
+./manage.sh register
 ```
 
 If you're using a local canvas instance, choose the first platform option. If you have a seperate hosted canvas service you're deploying, choose the second option and pass in the server url. 
@@ -86,7 +86,7 @@ https://<use-your-unique-number-here>.ngrok-free.app/lti/config
 
 Paste the Client ID into the registration script.
 
-Note that Client IDs must be unique for a given issuer and cannot be used multiple times. If you have already registered a Client ID, you do not need to make an additional registration and can make multiple deployments with the existing registration.
+Note that Client IDs must be unique for a given issuer and cannot be used multiple times. If you have already registered a Client ID, you do not need to ./manage.sh an additional registration and can make multiple deployments with the existing registration.
 
 Select which key set you would like to use. Typically, this will be the one you created earlier in the process.
 
@@ -97,6 +97,6 @@ Select which key set you would like to use. Typically, this will be the one you 
 3. On the new app, click the gear icon and then click "Deployment ID". Copy this value as it will be used in the deploy step.
 4. Run the following command to start the deployment process:
 ```sh
-make deploy
+./manage.sh deploy
 ```
 5. Select which registration you'd like to use for this deployment. Typically, it will be the one you created in the previous section. When prompted, paste the deployment ID you copied earlier.
