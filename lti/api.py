@@ -195,11 +195,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         today = timezone.now()
         start_of_week = today - datetime.timedelta(days=today.weekday())
         end_of_week = start_of_week + datetime.timedelta(days=6)
-    
 
-        print(start_of_week)
-        print(end_of_week)
-        
         weekly_homework = Assignment.objects.filter(
             course_id=course_id,
             start_date__gte=start_of_week,
@@ -216,21 +212,27 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         
         for assignment in weekly_homework:
             attempts = AssignmentAttempt.objects.filter(associated_assignment=assignment)
-            if attempts.exists():
-                assignment_total_grade = sum(attempt.total_grade for attempt in attempts)
-                assignment_average = assignment_total_grade / attempts.count()
-                total_grade += assignment_total_grade
-                total_attempts += attempts.count()
+            assignment_questions = assignment.questions.all()
+            assignment_total_points = sum(question.num_points for question in assignment_questions)
+            student_grades = []
+            if attempts.exists() and assignment_total_points > 0:
+                for attempt in attempts:
+                    student_grades.append(attempt.total_grade / assignment_total_points)                        
+    
+                assignment_average = sum(student_grades) / len(student_grades)
             else:
                 assignment_average = 0
             
             result.append({
                 "assignment_id": assignment.id,
                 "name": assignment.name,
-                "grade": assignment_average
+                "grade": int(assignment_average * 100)
             })
         
-        overall_average_grade = total_grade / total_attempts if total_attempts > 0 else 0
+
+        overall_average_grade = 0 #total_grade / total_attempts if total_attempts > 0 else 0
+
+        print(overall_average_grade)
         
         return Response({"overall_average_grade": overall_average_grade, "assignments": result}, status=status.HTTP_200_OK)
 
@@ -252,21 +254,24 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         
         for assignment in assignments:
             attempts = AssignmentAttempt.objects.filter(associated_assignment=assignment)
-            if attempts.exists():
-                assignment_total_grade = sum(attempt.total_grade for attempt in attempts)
-                assignment_average = assignment_total_grade / attempts.count()
-                total_grade += assignment_total_grade
-                total_attempts += attempts.count()
+            assignment_questions = assignment.questions.all()
+            assignment_total_points = sum(question.num_points for question in assignment_questions)
+            student_grades = []
+            if attempts.exists() and assignment_total_points > 0:
+                for attempt in attempts:
+                    student_grades.append(attempt.total_grade / assignment_total_points)                        
+    
+                assignment_average = sum(student_grades) / len(student_grades)
             else:
                 assignment_average = 0
             
             result.append({
                 "assignment_id": assignment.id,
-                "assignment_name": assignment.name,
-                "average_grade": assignment_average
+                "name": assignment.name,
+                "grade": int(assignment_average * 100)
             })
         
-        overall_average_grade = total_grade / total_attempts if total_attempts > 0 else 0
+        overall_average_grade = sum(assignment["grade"] for assignment in result) / total_assignments if total_assignments > 0 else 0
         
         return Response({
             "overall_average_grade": overall_average_grade,
