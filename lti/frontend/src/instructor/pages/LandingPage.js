@@ -121,7 +121,7 @@ const LandingPage = () => {
 
             </section>
             <section className='flex gap-8 items-center'>
-                {weeklyData && <HomeworkGradesChart data={weeklyData} /> }
+                {weeklyData ? <HomeworkGradesChart data={weeklyData} /> : <article className='w-96 h-48 justify-center items-center bg-white rounded-xl border border-slate-300 flex'>No assignments this week</article> }
                 <article className='flex gap-10'>
                     {chartsData.map((chart, index) => (
                         <CircularProgressChart
