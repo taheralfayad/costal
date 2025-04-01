@@ -589,6 +589,19 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         question.save()
         return Response({"message": "Assignment updated successfully"}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=["post"], url_path="generate_hint")
+    def generate_hint(self, request):
+        try:
+            question_text = request.data.get("question_text")
+            if not question_text:
+                return Response({"error": "Missing 'question' text."}, status=status.HTTP_400_BAD_REQUEST)
+
+            hint = llm_service.generate_hint(question_text)
+            return Response({"hint": hint}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     @action(detail=False, methods=["post"], url_path="create_question")
     def create_question(self, request):

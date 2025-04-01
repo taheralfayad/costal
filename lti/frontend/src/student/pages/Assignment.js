@@ -11,6 +11,7 @@ import SingleChoice from '../components/SingleChoice';
 import Textbook from '../components/Textbook';
 import Video from '../components/Video';
 import Writing from '../components/Writing';
+import PopupModal from '../components/PopupModal';
 
 const Assignment = () => {
   const navigate = useNavigate();
@@ -23,13 +24,50 @@ const Assignment = () => {
   const [assignmentCompletionPercentage, setAssignmentCompletionPercentage] = useState(location.state.assignmentAttempt.completion_percentage)
   const [answerChoices, setAnswerChoices] = useState([])
   const [answerChoice, setAnswerChoice] = useState(null);
+  const [showHintModal, setShowHintModal] = useState(false);
+  const [hintText, setHintText] = useState('');
+  const [isHintLoading, setIsHintLoading] = useState(false);
+  const [hintAlreadyRequested, setHintAlreadyRequested] = useState(false);
+
 
   const onSelect = (label) => {
     setAnswerChoice(label);
   }
 
+  const fetchHint = async () => {
+    if(hintAlreadyRequested) {
+      setShowHintModal(true);
+      return;
+    }
+
+    setShowHintModal(true);
+    setIsHintLoading(true);
+
+
+    try {
+      const response = await fetch('/lti/api/questions/generate_hint/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ question_text: question.text })
+      });
+  
+      const data = await response.json();
+      setHintText(data.hint || "No hint found.");
+    } catch (error) {
+      console.error("Hint fetch error:", error);
+      setHintText("An error occurred while generating the hint.");
+    } finally {
+      setIsHintLoading(false);
+      setHintAlreadyRequested(true);
+    }
+  };
+
   const onSubmit = async (textAnswer = null) => { // textAnswer is only used for writing questions
     const formData = new FormData();
+    setHintAlreadyRequested(false);
+    setHintText('');
     
 
     if (textAnswer && question.type === 'short') {
@@ -156,11 +194,19 @@ useEffect(() => {
         </header>
 
         <section className='bg-[#f8f8f8] h-full py-8'>
-          {question.type === "multiple" ? <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit}/> :<Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' />}
+        {question.type === "multiple" 
+        ? <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit} onHintRequest={fetchHint} />
+        : <Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' onHintRequest={fetchHint} />}
         </section>
       </section>
+      {showHintModal && (
+      <PopupModal 
+        isLoading={isHintLoading}
+        input={hintText}
+        setModalShow={setShowHintModal}
+      />
+      )}
     </main>
-
   );
 };
 
