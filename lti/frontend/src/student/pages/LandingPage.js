@@ -58,6 +58,10 @@ const LandingPage = () => {
             data[i].is_locked = true;
           }
 
+          if (new Date(data[i].start_date).valueOf() > new Date().valueOf()) {
+            data[i].is_locked = true;
+          }
+
           try {
             const assignmentAttemptResponse = await fetch(`/lti/api/assignments/get_current_assignment_attempt/${data[i].id}?user_id=${USER_ID}`, {method: 'GET'})
 
