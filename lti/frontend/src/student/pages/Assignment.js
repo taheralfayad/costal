@@ -23,17 +23,18 @@ const Assignment = () => {
   const [assignmentCompletionPercentage, setAssignmentCompletionPercentage] = useState(location.state.assignmentAttempt.completion_percentage)
   const [answerChoices, setAnswerChoices] = useState([])
   const [answerChoice, setAnswerChoice] = useState(null);
+  const [answerIsCorrect, setAnswerIsCorrect] = useState(true);
 
   const onSelect = (label) => {
     setAnswerChoice(label);
   }
 
-  const onSubmit = async (textAnswer = null) => { // textAnswer is only used for writing questions
+  const onSubmit = async (textAnswer = null, setValue = null) => { // textAnswer is only used for writing questions
     const formData = new FormData();
-    
-
+   
     if (textAnswer && question.type === 'short') {
       formData.append('answer_text', textAnswer)
+      setValue('')
     }
     else {
       for (let i = 0; i < question.possible_answers.length; i++) {
@@ -49,7 +50,7 @@ const Assignment = () => {
     formData.append('number_of_seconds_to_answer', seconds)
     formData.append('assignment_attempt_id', assignmentAttempt.id)
 
-    if (assignment.assessment_type === 'quiz' || assignment.assessment_type === 'prequiz') {
+    if (assignment.assessment_type === 'Quiz' || assignment.assessment_type === 'prequiz') {
         const response = await fetch('/lti/api/questions/answer_quiz_question/', {
           method: 'POST',
           body: formData
@@ -79,8 +80,6 @@ const Assignment = () => {
 
         const data = await response.json()
 
-        console.log(data)
-
         let question = null
         let assignment_completion_percentage = null
 
@@ -92,13 +91,39 @@ const Assignment = () => {
 
         if (response.ok) {
           if (data.assessment_status === 'completed') {
-            navigate('/lti/student_landing/')
-          }
+            console.log(data)
+            setAnswerIsCorrect(data.is_correct) 
 
-          setQuestion(question)
-          setAssignmentCompletionPercentage(assignment_completion_percentage)
-          setAnswerChoice(null)
-          setSeconds
+            if (!data.is_correct) {
+              setTimeout(() => { 
+                navigate('/lti/student_landing/')
+              }, 1500)
+            }
+            else {
+              navigate('/lti/student_landing/')
+            }
+          }
+        else {
+          console.log(data)
+          setAnswerIsCorrect(data.is_correct)
+
+          if (!data.is_correct) {
+            setTimeout(() => {
+              setQuestion(question)
+              setAssignmentCompletionPercentage(assignment_completion_percentage)
+              setAnswerChoice(null)
+              setAnswerIsCorrect(true)
+              setSeconds(0)
+            }, 1500)
+          }
+          else {
+            setQuestion(question)
+            setAssignmentCompletionPercentage(assignment_completion_percentage)
+            setAnswerChoice(null)
+            setAnswerIsCorrect(true)
+            setSeconds(0)
+          }
+        }
        } 
     }
   }
@@ -156,7 +181,9 @@ useEffect(() => {
         </header>
 
         <section className='bg-[#f8f8f8] h-full py-8'>
-          {question.type === "multiple" ? <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit}/> :<Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' />}
+          {question.type === "multiple" ? 
+            <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit} isIncorrect={!answerIsCorrect}/> :
+            <Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' isIncorrect={!answerIsCorrect}/>}
         </section>
       </section>
     </main>

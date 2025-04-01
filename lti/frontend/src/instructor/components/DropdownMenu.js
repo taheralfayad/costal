@@ -3,10 +3,10 @@ import Dots from '../../assets/dots-vertical.svg';
 import DeleteModal from './DeleteModal';
 import DropdownMenuItem from './DropdownMenuItem';
 
-
-const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfObject, nameOfObject, objectType = 'ASSIGNMENT' }) => {
+const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, name, objectType = 'ASSIGNMENT', handleDeleteFromAssignment }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalType, setModalType] = useState('DELETE_ITEM');
     const dropdownRef = useRef(null);
 
     useEffect(() => {
@@ -21,23 +21,25 @@ const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfO
     }, []);
 
     const handleDeleteItem = () => {
+        setModalType('DELETE_ITEM');
         setIsModalOpen(true);
         setIsOpen(false);
-    }
-
-    const handleDelete = () => {
-        deleteFunction(idOfObject);
-        setIsModalOpen(false);
     };
 
-    const handleEditObject = () => {
-        editFunction(idOfObject);
-    }
+    const handleDeleteFromAssignmentClick = () => {
+        setModalType('DELETE_FROM_ASSIGNMENT');
+        setIsModalOpen(true);
+        setIsOpen(false);
+    };
 
-    const handleAddQuestion = () => {
-        console.log('idOfObject', idOfObject);
-        addQuestionFunction(idOfObject);
-    }
+    const handleDelete = () => {
+        if (modalType === 'DELETE_FROM_ASSIGNMENT') {
+            handleDeleteFromAssignment();
+        } else {
+            deleteFunction();
+        }
+        setIsModalOpen(false);
+    };
 
     return (
         <article className='relative inline-block text-left' ref={dropdownRef}>
@@ -50,10 +52,17 @@ const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfO
 
             {isOpen && (
                 <article className='z-50 py-1 absolute right-2 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200'>
-                    {objectType == 'ASSIGNMENT' && (<><DropdownMenuItem label='View' onClick={handleAddQuestion} />
-                        <DropdownMenuItem label='Add question' onClick={handleAddQuestion} /></>)}
+                    {objectType === 'ASSIGNMENT' && (
+                        <>
+                            <DropdownMenuItem label='View' onClick={addQuestionFunction} />
+                            <DropdownMenuItem label='Add question' onClick={addQuestionFunction} />
+                        </>
+                    )}
+                    {objectType === 'QUESTION' && (
+                        <DropdownMenuItem label='Delete from Assignment' onClick={handleDeleteFromAssignmentClick} />
+                    )}
                     <DropdownMenuItem label='Delete' onClick={handleDeleteItem} />
-                    <DropdownMenuItem label='Edit' onClick={handleEditObject} />
+                    <DropdownMenuItem label='Edit' onClick={editFunction} />
                 </article>
             )}
 
@@ -61,8 +70,9 @@ const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfO
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onDelete={handleDelete}
-                nameOfObjectToDelete={nameOfObject}
+                name={name}
                 objectType={objectType}
+                modalType={modalType}
             />
         </article>
     );

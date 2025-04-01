@@ -44,6 +44,13 @@ class AddArmToMABRequest(BaseModel):
     course_id: int
 
 
+class MasteryPerObjective(BaseModel):
+    course_id: int
+    module_id: int
+    skill_name: int
+    user_id: int
+
+
 @app.post("/run-model-on-response/")
 def run_model_on_response(request: RunModelOnResponseRequest):
     model = pybkt.Model(seed=42, num_fits=1)
@@ -297,6 +304,38 @@ def fit_model(request: FitModelRequest):
     bkt.save(bkt_filename)
 
     return {"message": "Model fit successfully"}
+
+
+@app.post("/get-mastery-level/")
+def mastery_of_skill(request: MasteryPerObjective):
+    """
+    Get the mastery of a skill for a given user
+    """
+    model = pybkt.Model(seed=42, num_fits=1)
+    try:
+        model.load(
+            "./adaptive-engine-api/models/bkt_model_{course_id}_{module_id}.pkl".format(
+                course_id=request.course_id, module_id=request.module_id
+            )
+        )
+    except FileNotFoundError:
+        return {"message": "Model not found"}
+
+    data = pd.read_csv(
+        "./adaptive-engine-api/models/bkt_data_{course_id}_{module_id}.csv".format(
+            course_id=request.course_id, module_id=request.module_id
+        )
+    )
+
+
+    data = data[(data["user_id"] == request.user_id) & (data["skill_name"] == request.skill_name)]
+
+    try:
+        predictions = model.predict(data=data)
+    except Exception:
+        predictions = pd.DataFrame({"state_predictions": [0]})
+
+    return {"mastery": int(predictions.iloc[-1]["state_predictions"] * 100)}
 
 
 if __name__ == "__main__":

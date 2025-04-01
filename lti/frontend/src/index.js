@@ -16,6 +16,8 @@ import StudentLandingPage from "./student/pages/LandingPage.js";
 import CreateQuestion from "./instructor/pages/CreateQuestion.js";
 import Assignment from "./student/pages/Assignment.js";
 import CreatePrequiz from "./instructor/pages/CreatePrequiz.js";
+import SelectQuestions from "./instructor/pages/SelectQuestions";
+import ActivityDetails from "./student/pages/ActivityDetails.js";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +31,10 @@ const router = createBrowserRouter([
   {
     path: '/lti/add_questions/:assignmentId',
     element: <AddQuestions/>,
+  },
+  {
+    path: '/lti/select_questions/:moduleId/:assignmentId',
+    element: <SelectQuestions/>,
   },
   {
     path: '/lti/select_objectives/',
@@ -77,6 +83,10 @@ const router = createBrowserRouter([
   {
     path: '/lti/assignment/:assignmentId',
     element: <Assignment/>
+  },
+  {
+    path: '/lti/activity_details/:assignmentId',
+    element: <ActivityDetails/>
   }
 ])
 

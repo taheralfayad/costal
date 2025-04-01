@@ -11,7 +11,7 @@ from lti.api import (
     ModuleViewSet,
     CourseViewSet,
 )
-from lti.auth_views import oauth_complete, oauth_login
+from lti.oauth.auth_views import oauth_complete, oauth_login
 from lti.views import (
     config,
     get_jwks,

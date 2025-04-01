@@ -7,6 +7,8 @@ import Menu from '../../assets/menu.svg'
 import Arrow from '../../assets/arrow-left.svg';
 import DropdownMenu from '../components/DropdownMenu';
 import LoadingPage from '../components/LoadingPage.js';
+import DeleteModal from '../components/DeleteModal';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 const CourseOutline = () => {
     const navigate = useNavigate();
@@ -26,7 +28,9 @@ const CourseOutline = () => {
             isTableVisible: true,
             isEditing: false
         }]);
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedModule, setSelectedModule] = useState(null);
+    const [selectedModuleName, setSelectedModuleName] = useState('')
 
     const formatTimeStamps = (timestamp) => {
         const date = new Date(timestamp);
@@ -52,6 +56,35 @@ const CourseOutline = () => {
     };
 
 
+    const handleOpenModal = (id, name) => {
+        
+        setSelectedModule(id);
+        setSelectedModuleName(name)
+          
+        setIsModalOpen(true);
+        
+    }
+
+    const handleDeleteModule = async (id) => {
+        try {
+          const formData = new FormData();
+          formData.append('module_id', id);
+    
+          const response = await fetch(`/lti/api/modules/delete_module/`, {
+            method: 'POST',
+            body: formData
+          });
+    
+          if (response.status === 204) {
+            retrieveModules()
+            setIsModalOpen(false)
+          }
+        }
+        catch (error) {
+          console.error(error);
+        }
+      }
+
     const retrieveModules = async () => {
         try {
             const response = await fetch(`/lti/api/modules/get_modules_by_course_id/${COURSE_ID}`);
@@ -67,9 +100,8 @@ const CourseOutline = () => {
                     newData[i].rows.unshift(prequizData);
                 }
             }
-
+            
             setData(newData);
-            console.log(newData)
 
         } catch (error) {
             console.error(error);
@@ -84,12 +116,12 @@ const CourseOutline = () => {
 
     useEffect(() => {
         if (data) {
-            console.log(data)
             setModules(data.map(d => ({
                 id: d.id,
                 name: d.name,
                 rows: d.rows || [],
                 prequiz: d.prequiz,
+                skills: d.skills,
                 isOrdering: false,
                 allChecked: false,
                 checkedRows: Array((d.rows || []).length).fill(false),
@@ -140,21 +172,7 @@ const CourseOutline = () => {
     };
 
     const handleSaveNewModule = async () => {
-        const newModule = {
-            id: modules.length + 1,
-            name: newModuleName,
-            rows: [],
-            isOrdering: false,
-            allChecked: false,
-            checkedRows: [],
-            isStartDateOpen: false,
-            isEndDateOpen: false,
-            isTableVisible: true,
-            isEditing: false
-        };
-        setModules([...modules, newModule]);
         setIsAddingModule(false);
-        setNewModuleName('');
 
         try {
             const response = await fetch('/lti/api/modules/create_module/', {
@@ -167,13 +185,13 @@ const CourseOutline = () => {
                     name: newModuleName
                 })
             });
-
-            const data = await response.json();
-            console.log(data);
+            if (response.ok) {
+                setNewModuleName('')
+                retrieveModules(); 
+            }
         }
         catch (error) {
-            console.error(error
-            );
+            console.error(error);
         }
     };
 
@@ -216,7 +234,6 @@ const CourseOutline = () => {
         if (isSaving) {
             const moduleToUpdate = modules.find(module => module.id === moduleId);
             if (!moduleToUpdate) return;
-            console.log(moduleToUpdate)
             await fetch(`/lti/api/modules/update_assignment_order/${moduleId}/`, {
                 method: 'POST',
                 headers: {
@@ -272,8 +289,6 @@ const CourseOutline = () => {
     };
 
     const handleSetStart = async (moduleId, newDate) => {
-        console.log('here')
-        console.log(newDate)
         const targetModule = modules.find(module => module.id === moduleId);
         const checkedAssignments = targetModule.rows.filter((_, index) => targetModule.checkedRows[index]);
         try {
@@ -296,7 +311,6 @@ const CourseOutline = () => {
                 })
             );
 
-            console.log("Updated assignments:", responses);
 
             handleStartDate(moduleId);
             retrieveModules();
@@ -308,8 +322,6 @@ const CourseOutline = () => {
     }
 
     const handleSetEnd = async (moduleId, newDate) => {
-        console.log('here')
-        console.log(newDate)
         const targetModule = modules.find(module => module.id === moduleId);
         const checkedAssignments = targetModule.rows.filter((_, index) => targetModule.checkedRows[index]);
         try {
@@ -333,7 +345,6 @@ const CourseOutline = () => {
                 })
             );
 
-            console.log("Updated assignments:", responses);
 
             handleStartDate(moduleId);
             retrieveModules();
@@ -361,7 +372,11 @@ const CourseOutline = () => {
         ));
     };
 
-    const handleDeleteAssignment = async (assignmentId) => {
+    const handleDeleteAssignment = async (assignmentId, module) => {
+        if (assignmentId === module.prequiz.id && module.rows.length > 1) {
+            toast.error("You cannot delete this prequiz as you have other assignments")
+            return;
+        }
         try {
             const formData = new FormData();
             formData.append('assignment_id', assignmentId);
@@ -372,10 +387,7 @@ const CourseOutline = () => {
             });
 
             if (response.status === 204) {
-                setModules(modules.map(module => {
-                    const updatedRows = module.rows.filter(row => row.id !== assignmentId);
-                    return { ...module, rows: updatedRows };
-                }));
+                retrieveModules()
             }
         }
         catch (error) {
@@ -435,6 +447,7 @@ const CourseOutline = () => {
     };
 
     const renderMenu = (module) => {
+        console.log(module.prequiz)
         if (module.isOrdering) {
             return (
                 <section className='flex justify-between items-center mt-8 mx-16'>
@@ -499,10 +512,11 @@ const CourseOutline = () => {
                     {renderModuleName(module)}
                 </section>
                 <section className='flex gap-4'>
-                    {!module.prequiz && <Button label='Add Prequiz to Module' onClick={() => navigate(`/lti/create_prequiz/${module.id}`)} />}
+                    {(module.skills && !module.prequiz) && <Button label='Add Prequiz to Module' onClick={() => navigate(`/lti/create_prequiz/${module.id}`)} />}
                     {module.prequiz && module.prequiz.is_valid && <Button label='Add Assignment to Module' onClick={() => navigate(`/lti/create_assignment/${module.id}`)} />}
                     <Button label='Add Objectives to Module' onClick={() => navigate('/lti/select_objectives/')} />
                     <Button label='Edit Order' onClick={() => handleOrdering(module.id)} type='outline' />
+                    <Button label='Delete Module' onClick={() => handleOpenModal(module.id, module.name)} />
                 </section>
             </section>
         )
@@ -515,6 +529,8 @@ const CourseOutline = () => {
 
     return (
         <main className='flex flex-col gap-4'>
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick={false} rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" transition={Bounce}
+      />
             <header className='p-6 pl-10 flex items-center justify-between'>
                 <article className='flex flex-col gap-2'>
                     <span className='flex flex-row gap-2'>
@@ -528,7 +544,7 @@ const CourseOutline = () => {
                 <Button type='lightGreenOutline' label='Settings' onClick={() => navigate('/lti/course_settings')} />
 
             </header>
-            <section className='bg-[#f8f8f8] min-h-screen'>
+            <section className='bg-[#f8f8f8] min-h-screen pb-6'>
                 <section className='flex gap-6 items-center mt-4 mx-16'>
                     <h2 className={`text-slate-900 text-xl font-medium ${isAddingModule ? 'mb-4' : ''}`}>Course Outline</h2>
                     {!isAddingModule ? (
@@ -552,7 +568,8 @@ const CourseOutline = () => {
                 {modules.map(module => (
                     <section key={module.id}>
                         {renderMenu(module)}
-                        {!module.prequiz && <div className='mt-6 mx-16'><Notification type={'error'} message={'Please add a prequiz to this module before adding assignments'} /></div>}
+                        {!module.skills && <div className='mt-6 mx-16'><Notification type={'error'} message={'Please add an objective to this module before adding assignments'} /></div>}
+                        {(module.skills && !module.prequiz) && <div className='mt-6 mx-16'><Notification type={'error'} message={'Please add a prequiz to this module before adding assignments'} /></div>}
                         {module.prequiz && !module.prequiz.is_valid && <div className='mt-6 mx-16'><Notification type={'error'} message={`Your prequiz does not cover all the objectives in this module. Missing objectives: ${module.prequiz.missing_skills.map(skill => skill.name).join(', ')}`} /></div>}
                         {module.isTableVisible &&
                             <section className='bg-white rounded-xl border border-slate-300 mt-6 mx-16'>
@@ -574,7 +591,7 @@ const CourseOutline = () => {
                                                 {formatTimeStamps(row.start)} - {formatTimeStamps(row.end)}
                                             </td>
                                             <td className='pr-6'>
-                                                <DropdownMenu editFunction={handleEditAssignment} deleteFunction={handleDeleteAssignment} addQuestionFunction={handleAddQuestion} idOfObject={row.id} nameOfObject={row.topic} />
+                                                <DropdownMenu editFunction={() => handleEditAssignment(row.id)} deleteFunction={() => handleDeleteAssignment(row.id, module)} addQuestionFunction={() => handleAddQuestion(row.id)} name={row.topic} />
                                             </td>
                                         </tr>
                                     ))}
@@ -586,6 +603,14 @@ const CourseOutline = () => {
                     </section>
                 ))}
             </section>
+            <DeleteModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onDelete={() => handleDeleteModule(selectedModule)}
+        name={selectedModuleName}
+        objectType='MODULE'
+        modalType='DELETE_ITEM'
+      />
 
         </main>
     );

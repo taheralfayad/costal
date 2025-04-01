@@ -14,7 +14,7 @@ from pylti1p3.contrib.django import (
 )
 from pylti1p3.tool_config import ToolConfDict
 
-from lti.auth_views import reauthenticate, verify_auth
+from lti.oauth.auth_views import reauthenticate, authenticate
 from lti.models import (
     CanvasUser,
     Course,
@@ -195,7 +195,7 @@ def launch(request):
 
         return reauthenticate(request=request)
 
-    return verify_auth(request, user_object, expiration_date, response_data)
+    return authenticate(request, user_object, expiration_date, response_data)
 
 
 def get_jwks(request):

@@ -3,8 +3,9 @@ import requests
 import datetime
 import json
 import random
-
+from django.utils import timezone
 from canvasapi import Canvas
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db.models import Count, Q
 from rest_framework import status, viewsets
@@ -289,6 +290,95 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Assignment.objects.all()
         return queryset
+    
+
+    @action(detail=False, methods=["get"], url_path="get_weekly_homework_average")
+    def get_weekly_homework_average(self, request):
+        course_id = request.query_params.get("course_id")
+        today = timezone.now()
+        start_of_week = today - datetime.timedelta(days=today.weekday())
+        end_of_week = start_of_week + datetime.timedelta(days=6)
+    
+
+        print(start_of_week)
+        print(end_of_week)
+        
+        weekly_homework = Assignment.objects.filter(
+            course_id=course_id,
+            start_date__gte=start_of_week,
+            end_date__lte=end_of_week,
+            assessment_type="Homework"
+        )
+        
+        if not weekly_homework.exists():
+            return Response({"message": "No homework assignments found for this week", "average_grade": 0}, status=status.HTTP_200_OK)
+        
+        total_grade = 0
+        total_attempts = 0
+        result = []
+        
+        for assignment in weekly_homework:
+            attempts = AssignmentAttempt.objects.filter(associated_assignment=assignment)
+            if attempts.exists():
+                assignment_total_grade = sum(attempt.total_grade for attempt in attempts)
+                assignment_average = assignment_total_grade / attempts.count()
+                total_grade += assignment_total_grade
+                total_attempts += attempts.count()
+            else:
+                assignment_average = 0
+            
+            result.append({
+                "assignment_id": assignment.id,
+                "name": assignment.name,
+                "grade": assignment_average
+            })
+        
+        overall_average_grade = total_grade / total_attempts if total_attempts > 0 else 0
+        
+        return Response({"overall_average_grade": overall_average_grade, "assignments": result}, status=status.HTTP_200_OK)
+
+
+    @action(detail=False, methods=["get"], url_path="get_overall_grade")
+    def get_overall_grade(self, request):
+        course_id = request.query_params.get("course_id")
+        type = request.query_params.get("type")
+        
+        now = datetime.datetime.now()
+        assignments = Assignment.objects.filter(course_id=course_id, assessment_type=type, start_date__lte=now)
+        assignments = Assignment.objects.filter()
+        current_total_assignments = assignments.count()
+        total_assignments = Assignment.objects.filter(course_id=course_id, assessment_type=type).count()
+        
+        total_grade = 0
+        total_attempts = 0
+        result = []
+        
+        for assignment in assignments:
+            attempts = AssignmentAttempt.objects.filter(associated_assignment=assignment)
+            if attempts.exists():
+                assignment_total_grade = sum(attempt.total_grade for attempt in attempts)
+                assignment_average = assignment_total_grade / attempts.count()
+                total_grade += assignment_total_grade
+                total_attempts += attempts.count()
+            else:
+                assignment_average = 0
+            
+            result.append({
+                "assignment_id": assignment.id,
+                "assignment_name": assignment.name,
+                "average_grade": assignment_average
+            })
+        
+        overall_average_grade = total_grade / total_attempts if total_attempts > 0 else 0
+        
+        return Response({
+            "overall_average_grade": overall_average_grade,
+            "assignments": result,
+            "current_total_assignments": current_total_assignments,
+            "total_assignments": total_assignments
+        }, status=status.HTTP_200_OK)
+
+
 
     @action(
         detail=False,
@@ -431,6 +521,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="add_question")
     def add_question(self, request):
+        
         data = request.data
         assignment = Assignment.objects.get(id=data["assignment_id"])
         question = Question.objects.get(id=data["question_id"])
@@ -515,7 +606,40 @@ class AssignmentViewSet(viewsets.ModelViewSet):
                     modules_with_completed_prequizzes.append(module.id)
         
         return Response(modules_with_completed_prequizzes, status=status.HTTP_200_OK)
-             
+
+    @action(detail=False, methods=['get'], url_path='get_mastery_level_per_objective/(?P<user_id>[^/.]+)')
+    def get_mastery_level_per_objective(self, request, user_id=None):
+        user = CanvasUser.objects.get(uid=user_id)
+        assignment_id = request.query_params.get('assignment_id')
+        assignment = Assignment.objects.get(id=assignment_id)
+
+        assignment_objectives = assignment.questions.values_list('associated_skill', flat=True).distinct()
+
+        mastery = {}
+
+        for objective in assignment_objectives:
+            request_to_adaptive_engine = {
+                "user_id": user.id,
+                "course_id": assignment.course_id,
+                "module_id": assignment.associated_module.id,
+                "skill_name": objective,
+            }
+
+            response_from_adaptive_engine = requests.post(
+                os.environ.get("ADAPTIVE_ENGINE_URL") + "/get-mastery-level/",
+                json=request_to_adaptive_engine,
+            )
+
+            response = response_from_adaptive_engine.json()
+
+            if response_from_adaptive_engine.status_code == 200:
+                if "message" in response and response["message"] == "Model not found":
+                    return Response({"message": "No data found for module"}, status=status.HTTP_200_OK)
+                else:
+                    mastery[objective] = response["mastery"]
+
+        return Response(mastery, status=status.HTTP_200_OK)
+
 
 class QuestionViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -564,6 +688,23 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["post"], url_path="delete_question_from_assignment")
+    def delete_question_from_assignment(self, request):
+        data = request.data
+        try:
+            assignment = Assignment.objects.get(id=data["assignment_id"])
+            question = Question.objects.get(id=data["question_id"])
+            
+            if question in assignment.questions.all():
+                assignment.questions.remove(question)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response({"error": "Question not found in the assignment"}, status=status.HTTP_400_BAD_REQUEST)
+        except Assignment.DoesNotExist:
+            return Response({"error": "Assignment not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found"}, status=status.HTTP_404_NOT_FOUND)
     
     @action(detail=False, methods=['post'], url_path='edit_question/(?P<question_id>[^/.]+)')
     def edit_question(self, request, question_id):
@@ -780,29 +921,62 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment_completion_percentage = get_assignment_completion_percentage(assignment, user)
 
         if check_if_assignment_is_completed(assignment, user):
+            course = assignment.course
+
+            print(course.__dict__)
+
+            if course.deadline == "WEEK" or course.deadline == "MONTH":
+                current_date = timezone.now()
+                end_date = assignment.end_date
+                if current_date > end_date:
+                    assignment_attempt.total_grade -= (assignment_attempt.total_grade * float(course.penalty))
+                    assignment_attempt.save()
+
             assignment_attempt.status = 2
             assignment_attempt.save()
 
             if assignment.assessment_type != "prequiz":
-                submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], assignment_completion_percentage, data['user_id'])
+                submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], assignment_attempt.total_grade, data['user_id'])
 
-            return Response({"message": "Assignment completed", "assessment_status": "completed"}, status=status.HTTP_200_OK)
+            return Response({"message": "Assignment completed", "assessment_status": "completed", "is_correct": answer_choice.is_correct}, status=status.HTTP_200_OK)
+
         elif successful_attempt or failed_attempts:
             random_question = get_valid_random_question(assignment, user)
             if random_question is None:
+                course = assignment.course
+                if course.deadline == "WEEK" or course.deadline == "MONTH":
+                    current_date = timezone.now()
+                    end_date = assignment.end_date
+                    if current_date > end_date:
+                        assignment_attempt.total_grade -= (assignment_attempt.total_grade * float(course.penalty))
+                        assignment_attempt.save()
                 assignment_attempt.status = 2
                 assignment_attempt.save()
-                return Response({"message": "No more questions to ask", "assessment_status": "completed"}, status=status.HTTP_200_OK)
+                return Response({"message": "No more questions to ask", "assessment_status": "completed", "is_correct": answer_choice.is_correct}, status=status.HTTP_200_OK)
             assignment_attempt.current_question_attempt = random_question
             assignment_attempt.save()
+            question_serializer = QuestionSerializer(random_question)
+            objective = Skill.objects.get(id=random_question.associated_skill.id)
+            skill_serializer = SkillSerializer(objective)
+            question_data = question_serializer.data.copy()
+            question_data["associated_skill"] = skill_serializer.data
+
+            assignment_attempt.current_question_attempt = next_question
+            assignment_attempt.completion_percentage = assignment_completion_percentage
+            assignment_attempt.save()
             data = {
-                "question": QuestionSerializer(random_question).data,
-                "assignment_completion_percentage": assignment_completion_percentage
+                "question": question_data,
+                "assignment_completion_percentage": assignment_completion_percentage,
+                "is_correct": answer_choice.is_correct,
             }
 
             return Response(data, status=status.HTTP_200_OK)
-
-
+        
+        question_serializer = QuestionSerializer(next_question)
+        objective = Skill.objects.get(id=next_question.associated_skill.id)
+        skill_serializer = SkillSerializer(objective)
+        question_data = question_serializer.data.copy()
+        question_data["associated_skill"] = skill_serializer.data
 
         assignment_attempt.current_question_attempt = next_question
         assignment_attempt.completion_percentage = assignment_completion_percentage
@@ -810,8 +984,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
 
         data = {
-            "question": QuestionSerializer(next_question).data,
+            "question": question_data,
             "assignment_completion_percentage": assignment_completion_percentage,
+            "is_correct": answer_choice.is_correct,
         }
 
 
@@ -892,6 +1067,17 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         # If there are no more questions to ask, return a message
         if next_question is None:
+            course = assignment.course
+
+            if course.deadline == "WEEK" or course.deadline == "MONTH":
+                current_date = timezone.now()
+                end_date = assignment.end_date
+                if current_date > end_date:
+                    print(course.penalty)
+                    assignment_attempt.total_grade -= (assignment_attempt.total_grade * float(course.penalty))
+                    print(assignment_attempt.total_grade)
+                    assignment_attempt.save()
+
             assignment_attempt.status = 2
             assignment_attempt.current_question_attempt = None
             assignment_attempt.save()
@@ -947,7 +1133,37 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question_data["associated_skill"] = skill_serializer.data
 
         return Response(question_data, status=status.HTTP_200_OK)
-        
+
+    @action(detail=False, methods=['get'], url_path='retrieve_question_attempts/(?P<assignment_id>[^/.]+)')
+    def retrieve_question_attempts(self, request, assignment_id=None):
+        assignment = Assignment.objects.get(id=assignment_id)
+        user_id = request.query_params.get('user_id')
+
+        user = CanvasUser.objects.get(uid=user_id)
+
+        question_attempts = QuestionAttempt.objects.filter(
+            user=user,
+            associated_assignment=assignment
+        )
+
+        serializer = QuestionAttemptSerializer(question_attempts, many=True)
+
+        data = serializer.data
+
+        data = data.copy()
+
+        for question_attempt in data:
+            question = Question.objects.get(id=question_attempt["associated_question"])
+            question_serializer = QuestionSerializer(question)
+            question_attempt["associated_question"] = question_serializer.data
+
+        for question_attempt in data:
+            possible_answer = PossibleAnswer.objects.get(id=question_attempt["associated_possible_answer"])
+            possible_answer_serializer = PossibleAnswerSerializer(possible_answer)
+            question_attempt["associated_possible_answer"] = possible_answer_serializer.data
+            question_attempt["associated_possible_answer"]["is_correct"] = possible_answer.is_correct
+
+        return Response(data, status=status.HTTP_200_OK)
         
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
@@ -970,6 +1186,19 @@ class ModuleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Module.objects.all()
         return queryset
+    
+    @action(detail=False, methods=["post"], url_path="delete_module")
+    def delete_module(self, request):
+        try:
+            data = request.data
+            module = Module.objects.get(id=data['module_id'])
+            module.delete()
+            return Response({"message": "Module deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except Module.DoesNotExist:
+            return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
     @action(
         detail=False,
@@ -981,6 +1210,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
             response = []
 
             modules = Module.objects.filter(course_id=course_id)
+            
 
             for module in modules:
                 module_response = {
@@ -994,6 +1224,9 @@ class ModuleViewSet(viewsets.ModelViewSet):
                         "is_valid": module.prequiz.is_valid(),
                         "missing_skills": SkillSerializer(module.prequiz.missing_skills(), many=True).data,
                     }
+                
+                if module.skills.exists():
+                    module_response["skills"] = SkillSerializer(module.skills.all(), many=True).data
 
                 module_response["rows"] = []
 
@@ -1040,10 +1273,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(
-            {"error": "No modules found for this course"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        
 
     @action(
         detail=False,
@@ -1082,6 +1312,38 @@ class ModuleViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+    @action(detail=False, methods=["get"], url_path="get_questions_by_module/(?P<module_id>[^/.]+)/(?P<assignment_id>[^/.]+)?")
+    def get_questions_by_module(self, request, module_id=None, assignment_id=None):
+        try:
+            module = Module.objects.get(id=module_id)
+            response = {
+                "id": module.id,
+                "name": module.name,
+                "questions": [],
+            }
+
+            assignment_filter = None
+            selected_question_ids = set()
+
+            if assignment_id:
+                assignment_filter = Assignment.objects.filter(id=assignment_id, associated_module=module).first()
+                response['assignment_name'] = assignment_filter.name
+                if not assignment_filter:
+                    return Response({"error": "Assignment not found in this module"}, status=status.HTTP_404_NOT_FOUND)
+                selected_question_ids = set(assignment_filter.questions.values_list("id", flat=True))
+
+            for assignment in module.assignments.all():
+                serializer = QuestionSerializer(assignment.questions.all(), many=True)
+                for question in serializer.data:
+                    question["is_selected"] = question["id"] in selected_question_ids
+                    response["questions"].append(question)
+
+            return Response(response, status=status.HTTP_200_OK)
+        except Module.DoesNotExist:
+            return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
     @action(detail=False, methods=["post"], url_path="create_module")
     def create_module(self, request):
         data = request.data
@@ -1118,6 +1380,18 @@ class SkillViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Skill.objects.all()
         return queryset
+
+    @action(detail=False, methods=["post"], url_path="delete_skill")
+    def delete_skill(self, request):
+        try:
+            data = request.data
+            skill = Skill.objects.get(id=data['skill_id'])
+            skill.delete()
+            return Response({"message": "Skill deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except Skill.DoesNotExist:
+            return Response({"error": "Skill not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,
@@ -1174,6 +1448,7 @@ class GetCourseProfessorName(APIView):
             # Fetch the course using Canvas API
             course = canvas.get_course(course_id)
 
+
             # Fetch enrollments with TeacherEnrollment type
             teacher_names = []
             enrollments = course.get_enrollments(type=["TeacherEnrollment"])
@@ -1189,7 +1464,7 @@ class GetCourseProfessorName(APIView):
                     }
                 )
 
-            return Response({"course_id": course_id, "professors": teacher_names})
+            return Response({"course_id": course_id, "professors": teacher_names, "start": course.start_at, "end": course.end_at})
 
         except Exception as e:
             raise NotFound({"error": str(e)})

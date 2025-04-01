@@ -51,7 +51,7 @@ class Module(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
     assignments = models.ManyToManyField("Assignment", blank=True)
     skills = models.ManyToManyField("Skill", blank=True)
-    prequiz = models.OneToOneField("Prequiz", on_delete=models.CASCADE, null=True, blank=True)
+    prequiz = models.OneToOneField("Prequiz", null=True, on_delete=models.SET_NULL, blank=True)
 
     def __str__(self):
         return self.name
@@ -87,13 +87,14 @@ class AssignmentAttempt(models.Model):
     user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE, blank=True, null=True)
     attempted_questions = models.ManyToManyField("QuestionAttempt", blank=True)
     current_question_attempt = models.ForeignKey("Question", on_delete=models.CASCADE, null=True, blank=True)
-    total_grade = models.IntegerField(default=0)
+    total_grade = models.FloatField(default=0.0)
     total_time_spent = models.IntegerField(default=0)
     associated_assignment = models.ForeignKey("Assignment", on_delete=models.CASCADE, null=True, blank=True)
     completion_percentage = models.FloatField(default=0.0)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=NOT_STARTED)
 
 class QuestionAttempt(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE, blank=True, null=True)
     associated_assignment_attempt = models.ForeignKey("AssignmentAttempt", blank=True, null=True, on_delete=models.CASCADE)
     associated_assignment = models.ForeignKey("Assignment", blank=True, null=True ,on_delete=models.CASCADE)

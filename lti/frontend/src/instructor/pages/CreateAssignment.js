@@ -76,13 +76,6 @@ const CreateAssignment = () => {
               }
             }]} />
           </section>
-
-          <section className='h-20 rounded-[10px] border border-slate-300 flex items-center justify-center gap-4'>
-            <label
-              className='block text-sm font-medium text-gray-700 text-center'
-            >Import questions and settings from another assignment</label>
-            <Checkbox label='' />
-          </section>
         </main>
         <section className='flex justify-end gap-2 pr-2'>
           <Button label='Create' form={true} />

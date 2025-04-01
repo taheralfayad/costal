@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Button = ({ label = 'Button', icon = null, onClick, type = 'primary', className = '', form = false }) => {
+const Button = ({ label = 'Button', icon = null, onClick, type = 'primary', className = '', form = false, disabled = false  }) => {
   const baseStyle =
     'flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition';
   const customStyles = {
@@ -18,11 +18,14 @@ const Button = ({ label = 'Button', icon = null, onClick, type = 'primary', clas
     black: 'bg-black text-white hover:bg-slate-800 focus:ring-black'
   };
 
+  const disabledStyle = 'opacity-50 cursor-not-allowed';
+  
   return (
     <button
-      className={`${baseStyle} ${customStyles[type]} ${className}`}
+      className={`${baseStyle} ${customStyles[type]} ${disabled ? disabledStyle : ''} ${className}`}
       onClick={onClick}
       type={form ? 'submit' : 'button'}
+      disabled={disabled}
     >
       {icon && <span className='text-lg'>{icon}</span>}
       {label}
