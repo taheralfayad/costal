@@ -13,7 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError, NotFound
-from lti.auth_views import refresh_access_token
+from lti.oauth.auth_utils import refresh_access_token
 
 
 from lti.models import (
@@ -189,18 +189,28 @@ def get_professor_access_token(request, course_id, api_key):
             return None
         
         prof_usr_obj = CanvasUser.objects.get(uid=users[0].id)
-        res = refresh_access_token(request, prof_usr_obj)
+        new_token, new_exp = refresh_access_token(request, prof_usr_obj)
 
-        if not res or "access_token" not in res:
+        if not new_token:
             print("Failed to refresh access token.")
             return None
 
-        return res["access_token"]
+        return new_token
 
     except Exception as e:
         print(f"Error getting professor ID: in Canvas: {e}")
         return None
 
+
+def get_professor_id(course_id):
+    course = Course.objects.get(course_id=course_id)
+    teachers = course.teachers.all()
+
+    if not teachers:
+        print("No teachers found")
+        return None
+
+    return teachers[0].uid
 
 def delete_assignment_from_canvas(course_id, assignment, api_key):
     try:
@@ -211,6 +221,7 @@ def delete_assignment_from_canvas(course_id, assignment, api_key):
         canvas_assignment.delete()
     except Exception as e:
         print(f"Error deleting assignment: {assignment.name} in Canvas: {e}")
+
 
 class TextbookViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -936,7 +947,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             assignment_attempt.save()
 
             if assignment.assessment_type != "prequiz":
-                submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], assignment_attempt.total_grade, data['user_id'])
+                submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], assignment_completion_percentage, data['user_id'])
 
             return Response({"message": "Assignment completed", "assessment_status": "completed", "is_correct": answer_choice.is_correct}, status=status.HTTP_200_OK)
 
@@ -1447,24 +1458,15 @@ class GetCourseProfessorName(APIView):
         try:
             # Fetch the course using Canvas API
             course = canvas.get_course(course_id)
+            prof_id = get_professor_id(course_id)
+            if not prof_id:
+                return Response({"message": "No professors found for this course."})
 
+            teacher = course.get_user(prof_id)
+            if not teacher:
+                return Response({"message": "No professors found for this course.", "professor": None})
 
-            # Fetch enrollments with TeacherEnrollment type
-            teacher_names = []
-            enrollments = course.get_enrollments(type=["TeacherEnrollment"])
-            for enrollment in enrollments:
-                teacher_names.append(enrollment.user["name"])
-
-            # Return response with professor names
-            if not teacher_names:
-                return Response(
-                    {
-                        "message": "No professors found for this course.",
-                        "professors": [],
-                    }
-                )
-
-            return Response({"course_id": course_id, "professors": teacher_names, "start": course.start_at, "end": course.end_at})
+            return Response({"course_id": course_id, "professor": teacher.name, "start": course.start_at, "end": course.end_at})
 
         except Exception as e:
             raise NotFound({"error": str(e)})
