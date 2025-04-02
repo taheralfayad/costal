@@ -50,7 +50,7 @@ const Assignment = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ question_text: question.text })
+        body: JSON.stringify({ question_text: question.text, question_answer_choices: question.possible_answers })
       });
   
       const data = await response.json();
@@ -78,7 +78,7 @@ const Assignment = () => {
         if (question.possible_answers[i].answer == answerChoice) {
           formData.append("answer_choice", question.possible_answers[i].id)
         }
-      }
+      }question_answer
     }
 
     formData.append('assignment_id', assignment.id)

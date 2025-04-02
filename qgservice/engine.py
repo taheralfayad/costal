@@ -4,7 +4,7 @@ import boto3
 
 
 class LLMEngine:
-    def __init__(self, model_id="meta.llama3-8b-instruct-v1:0", region="us-east-1"):
+    def __init__(self, model_id="us.meta.llama3-3-70b-instruct-v1:0", region="us-east-1"):
         """
         Initializes AWS Bedrock client for calling LLaMA-3 or another Bedrock-supported model.
         Uses environment variables for AWS credentials if available.
@@ -66,12 +66,22 @@ class LLMEngine:
             }
         )
         
-
-        response = self.boto3_client.invoke_model_with_response_stream(
-            modelId=self.model_id, body=request_body, performanceConfigLatency="standard"
-        )
-
-        return self.__parse_boto_response_stream(response.get("body"))
+        try:
+            response = self.boto3_client.invoke_model_with_response_stream(
+                modelId=self.model_id,
+                body=request_body,
+                # accept='application/json', # Often optional, inferred
+                # contentType='application/json' # Often optional, inferred
+            )
+            return self.__parse_boto_response_stream(response.get("body"))
+        except Exception as e:
+            # Check specifically for AccessDeniedException which indicates model access issues
+            if "AccessDeniedException" in str(e):
+                 print(f"Error: AccessDeniedException. Ensure you have requested access to model '{self.model_id}' in the AWS Bedrock console for region '{self.boto3_client.meta.region_name}'.")
+            else:
+                print(f"Error invoking Bedrock model {self.model_id}: {e}")
+            # Consider raising the exception or returning a more structured error
+            return f"Error: Could not get response from model. {e}"
 
     def extract_concepts(self, course_name: str, text: str, num_concepts: int = 3):
         """
@@ -194,18 +204,60 @@ class LLMEngine:
 
         return response_text
 
-    def generate_hint(self, question: str) -> str:
+    def generate_hint(self, question: str, question_answer_choices) -> str:
         """
         Generates a hint for a given question without giving away the answer.
         """
+
+        answer_texts = []
+        if isinstance(question_answer_choices, list):
+            for choice in question_answer_choices:
+                if isinstance(choice, dict) and 'answer' in choice:
+                    answer_texts.append(str(choice['answer']))
+                elif hasattr(choice, 'answer'):
+                     answer_texts.append(str(choice.answer))
+
+        if not answer_texts:
+            print("Warning: No valid answer texts found in question_answer_choices for hint generation.")
+            pass
+
+
         system_instruction = (
             "You are an assistant in a sensitive learning environment. "
             "Your responsibility is to generate a concise hint for the given question, "
             "helping the user without revealing the correct answer."
+            "Return without using LaTeX or any other markup language."
+            
         )
 
         formatted_prompt = self.__format_prompt(system_instruction, question)
 
-        return self.__call__(formatted_prompt, temperature=0.7)
+        hint = self.__call__(formatted_prompt, temperature=0.7)
 
+        max_rewrites = 3 
+        rewrite_count = 0
+        while any(answer_text in hint for answer_text in answer_texts) and rewrite_count < max_rewrites:
+            print(f"Hint contains an answer, rewriting (Attempt {rewrite_count + 1})...")
+            hint = self.__rewrite_hint(hint, answer_texts_to_avoid=answer_texts)
+            rewrite_count += 1
+        
+        return hint
+    
+    def __rewrite_hint(self, hint: str, answer_texts_to_avoid: list) -> str:
+        """
+        Rewrites the hint to avoid revealing specific answer texts.
+        """
+        avoid_list_str = "\n - ".join(answer_texts_to_avoid)
+        system_instruction = (
+            f"Rewrite the following hint so that it does NOT contain or strongly imply any of these specific answer phrases:\n"
+            f" - {avoid_list_str}\n\n"
+            "The rewritten hint must still be relevant to the original question context implied by the original hint, helpful, and concise (1-2 sentences).\n"
+            "Use HTML markup.."
+        )
+        user_message = f"Original Hint: {hint}"
+
+
+        formatted_prompt = self.__format_prompt(system_instruction, user_message)
+        rewritten_hint = self.__call__(formatted_prompt, temperature=0.6) 
+        return rewritten_hint
 

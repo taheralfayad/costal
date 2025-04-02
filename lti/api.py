@@ -594,10 +594,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def generate_hint(self, request):
         try:
             question_text = request.data.get("question_text")
+            question_answer_choices = request.data.get("question_answer_choices")
             if not question_text:
                 return Response({"error": "Missing 'question' text."}, status=status.HTTP_400_BAD_REQUEST)
 
-            hint = llm_service.generate_hint(question_text)
+            hint = llm_service.generate_hint(question_text, question_answer_choices)
             return Response({"hint": hint}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
