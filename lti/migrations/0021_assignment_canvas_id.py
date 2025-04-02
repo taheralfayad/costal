@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("lti", "0017_assignmentattempt_completion_percentage"),
+        ("lti", "0020_alter_assignmentattempt_total_grade"),
     ]
 
     operations = [
