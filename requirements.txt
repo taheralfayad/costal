@@ -18,11 +18,8 @@ pyBKT
 django-webpack-loader
 uvicorn==0.33.0
 fastapi
-llama-cpp-python
-huggingface_hub
 boto3
 mabwiser
 gunicorn==21.2.0
 black~=24.1.1
 flake8~=7.0.0
-react-pdf
