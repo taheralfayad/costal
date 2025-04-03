@@ -22,6 +22,8 @@ import TextbookView from "./components/TextbookView/TextbookView.js";
 import ManageTextbooks from "./instructor/pages/ManageTextbooks";
 
 
+import ActivityDetails from "./student/pages/ActivityDetails.js";
+import StatsOverall from "./instructor/pages/StatsOverall";
 
 const router = createBrowserRouter([
   {
@@ -87,6 +89,14 @@ const router = createBrowserRouter([
   {
     path: '/lti/assignment/:assignmentId',
     element: <Assignment/>
+  },
+  {
+    path: '/lti/activity_details/:assignmentId',
+    element: <ActivityDetails/>
+  },
+  {
+    path: '/lti/stats/',
+    element: <StatsOverall/>
   },
   {
     path: 'lti/textbook_list/:courseId',

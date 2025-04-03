@@ -13,7 +13,11 @@ const ResultItem = ({ type, status, text, time }) => {
                 {status === 'incorrect' && <XClose className='text-red-500' />}
                 {type === 'instruction' && <Menu />}
             </div>
-            <p className='flex-1 text-slate-900 text-base font-medium mx-4 truncate'>{text}</p>
+            <div 
+               className='flex-1 text-slate-900 text-base font-medium mx-4 truncate'
+               dangerouslySetInnerHTML={{ __html: text }}
+            >
+            </div>
             <span className='text-sm text-gray-500'>{time}</span>
         </div>
     )

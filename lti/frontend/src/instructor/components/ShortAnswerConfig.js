@@ -26,7 +26,7 @@ const ShortAnswerConfig = ({ items, setItems }) => {
   return (
     <section className='p-4 w-full'>
       <section className='flex items-center'>
-        <section className="mb-4 w-full mr-4 flex items-center gap-2">
+        <section className="mb-2 w-full mr-4 flex items-center gap-2">
           <Input
             label="Accepted Answers"
             placeholder="Great Answer"

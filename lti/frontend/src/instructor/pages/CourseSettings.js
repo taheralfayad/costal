@@ -77,7 +77,6 @@ const CourseSettings = () => {
                     </button>
                     <Title>Course Settings</Title>
                 </span>
-                <Button type='blackOutline' label='Copy Course' />
             </header>
             <h2 className='text-slate-950 text-2xl font-semibold'>Grading</h2>
             <section className='flex items-center justify-between mb-6'>

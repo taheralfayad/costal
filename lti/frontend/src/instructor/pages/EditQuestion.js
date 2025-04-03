@@ -16,7 +16,8 @@ const EditQuestion = () => {
     const [objective, setObjective] = useState('');
     const [assignmentId, setAssignmentId] = useState('');
     const [selectedCheckbox, setSelectedCheckbox] = useState(null);
-    const [associatedSkill, setAssociatedSkill] = useState(0)
+    const [associatedSkill, setAssociatedSkill] = useState(0);
+    const [solvingText, setSolvingText] = useState('');
     const [points, setPoints] = useState(0);
     const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState([{ id: 1, text: '', checked: false }]);
     const [shortAnswerItems, setShortAnswerItems] = useState([]);
@@ -117,7 +118,7 @@ const EditQuestion = () => {
             toast.error("Please select a question type (Short Answer or Multiple Choice)");
             return;
         }
-        
+
         if (selectedCheckbox === 'multiple' && multipleChoiceAnswers.length < 3) {
             toast.error("Please add more choices to multiple choice");
             return;
@@ -209,6 +210,10 @@ const EditQuestion = () => {
                             {selectedCheckbox === 'short' ?
                                 <ShortAnswerConfig items={shortAnswerItems} setItems={setShortAnswerItems} /> :
                                 <MultipleChoiceConfig choices={multipleChoiceAnswers} setChoices={setMultipleChoiceAnswers} />}
+
+                            <section className='mx-4 mb-2'>
+                                <RichTextEditor label='Add an explanation on how to solve this question' required value={solvingText} onChange={setSolvingText} />
+                            </section>
                         </aside>}
                 </main>
                 <section className='flex justify-end gap-2 pr-4 pb-2'>

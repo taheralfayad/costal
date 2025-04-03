@@ -5,6 +5,7 @@ import CourseInfo from '../../instructor/components/CourseInfo';
 import AlertCircle from '../../assets/alert-circle.svg';
 import CheckCircle from '../../assets/check-circle.svg';
 import ArrowCircle from '../../assets/arrow-circle.svg';
+import { FcCancel } from "react-icons/fc";
 import Lock from '../../assets/lock.svg';
 import LoadingPage from '../../instructor/components/LoadingPage.js';
 
@@ -12,9 +13,12 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [courseData, setCourseData] = useState({});
 
   const getIcon = (assignment) => {
-    const ICON_SIZE = 24
+    const ICON_SIZE = 38;
+    if (assignment.is_locked && courseData.late_completion === false) return <FcCancel size={ICON_SIZE}/>;
+    if (assignment.is_locked && assignment.locked_after_deadline) return <FcCancel size={ICON_SIZE}/>;
     if (assignment.is_locked) return <Lock size={5}/>;
     if (assignment.assignment_attempt) {
       return assignment.assignment_attempt.status === 2 ? <CheckCircle size={ICON_SIZE}/> : <ArrowCircle size={ICON_SIZE}/>;
@@ -46,12 +50,15 @@ const LandingPage = () => {
         const completedPrequizzesRequest = await fetch(`/lti/api/assignments/student_has_completed_prequizzes/${USER_ID}?course_id=${COURSE_ID}`, {method: 'GET'})
         const modulesWithCompletedPrequizzes = await completedPrequizzesRequest.json()
 
-        console.log(modulesWithCompletedPrequizzes)
-
         const data = await response.json()
+
         for (let i = 0; i < data.length; i++) {
 
           if (data[i].assessment_type != "prequiz" && !modulesWithCompletedPrequizzes.includes(data[i].associated_module)) {
+            data[i].is_locked = true;
+          }
+
+          if (new Date(data[i].start_date).valueOf() > new Date().valueOf()) {
             data[i].is_locked = true;
           }
 
@@ -61,7 +68,6 @@ const LandingPage = () => {
             if (response.ok) {
               const assignmentAttemptData = await assignmentAttemptResponse.json()
               data[i].assignment_attempt = assignmentAttemptData   
-              console.log(assignmentAttemptData)       
             }
           } catch (error) {
             console.log("Error fetching assignment attempt")
@@ -74,7 +80,8 @@ const LandingPage = () => {
           data[i].start_date = formatTimestamp(data[i].start_date)
           data[i].end_date = formatTimestamp(data[i].end_date)
         }
-        console.log(data)
+
+
         setAssignments(data);
       } catch (error) {
         console.log(error)

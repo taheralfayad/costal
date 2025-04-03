@@ -29,6 +29,7 @@ const Assignment = () => {
   const [isHintLoading, setIsHintLoading] = useState(false);
   const [hintAlreadyRequested, setHintAlreadyRequested] = useState(false);
 
+  const [answerIsCorrect, setAnswerIsCorrect] = useState(true);
 
   const onSelect = (label) => {
     setAnswerChoice(label);
@@ -68,17 +69,17 @@ const Assignment = () => {
     const formData = new FormData();
     setHintAlreadyRequested(false);
     setHintText('');
-    
-
+   
     if (textAnswer && question.type === 'short') {
       formData.append('answer_text', textAnswer)
+      setValue('')
     }
     else {
       for (let i = 0; i < question.possible_answers.length; i++) {
         if (question.possible_answers[i].answer == answerChoice) {
           formData.append("answer_choice", question.possible_answers[i].id)
         }
-      }question_answer
+      }
     }
 
     formData.append('assignment_id', assignment.id)
@@ -87,7 +88,7 @@ const Assignment = () => {
     formData.append('number_of_seconds_to_answer', seconds)
     formData.append('assignment_attempt_id', assignmentAttempt.id)
 
-    if (assignment.assessment_type === 'quiz' || assignment.assessment_type === 'prequiz') {
+    if (assignment.assessment_type === 'Quiz' || assignment.assessment_type === 'prequiz') {
         const response = await fetch('/lti/api/questions/answer_quiz_question/', {
           method: 'POST',
           body: formData
@@ -117,8 +118,6 @@ const Assignment = () => {
 
         const data = await response.json()
 
-        console.log(data)
-
         let question = null
         let assignment_completion_percentage = null
 
@@ -130,13 +129,39 @@ const Assignment = () => {
 
         if (response.ok) {
           if (data.assessment_status === 'completed') {
-            navigate('/lti/student_landing/')
-          }
+            console.log(data)
+            setAnswerIsCorrect(data.is_correct) 
 
-          setQuestion(question)
-          setAssignmentCompletionPercentage(assignment_completion_percentage)
-          setAnswerChoice(null)
-          setSeconds
+            if (!data.is_correct) {
+              setTimeout(() => { 
+                navigate('/lti/student_landing/')
+              }, 1500)
+            }
+            else {
+              navigate('/lti/student_landing/')
+            }
+          }
+        else {
+          console.log(data)
+          setAnswerIsCorrect(data.is_correct)
+
+          if (!data.is_correct) {
+            setTimeout(() => {
+              setQuestion(question)
+              setAssignmentCompletionPercentage(assignment_completion_percentage)
+              setAnswerChoice(null)
+              setAnswerIsCorrect(true)
+              setSeconds(0)
+            }, 1500)
+          }
+          else {
+            setQuestion(question)
+            setAssignmentCompletionPercentage(assignment_completion_percentage)
+            setAnswerChoice(null)
+            setAnswerIsCorrect(true)
+            setSeconds(0)
+          }
+        }
        } 
     }
   }
@@ -195,8 +220,10 @@ useEffect(() => {
 
         <section className='bg-[#f8f8f8] h-full py-8'>
         {question.type === "multiple" 
-        ? <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit} onHintRequest={fetchHint} />
-        : <Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' onHintRequest={fetchHint} />}
+        ? 
+            <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit} isIncorrect={!answerIsCorrect} onHintRequest={fetchHint} />
+        : 
+            <Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' onHintRequest={fetchHint} isIncorrect={!answerIsCorrect}/>}
         </section>
       </section>
       {showHintModal && (

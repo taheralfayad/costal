@@ -227,6 +227,8 @@ class LLMEngine:
             "Your responsibility is to generate a concise hint for the given question, "
             "helping the user without revealing the correct answer."
             "Return without using LaTeX or any other markup language."
+            "Be consice and ask yourself, is this too revealing? Only allude to concepts that may help. Not the answer."
+            "Do not include the answer or anything that may resemble an answer in your hint."
             
         )
 

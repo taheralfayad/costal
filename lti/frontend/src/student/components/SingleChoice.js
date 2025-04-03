@@ -4,8 +4,7 @@ import DotsVertical from '../../assets/dots-vertical.svg';
 import RadioGroup from '../components/RadioGroup.js';
 
 
-const SingleChoice = ({ title, question, options, onSubmit, onHintRequest }) => {
-  const [isIncorrect, setIncorrect] = useState(false)
+const SingleChoice = ({ title, question, options, onSubmit, onHintRequest, isIncorrect }) => {
   
   return (
     <article className='w-[90%] mx-auto'>
@@ -24,12 +23,12 @@ const SingleChoice = ({ title, question, options, onSubmit, onHintRequest }) => 
           </h4>
           <div className='block mb-2 text-sm font-medium text-gray-700' dangerouslySetInnerHTML={{ __html: question }}></div>
         </section>
-        {isIncorrect && (<p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-2 rounded'>Sorry, that's incorrect. Try again?</p>)}
+        {isIncorrect && (<p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-2 rounded'>Sorry, that's incorrect.</p>)}
         <section className='px-8 pb-8'>
           <RadioGroup options={options}/> 
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' onClick={onHintRequest} />
-            <Button label='Submit' onClick={onSubmit}/>
+            <Button label='Submit' onClick={onSubmit} disabled={isIncorrect}/>
           </section>
         </section>
       </main>

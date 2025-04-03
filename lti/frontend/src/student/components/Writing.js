@@ -5,8 +5,7 @@ import DotsVertical from '../../assets/dots-vertical.svg';
 import styles from "./styles.css";
 
 
-const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isMath = false }) => {
-  const [isIncorrect, setIncorrect] = useState(false)
+const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isIncorrect, isMath = false }) => {
   const firstMathfieldRef = useRef();
   const [value, setValue] = useState("");
 
@@ -28,7 +27,7 @@ const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isMath
           </h4>
           <div className='block mb-2 text-sm font-medium text-gray-700' dangerouslySetInnerHTML={{ __html: question }}></div>
         </section>
-        {isIncorrect && (<p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-4 rounded'>Sorry, that's incorrect. Try again?</p>)}
+        {isIncorrect && (<p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-4 rounded'>Sorry, that's incorrect.</p>)}
         <section className='px-8 pb-8'>
           {isMath ? <article className='mb-4'><MathInput
             setValue={(val) => {
@@ -49,7 +48,7 @@ const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isMath
           /></article> : <TextArea placeholder={placeholder} isIncorrect={isIncorrect} label='' value={value} onChange={(e) => setValue(e.target.value)}/>}
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' onClick={onHintRequest} />
-            <Button label='Submit' onClick={() => onSubmit(value)}/>
+            <Button label='Submit' onClick={() => onSubmit(value, setValue)} disabled={isIncorrect}/>
           </section>
         </section>
       </main>
