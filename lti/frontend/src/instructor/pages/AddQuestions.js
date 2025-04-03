@@ -29,6 +29,10 @@ const AddQuestions = () => {
     navigate(`/lti/select_questions/${moduleId}/${assignmentId}/`)
   }
 
+  const navigateToCreateLLMQuestion = () => {
+    navigate(`/lti/create_question/${assignmentId}?llm=true`)
+  }
+
   const getAssignment = async () => {
     try {
       const response = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
@@ -168,7 +172,7 @@ const AddQuestions = () => {
           </section>
           <section className='flex gap-2 pr-4'>
             <Button label='Add a question' icon={<PlusIcon />} onClick={() => navigateToCreateQuestion()} />
-            <Button label='Add an LLM generated question' icon={<PlusIcon />} />
+            <Button label='Add an LLM generated question' icon={<PlusIcon />} onClick={() => navigateToCreateLLMQuestion()}/>
             <Button label='Question Bank' type='outline' onClick={() => navigateToSelectQuestions()} />
           </section>
         </section>
@@ -205,7 +209,7 @@ const AddQuestions = () => {
           </span>
           <section className='flex gap-4'>
             <Button label='Add a question' icon={<PlusIcon />} onClick={() => navigateToCreateQuestion()} />
-            <Button label='Add an LLM generated question' type='outline' icon={<PlusGIcon />} />
+            <Button label='Add an LLM generated question' type='outline' icon={<PlusGIcon />} onClick={() => navigateToCreateLLMQuestion()} />
           </section>
           <Button label='Search Question Bank' type='gray' onClick={() => navigateToSelectQuestions()} />
         </section>}

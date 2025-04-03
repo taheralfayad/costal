@@ -4,7 +4,8 @@ import { Button, TextArea } from '../../design-system';
 import DotsVertical from '../../assets/dots-vertical.svg';
 import styles from "./styles.css";
 
-const Writing = ({ title, question, placeholder, onSubmit, isIncorrect, isMath = false }) => {
+
+const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isIncorrect, isMath = false }) => {
   const firstMathfieldRef = useRef();
   const [value, setValue] = useState("");
 
@@ -46,7 +47,7 @@ const Writing = ({ title, question, placeholder, onSubmit, isIncorrect, isMath =
             divisionFormat="obelus"
           /></article> : <TextArea placeholder={placeholder} isIncorrect={isIncorrect} label='' value={value} onChange={(e) => setValue(e.target.value)}/>}
           <section className='flex justify-end gap-2'>
-            <Button label='More instruction' type='outline' />
+            <Button label='More instruction' type='outline' onClick={onHintRequest} />
             <Button label='Submit' onClick={() => onSubmit(value, setValue)} disabled={isIncorrect}/>
           </section>
         </section>
