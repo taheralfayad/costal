@@ -21,36 +21,50 @@ const ManageTextbooks = () => {
       .catch(err => console.error("Error fetching textbooks:", err));
   }, []);
 
-  const handleChange = (e) => {
-    if (e.target.name === "file") {
-      setForm({ ...form, file: e.target.files[0] });
-    } else {
-      setForm({ ...form, [e.target.name]: e.target.value });
-    }
-  };
+  // One handler per input, because <Input> doesn't support "name"
+  const handleTitleChange = (e) =>
+    setForm((prev) => ({ ...prev, title: e.target.value }));
+  const handleAuthorChange = (e) =>
+    setForm((prev) => ({ ...prev, author: e.target.value }));
+  const handleIsbnChange = (e) =>
+    setForm((prev) => ({ ...prev, isbn: e.target.value }));
+  const handleDateChange = (e) =>
+    setForm((prev) => ({ ...prev, published_date: e.target.value }));
+  const handleFileChange = (e) =>
+    setForm((prev) => ({ ...prev, file: e.target.files[0] }));
 
-  const handleAddTextbook = async () => {
-    const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("author", form.author);
-    formData.append("isbn", form.isbn);
-    formData.append("published_date", form.published_date);
-    formData.append("file", form.file);
-    formData.append("course", COURSE_ID);
+    const handleAddTextbook = async (e) => {
+      e.preventDefault();
+    
+      console.log("Submitting form data", form);
+      
+      const formData = new FormData();
+      formData.append("title", form.title);
+      formData.append("author", form.author);
+      formData.append("isbn", form.isbn);
+      formData.append("published_date", form.published_date);
+      if (form.file) {
+        const fileBlob = new Blob([form.file], { type: form.file.type });
+        formData.append("file", fileBlob, form.file.name);
+      }
+      
 
-    const response = await fetch("/lti/api/textbooks/", {
-      method: "POST",
-      body: formData
-    });
-
-    if (response.ok) {
-      const newBook = await response.json();
-      setTextbooks([...textbooks, newBook]);
-      setForm({ title: '', author: '', isbn: '', published_date: '', file: null });
-    } else {
-      console.error("Failed to add textbook");
-    }
-  };
+      formData.append("course", COURSE_ID);
+    
+      const response = await fetch("/lti/api/textbooks/", {
+        method: "POST",
+        body: formData,
+      });
+      if (response.ok) {
+        const newBook = await response.json();
+        setTextbooks([...textbooks, newBook]);
+        setForm({ title: '', author: '', isbn: '', published_date: '', file: null });
+      } else {
+        const err = await response.json();
+        console.error("Failed to add textbook", err);
+      }
+    };
+    
 
   const handleDelete = async (id) => {
     const res = await fetch(`/lti/api/textbooks/${id}/`, { method: "DELETE" });
@@ -65,16 +79,17 @@ const ManageTextbooks = () => {
     <main className="p-8 space-y-6">
       <Title>Manage Textbooks</Title>
 
-      <section className="bg-white p-4 rounded-lg shadow-md border max-w-xl space-y-4">
-        <h2 className="text-lg font-semibold">Add New Textbook</h2>
-        <Input name="title" value={form.title} onChange={handleChange} label="Title" />
-        <Input name="author" value={form.author} onChange={handleChange} label="Author" />
-        <Input name="isbn" value={form.isbn} onChange={handleChange} label="ISBN" />
-        <Input name="published_date" type="date" value={form.published_date} onChange={handleChange} label="Published Date" />
-        <input type="file" name="file" onChange={handleChange} />
-        <Button label="Add Textbook" onClick={handleAddTextbook} />
+      <section className="bg-white p-4 rounded-lg shadow-md border max-w-xl space-y-4 gap-4 flex flex-col">
+        <form onSubmit={handleAddTextbook}>
+          <h2 className="text-lg font-semibold">Add New Textbook</h2>
+          <Input className="my-2" value={form.title} onChange={handleTitleChange} label="Title" />
+          <Input className="my-2" value={form.author} onChange={handleAuthorChange} label="Author" />
+          <Input className="my-2" value={form.isbn} onChange={handleIsbnChange} label="ISBN" />
+          <Input className="my-2" type="date" value={form.published_date} onChange={handleDateChange} label="Published Date" />
+          <input className="my-2" type="file" onChange={handleFileChange} />
+          <Button label={"Add Textbook"} form={true} />
+        </form>
       </section>
-
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Current Textbooks</h2>
         {textbooks.map(book => (

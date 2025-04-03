@@ -12,6 +12,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 from qgservice.engine import LLMEngine  # Import LLM service
 
@@ -175,6 +177,7 @@ class TextbookViewSet(viewsets.ModelViewSet):
 
     serializer_class = TextbookSerializer
     queryset = Textbook.objects.all()
+    parser_classes = [MultiPartParser, FormParser]
 
 
     def get_queryset(self):
@@ -196,6 +199,14 @@ class TextbookViewSet(viewsets.ModelViewSet):
             return Response(
                 {"error": "Textbook not found"}, status=status.HTTP_404_NOT_FOUND
             )
+    def create(self, request, *args, **kwargs):
+        print(">>> Incoming request.data:", request.data)
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print(serializer.errors)  # 👈 This shows the problem
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CourseViewSet(viewsets.ModelViewSet):

@@ -122,7 +122,7 @@ class LLMEngine:
             )
 
             concept_prompt = self.__format_prompt(system_prompt_1, user_message_1)
-            concept_response = self.__call__(concept_prompt, temperature=0.3)
+            concept_response = self.__call__(concept_prompt, temperature=0.7)
 
             try:
                 concept = json.loads(concept_response)
@@ -132,21 +132,21 @@ class LLMEngine:
             prev_q_texts = "\n".join(
                 [f"- {q['question']}" for q in previous_questions if 'question' in q]
             )
+            
+            avoidance_clause = f"Critically, the new question MUST be substantially different from these previous questions:\n{prev_q_texts}\n\n" if prev_q_texts else ""
 
             system_prompt_2 = f"You are a skilled educator in {course_name}."
-            user_message_2 = (
-                f"Write a unique multiple-choice question based on this concept: \"{concept}\"\n\n"
-                f"Do NOT reuse any of the following previously asked questions:\n{prev_q_texts}\n\n"
-                "The question should include 4 answer choices labeled A–D.\n"
-                "Return the result in JSON format:\n"
-                "{"
-                "\"question\": \"string\", "
-                "\"options\": {\"A\": \"\", \"B\": \"\", \"C\": \"\", \"D\": \"\"}"
-                "}"
-            )
+            
+            user_message_2 = ( f"Generate a **completely new and unique** multiple-choice question focusing on the core idea of this concept: \"{concept}\".\n\n"
+            f"{avoidance_clause}"
+            "Ensure the question tests understanding, not just recall. Phrase it differently using no markup language than any previous examples provided.\n"
+            "The question must have exactly 4 plausible answer choices in no markup language labeled A, B, C, and D. You may use numbers and equations. One choice must be unambiguously correct.\n"
+            "Return ONLY a valid JSON object with NO markup language with keys 'question' (string) and 'options' (object with keys 'A', 'B', 'C', 'D'), like:\n"
+            "{\n" )
+
 
             question_prompt = self.__format_prompt(system_prompt_2, user_message_2)
-            question_response = self.__call__(question_prompt, temperature=0.7)
+            question_response = self.__call__(question_prompt, temperature=0.5)
 
             try:
                 draft = json.loads(question_response)
