@@ -728,6 +728,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
             question.name = data['name']
         if 'text' in data:
             question.text = data['text']
+        if 'explanation' in data:
+            question.explanation = data['explanation']
         if 'difficulty' in data:
             difficulty_map = {
                 "easy": 1,
