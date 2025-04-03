@@ -137,6 +137,7 @@ const EditQuestion = () => {
         formData.append('points', points);
         formData.append('text', text);
         formData.append('type', selectedCheckbox);
+        formData.append('explanation', solvingText);
 
         if (selectedCheckbox === 'multiple') {
             const multipleChoiceData = multipleChoiceAnswers.filter((choice) => choice.text.trim() !== "").map((choice) => {
