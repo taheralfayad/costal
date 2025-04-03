@@ -13,6 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError, NotFound
+from lti.oauth.auth_utils import refresh_access_token
 
 
 from lti.models import (
@@ -108,6 +109,119 @@ def get_valid_random_question(assignment, user):
     # Pick random question
     random_question_id = random.choice(valid_question_ids)
     return assignment.questions.get(id=random_question_id)
+
+
+def add_assignment_to_canvas(course_id, assignment, api_key):
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        course = canvas.get_course(course_id)
+
+        created_assignment = course.create_assignment({
+            'name': assignment.name,
+            'points_possible': 100,
+            'due_at': assignment.end_date,
+            'description': 'This assignment has been automatically created by COSTAL.',
+            'submission_types': ['external_tool'],
+            'published': True
+        })
+
+        assignment.canvas_id = created_assignment.id
+        assignment.save()
+
+    except Exception as e:
+        print(f"Error creating assignment: {assignment.name} in Canvas: {e}")
+
+
+def update_assignment_in_canvas(course_id, assignment, api_key):
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        course = canvas.get_course(course_id)
+
+        canvas_assignment = course.get_assignment(assignment.canvas_id)
+        update_params = {}
+        
+        if canvas_assignment.name != assignment.name:
+            update_params['name'] = assignment.name
+        
+        if canvas_assignment.due_at != assignment.end_date:
+            update_params['due_at'] = assignment.end_date
+        
+        if update_params:
+            canvas_assignment.edit(assignment=update_params)
+        
+    except Exception as e:
+        print(f"Error updating assignment: {assignment.name} in Canvas: {e}")
+
+
+def submit_grade_to_canvas(request, course_id, assignment, api_key, grade, student_id):
+    prof_token = get_professor_access_token(request, course_id, api_key)
+
+    if not prof_token:
+        print(f"No professor found in course {course_id}. Not submitting grade to Canvas")
+        return
+
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), prof_token)
+        course = canvas.get_course(course_id)
+
+        canvas_assignment = course.get_assignment(assignment.canvas_id) 
+        canvas_assignment.submit(
+            submission={
+                'user_id': student_id,
+                'submission_type': 'basic_lti_launch',
+                'url': "https://localhost/lti/login",
+            }
+        )
+        submission = canvas_assignment.get_submission(student_id)
+        submission.edit(submission={'posted_grade': str(grade)})
+
+    except Exception as e:
+        print(f"Error submitting grade for assignment: {assignment.name} in Canvas: {e}")
+
+
+def get_professor_access_token(request, course_id, api_key):
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        course = canvas.get_course(course_id)
+        users = course.get_users(enrollment_type=['teacher'])
+        if not users:
+            print("No teachers found", flush=True)
+            return None
+        
+        prof_usr_obj = CanvasUser.objects.get(uid=users[0].id)
+        new_token, new_exp = refresh_access_token(request, prof_usr_obj)
+
+        if not new_token:
+            print("Failed to refresh access token.")
+            return None
+
+        return new_token
+
+    except Exception as e:
+        print(f"Error getting professor ID: in Canvas: {e}")
+        return None
+
+
+def get_professor_id(course_id):
+    course = Course.objects.get(course_id=course_id)
+    teachers = course.teachers.all()
+
+    if not teachers:
+        print("No teachers found")
+        return None
+
+    return teachers[0].uid
+
+def delete_assignment_from_canvas(course_id, assignment, api_key):
+    try:
+        canvas = Canvas(os.environ.get("CANVAS_URL"), api_key)
+        course = canvas.get_course(course_id)
+
+        canvas_assignment = course.get_assignment(assignment.canvas_id)
+        canvas_assignment.delete()
+    except Exception as e:
+        print(f"Error deleting assignment: {assignment.name} in Canvas: {e}")
+
 
 class TextbookViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -330,8 +444,10 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         start_date = datetime.datetime.strptime(data["start_date"], "%Y-%m-%dT%H:%M")
         end_date = datetime.datetime.strptime(data["end_date"], "%Y-%m-%dT%H:%M")
 
-        course = Course.objects.get(course_id=data["course_id"])
-        module = Module.objects.get(id=data["module_id"])
+        course_id, module_id = data["course_id"], data["module_id"]
+        canvas_api_key = request.session["api_key"]
+        course = Course.objects.get(course_id=course_id)
+        module = Module.objects.get(id=module_id)
 
         assignment = Assignment(
             name=data["name"],
@@ -341,6 +457,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             assessment_type=data["assessment_type"],
             associated_module=module,
         )
+        add_assignment_to_canvas(course_id, assignment, canvas_api_key)
 
         assignment.save()
         module.assignments.add(assignment)
@@ -410,7 +527,10 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         if "assessment_type" in data:
             assignment.assessment_type = data["assessment_type"]
 
-        assignment.save()
+        assignment.save()            
+        if assignment.assessment_type != "prequiz":
+            update_assignment_in_canvas(assignment.course_id, assignment, request.session["api_key"])
+
         return Response(
             {"message": "Assignment updated successfully"}, status=status.HTTP_200_OK
         )
@@ -444,6 +564,9 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         data = request.data
         assignment = Assignment.objects.get(id=data["assignment_id"])
         assignment.delete()
+
+        if assignment.assessment_type != "prequiz":
+            delete_assignment_from_canvas(assignment.course_id, assignment, request.session["api_key"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'], url_path='get_current_assignment_attempt/(?P<assignment_id>[^/.]+)')
@@ -827,10 +950,21 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
             assignment_attempt.status = 2
             assignment_attempt.save()
+
+            if assignment.assessment_type != "prequiz":
+                total_assignment_grade = sum(question.num_points for question in assignment.questions.all())
+                grade = assignment_attempt.total_grade / total_assignment_grade * 100
+                submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], int(grade), data['user_id'])
+
             return Response({"message": "Assignment completed", "assessment_status": "completed", "is_correct": answer_choice.is_correct}, status=status.HTTP_200_OK)
+
         elif successful_attempt or failed_attempts:
             random_question = get_valid_random_question(assignment, user)
             if random_question is None:
+                if assignment.assessment_type != "prequiz":
+                    total_assignment_grade = sum(question.num_points for question in assignment.questions.all())
+                    grade = assignment_attempt.total_grade / total_assignment_grade * 100
+                    submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], int(grade), data['user_id'])
                 course = assignment.course
                 if course.deadline == "WEEK" or course.deadline == "MONTH":
                     current_date = timezone.now()
@@ -1335,24 +1469,15 @@ class GetCourseProfessorName(APIView):
         try:
             # Fetch the course using Canvas API
             course = canvas.get_course(course_id)
+            prof_id = get_professor_id(course_id)
+            if not prof_id:
+                return Response({"message": "No professors found for this course."})
 
+            teacher = course.get_user(prof_id)
+            if not teacher:
+                return Response({"message": "No professors found for this course.", "professor": None})
 
-            # Fetch enrollments with TeacherEnrollment type
-            teacher_names = []
-            enrollments = course.get_enrollments(type=["TeacherEnrollment"])
-            for enrollment in enrollments:
-                teacher_names.append(enrollment.user["name"])
-
-            # Return response with professor names
-            if not teacher_names:
-                return Response(
-                    {
-                        "message": "No professors found for this course.",
-                        "professors": [],
-                    }
-                )
-
-            return Response({"course_id": course_id, "professors": teacher_names, "start": course.start_at, "end": course.end_at})
+            return Response({"course_id": course_id, "professor": teacher.name, "start": course.start_at, "end": course.end_at})
 
         except Exception as e:
             raise NotFound({"error": str(e)})

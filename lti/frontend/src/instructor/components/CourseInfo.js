@@ -11,7 +11,7 @@ const CourseInfo = ({white = false}) => {
         const response = await fetch(`/lti/api/get_course_professor_name/?course_id=${COURSE_ID}`);
         const data = await response.json();
         console.log(data.start, data.end)
-        setProfessorName(data.professors[0]);
+        setProfessorName(data.professor);
         setStart(formatDate(data.start));
         setEnd(formatDate(data.end));
     }

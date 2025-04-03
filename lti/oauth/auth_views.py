@@ -68,7 +68,7 @@ def oauth_complete(request):
 
     Course.objects.get(course_id=request.session["course_id"]).users.add(user)
 
-    return render(request, "index.html")
+    return render(request, "index.html", request.session["course_data"])
 
 
 def reauthenticate(request):

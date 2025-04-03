@@ -58,6 +58,7 @@ class Module(models.Model):
 
 
 class Assignment(models.Model):
+    canvas_id = models.CharField(max_length=200, null=True, blank=True)
     name = models.CharField(max_length=255)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
     questions = models.ManyToManyField("Question", blank=True)
