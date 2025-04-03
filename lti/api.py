@@ -357,8 +357,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         type = request.query_params.get("type")
         
         now = datetime.datetime.now()
-        assignments = Assignment.objects.filter(course_id=course_id, assessment_type=type, start_date__lte=now)
-        assignments = Assignment.objects.filter()
+        assignments = Assignment.objects.filter(assessment_type=type)
         current_total_assignments = assignments.count()
         total_assignments = Assignment.objects.filter(course_id=course_id, assessment_type=type).count()
         
@@ -374,21 +373,17 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             if attempts.exists() and assignment_total_points > 0:
                 for attempt in attempts:
                     student_grades.append(attempt.total_grade / assignment_total_points)                        
-    
-                assignment_average = sum(student_grades) / len(student_grades)
-            else:
-                assignment_average = 0
-            
-            result.append({
-                "assignment_id": assignment.id,
-                "name": assignment.name,
-                "grade": int(assignment_average * 100)
-            })
+                    result.append({
+                        "assignment_id": assignment.id,
+                        "name": assignment.name,
+                        "grade": int((attempt.total_grade / assignment_total_points) * 100)
+                    })
+
         
-        overall_average_grade = sum(assignment["grade"] for assignment in result) / total_assignments if total_assignments > 0 else 0
+        overall_average_grade = sum(assignment["grade"] for assignment in result) / len(result) if len(result) > 0 else 0
         
         return Response({
-            "overall_average_grade": overall_average_grade,
+            "overall_average_grade": int(overall_average_grade),
             "assignments": result,
             "current_total_assignments": current_total_assignments,
             "total_assignments": total_assignments
