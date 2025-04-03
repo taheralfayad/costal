@@ -548,7 +548,7 @@ const CourseOutline = () => {
                     <CourseInfo />
                 </article>
                 <Button type='lightGreenOutline' label='Settings' onClick={() => navigate('/lti/course_settings')} />
-
+                <Button type='lightGreenOutline' label='Manage Textbooks' onClick={() => navigate('/lti/manage_textbooks')}/>
             </header>
             <section className='bg-[#f8f8f8] min-h-screen'>
                 <section className='flex gap-6 items-center mt-4 mx-16'>

@@ -19,6 +19,8 @@ import CreatePrequiz from "./instructor/pages/CreatePrequiz.js";
 import SelectQuestions from "./instructor/pages/SelectQuestions";
 import TextbookList from "./components/TextbookView/TextbookList.js";
 import TextbookView from "./components/TextbookView/TextbookView.js";
+import ManageTextbooks from "./instructor/pages/ManageTextbooks";
+
 
 
 const router = createBrowserRouter([
@@ -93,7 +95,13 @@ const router = createBrowserRouter([
   {
     path: '/lti/textbook/:isbn',
     element: <TextbookView/>,
+  },
+  {
+    path: '/lti/manage_textbooks',
+    element: <ManageTextbooks/>
   }
+  
+
 ])
 
 ReactDOM.createRoot(document.getElementById("root")).render(
