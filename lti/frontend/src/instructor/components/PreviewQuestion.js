@@ -39,7 +39,7 @@ const PreviewQuestion = ({ title, points, percentage, question, placeholder = 'P
         <h3 className="text-slate-900 font-medium text-base">{title}</h3>
         <button className="text-slate-400">
           <div className="flex flex-col space-y-1">
-          <DropdownMenu editFunction={handleEditQuestion} deleteFunction={handleDeleteQuestion} idOfObject={id} nameOfObject={title} objectType='QUESTION' handleDeleteFromAssignment={handleDeleteFromAssignment} />
+          <DropdownMenu editFunction={() => handleEditQuestion(id)} deleteFunction={() => handleDeleteQuestion(id)} name={title} objectType='QUESTION' handleDeleteFromAssignment={() => handleDeleteFromAssignment(id)} />
           </div>
         </button>
       </header>

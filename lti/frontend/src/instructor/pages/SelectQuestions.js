@@ -121,7 +121,7 @@ const SelectQuestions = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onDelete={() => handleDeleteForever(selectedQuestionId)}
-        nameOfObjectToDelete={selectedQuestionName}
+        name={selectedQuestionName}
         objectType='QUESTION'
         modalType='DELETE_ITEM'
       />

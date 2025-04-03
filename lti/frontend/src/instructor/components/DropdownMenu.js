@@ -3,7 +3,7 @@ import Dots from '../../assets/dots-vertical.svg';
 import DeleteModal from './DeleteModal';
 import DropdownMenuItem from './DropdownMenuItem';
 
-const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfObject, nameOfObject, objectType = 'ASSIGNMENT', handleDeleteFromAssignment }) => {
+const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, name, objectType = 'ASSIGNMENT', handleDeleteFromAssignment }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState('DELETE_ITEM');
@@ -34,19 +34,11 @@ const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfO
 
     const handleDelete = () => {
         if (modalType === 'DELETE_FROM_ASSIGNMENT') {
-            handleDeleteFromAssignment(idOfObject);
+            handleDeleteFromAssignment();
         } else {
-            deleteFunction(idOfObject);
+            deleteFunction();
         }
         setIsModalOpen(false);
-    };
-
-    const handleEditObject = () => {
-        editFunction(idOfObject);
-    };
-
-    const handleAddQuestion = () => {
-        addQuestionFunction(idOfObject);
     };
 
     return (
@@ -62,15 +54,15 @@ const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfO
                 <article className='z-50 py-1 absolute right-2 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200'>
                     {objectType === 'ASSIGNMENT' && (
                         <>
-                            <DropdownMenuItem label='View' onClick={handleAddQuestion} />
-                            <DropdownMenuItem label='Add question' onClick={handleAddQuestion} />
+                            <DropdownMenuItem label='View' onClick={addQuestionFunction} />
+                            <DropdownMenuItem label='Add question' onClick={addQuestionFunction} />
                         </>
                     )}
                     {objectType === 'QUESTION' && (
                         <DropdownMenuItem label='Delete from Assignment' onClick={handleDeleteFromAssignmentClick} />
                     )}
                     <DropdownMenuItem label='Delete' onClick={handleDeleteItem} />
-                    <DropdownMenuItem label='Edit' onClick={handleEditObject} />
+                    <DropdownMenuItem label='Edit' onClick={editFunction} />
                 </article>
             )}
 
@@ -78,7 +70,7 @@ const DropdownMenu = ({ deleteFunction, editFunction, addQuestionFunction, idOfO
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onDelete={handleDelete}
-                nameOfObjectToDelete={nameOfObject}
+                name={name}
                 objectType={objectType}
                 modalType={modalType}
             />

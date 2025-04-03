@@ -8,6 +8,7 @@ import Arrow from '../../assets/arrow-left.svg';
 import DropdownMenu from '../components/DropdownMenu';
 import LoadingPage from '../components/LoadingPage.js';
 import DeleteModal from '../components/DeleteModal';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 const CourseOutline = () => {
     const navigate = useNavigate();
@@ -65,7 +66,6 @@ const CourseOutline = () => {
     }
 
     const handleDeleteModule = async (id) => {
-        console.log(id)
         try {
           const formData = new FormData();
           formData.append('module_id', id);
@@ -101,9 +101,7 @@ const CourseOutline = () => {
                 }
             }
             
-            console.log(newData)
             setData(newData);
-            console.log(newData)
 
         } catch (error) {
             console.error(error);
@@ -118,7 +116,6 @@ const CourseOutline = () => {
 
     useEffect(() => {
         if (data) {
-            console.log(data)
             setModules(data.map(d => ({
                 id: d.id,
                 name: d.name,
@@ -237,7 +234,6 @@ const CourseOutline = () => {
         if (isSaving) {
             const moduleToUpdate = modules.find(module => module.id === moduleId);
             if (!moduleToUpdate) return;
-            console.log(moduleToUpdate)
             await fetch(`/lti/api/modules/update_assignment_order/${moduleId}/`, {
                 method: 'POST',
                 headers: {
@@ -293,8 +289,6 @@ const CourseOutline = () => {
     };
 
     const handleSetStart = async (moduleId, newDate) => {
-        console.log('here')
-        console.log(newDate)
         const targetModule = modules.find(module => module.id === moduleId);
         const checkedAssignments = targetModule.rows.filter((_, index) => targetModule.checkedRows[index]);
         try {
@@ -317,7 +311,6 @@ const CourseOutline = () => {
                 })
             );
 
-            console.log("Updated assignments:", responses);
 
             handleStartDate(moduleId);
             retrieveModules();
@@ -329,8 +322,6 @@ const CourseOutline = () => {
     }
 
     const handleSetEnd = async (moduleId, newDate) => {
-        console.log('here')
-        console.log(newDate)
         const targetModule = modules.find(module => module.id === moduleId);
         const checkedAssignments = targetModule.rows.filter((_, index) => targetModule.checkedRows[index]);
         try {
@@ -354,7 +345,6 @@ const CourseOutline = () => {
                 })
             );
 
-            console.log("Updated assignments:", responses);
 
             handleStartDate(moduleId);
             retrieveModules();
@@ -382,7 +372,11 @@ const CourseOutline = () => {
         ));
     };
 
-    const handleDeleteAssignment = async (assignmentId) => {
+    const handleDeleteAssignment = async (assignmentId, module) => {
+        if (assignmentId === module.prequiz.id && module.rows.length > 1) {
+            toast.error("You cannot delete this prequiz as you have other assignments")
+            return;
+        }
         try {
             const formData = new FormData();
             formData.append('assignment_id', assignmentId);
@@ -393,10 +387,7 @@ const CourseOutline = () => {
             });
 
             if (response.status === 204) {
-                setModules(modules.map(module => {
-                    const updatedRows = module.rows.filter(row => row.id !== assignmentId);
-                    return { ...module, rows: updatedRows };
-                }));
+                retrieveModules()
             }
         }
         catch (error) {
@@ -456,6 +447,7 @@ const CourseOutline = () => {
     };
 
     const renderMenu = (module) => {
+        console.log(module.prequiz)
         if (module.isOrdering) {
             return (
                 <section className='flex justify-between items-center mt-8 mx-16'>
@@ -537,6 +529,8 @@ const CourseOutline = () => {
 
     return (
         <main className='flex flex-col gap-4'>
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick={false} rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" transition={Bounce}
+      />
             <header className='p-6 pl-10 flex items-center justify-between'>
                 <article className='flex flex-col gap-2'>
                     <span className='flex flex-row gap-2'>
@@ -552,7 +546,7 @@ const CourseOutline = () => {
                     <Button type='lightGreenOutline' label='Settings' onClick={() => navigate('/lti/course_settings')} />
                 </div>
             </header>
-            <section className='bg-[#f8f8f8] min-h-screen'>
+            <section className='bg-[#f8f8f8] min-h-screen pb-6'>
                 <section className='flex gap-6 items-center mt-4 mx-16'>
                     <h2 className={`text-slate-900 text-xl font-medium ${isAddingModule ? 'mb-4' : ''}`}>Course Outline</h2>
                     {!isAddingModule ? (
@@ -599,7 +593,7 @@ const CourseOutline = () => {
                                                 {formatTimeStamps(row.start)} - {formatTimeStamps(row.end)}
                                             </td>
                                             <td className='pr-6'>
-                                                <DropdownMenu editFunction={handleEditAssignment} deleteFunction={handleDeleteAssignment} addQuestionFunction={handleAddQuestion} idOfObject={row.id} nameOfObject={row.topic} />
+                                                <DropdownMenu editFunction={() => handleEditAssignment(row.id)} deleteFunction={() => handleDeleteAssignment(row.id, module)} addQuestionFunction={() => handleAddQuestion(row.id)} name={row.topic} />
                                             </td>
                                         </tr>
                                     ))}
@@ -615,7 +609,7 @@ const CourseOutline = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onDelete={() => handleDeleteModule(selectedModule)}
-        nameOfObjectToDelete={selectedModuleName}
+        name={selectedModuleName}
         objectType='MODULE'
         modalType='DELETE_ITEM'
       />
