@@ -947,13 +947,19 @@ class QuestionViewSet(viewsets.ModelViewSet):
             assignment_attempt.save()
 
             if assignment.assessment_type != "prequiz":
-                submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], assignment_completion_percentage, data['user_id'])
+                total_assignment_grade = sum(question.num_points for question in assignment.questions.all())
+                grade = assignment_attempt.total_grade / total_assignment_grade * 100
+                submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], int(grade), data['user_id'])
 
             return Response({"message": "Assignment completed", "assessment_status": "completed", "is_correct": answer_choice.is_correct}, status=status.HTTP_200_OK)
 
         elif successful_attempt or failed_attempts:
             random_question = get_valid_random_question(assignment, user)
             if random_question is None:
+                if assignment.assessment_type != "prequiz":
+                    total_assignment_grade = sum(question.num_points for question in assignment.questions.all())
+                    grade = assignment_attempt.total_grade / total_assignment_grade * 100
+                    submit_grade_to_canvas(request, assignment.course_id, assignment, request.session["api_key"], int(grade), data['user_id'])
                 course = assignment.course
                 if course.deadline == "WEEK" or course.deadline == "MONTH":
                     current_date = timezone.now()

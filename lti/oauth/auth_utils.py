@@ -42,7 +42,7 @@ def refresh_access_token(request, user):
         data=payload,
         verify=(not settings.DEBUG),
     )
-    invalid_response = {"access_token": None, "expiration_date": None}
+    invalid_response = (None, None) 
 
     try:
         response.raise_for_status()
