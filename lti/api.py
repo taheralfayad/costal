@@ -777,6 +777,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             type=data["type"],
             num_points=data["points"],
             associated_skill=skill,
+            explanation=data["explanation"],
         )
 
         question.save()

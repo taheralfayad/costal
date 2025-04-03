@@ -143,6 +143,7 @@ class Question(models.Model):
     difficulty = models.IntegerField(default=0)
     num_points = models.IntegerField(default=1)
     type = models.TextField(default="multiple")
+    explanation = models.TextField(default="")
 
     def __str__(self):
         return self.name

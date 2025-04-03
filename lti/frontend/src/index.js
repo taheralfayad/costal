@@ -18,6 +18,7 @@ import Assignment from "./student/pages/Assignment.js";
 import CreatePrequiz from "./instructor/pages/CreatePrequiz.js";
 import SelectQuestions from "./instructor/pages/SelectQuestions";
 import ActivityDetails from "./student/pages/ActivityDetails.js";
+import StatsOverall from "./instructor/pages/StatsOverall";
 
 const router = createBrowserRouter([
   {
@@ -87,6 +88,10 @@ const router = createBrowserRouter([
   {
     path: '/lti/activity_details/:assignmentId',
     element: <ActivityDetails/>
+  },
+  {
+    path: '/lti/stats/',
+    element: <StatsOverall/>
   }
 ])
 
