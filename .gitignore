@@ -10,3 +10,7 @@ webpack-stats.json
 node_modules
 models/
 lti/static
+key.pem
+cert.pem
+textbooks/
+media/
