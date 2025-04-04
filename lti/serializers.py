@@ -13,6 +13,7 @@ from lti.models import (
     QuestionAttempt,
 )
 
+
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
@@ -24,23 +25,28 @@ class AssignmentSerializer(serializers.ModelSerializer):
         model = Assignment
         fields = "__all__"
 
+
 class PrequizSerializer(serializers.ModelSerializer):
-    topic = serializers.CharField(source='name')
-    start = serializers.DateTimeField(source='start_date')
-    end = serializers.DateTimeField(source='end_date')
+    topic = serializers.CharField(source="name")
+    start = serializers.DateTimeField(source="start_date")
+    end = serializers.DateTimeField(source="end_date")
+
     class Meta:
         model = Prequiz
-        fields = ['id', 'topic', 'start', 'end', 'assessment_type']
+        fields = ["id", "topic", "start", "end", "assessment_type"]
+
 
 class TextbookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Textbook
         fields = "__all__"
+
     def get_pdf_url(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if obj.file and request:
             return request.build_absolute_uri(obj.file.url)
         return None
+
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,7 +57,7 @@ class ModuleSerializer(serializers.ModelSerializer):
 class PossibleAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = PossibleAnswer
-        fields = ('id', 'answer', 'is_correct', 'related_question')
+        fields = ("id", "answer", "is_correct", "related_question")
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -78,4 +84,3 @@ class QuestionAttemptSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionAttempt
         fields = "__all__"
-
