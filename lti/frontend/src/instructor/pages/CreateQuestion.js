@@ -77,6 +77,7 @@ const CreateQuestion = () => {
     try {
       const response = await fetch(`/lti/api/skills/get_skill_by_assignment_id/${assignmentId}`);
       const data = await response.json();
+      console.log(data)
       setObjectives(data);
     } catch (error) {
       console.error(error);

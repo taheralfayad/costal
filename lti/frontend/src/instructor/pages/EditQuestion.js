@@ -6,7 +6,7 @@ import ShortAnswerConfig from '../components/ShortAnswerConfig';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 const EditQuestion = () => {
-    const { questionId } = useParams();
+    const { assignmentId, questionId } = useParams();
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [text, setText] = useState('');
@@ -14,7 +14,6 @@ const EditQuestion = () => {
     const [objectives, setObjectives] = useState([]);
     const [dropdownObjectives, setDropdownObjectives] = useState([]);
     const [objective, setObjective] = useState('');
-    const [assignmentId, setAssignmentId] = useState('');
     const [selectedCheckbox, setSelectedCheckbox] = useState(null);
     const [associatedSkill, setAssociatedSkill] = useState(0);
     const [solvingText, setSolvingText] = useState('');
@@ -52,7 +51,6 @@ const EditQuestion = () => {
         setDifficulty(difficulty_map[resData.difficulty])
         setSelectedCheckbox(resData.type)
         setPoints(resData.num_points)
-        setAssignmentId(resData.assignments[0])
 
         if (resData.type === 'multiple') {
             setMultipleChoiceAnswers(transformMultipleChoiceBack(resData.possible_answers))
@@ -98,6 +96,7 @@ const EditQuestion = () => {
         try {
             const response = await fetch(`/lti/api/skills/get_skill_by_assignment_id/${assignmentId}`);
             const data = await response.json();
+
             let obj = data.find(item => item.id === associatedSkill).name
             setObjective(obj)
 
@@ -169,7 +168,7 @@ const EditQuestion = () => {
 
     useEffect(() => {
         fetchObjectives();
-    }, [assignmentId]);
+    }, [assignmentId, associatedSkill]);
 
     useEffect(() => {
         formatObjectivesForDropdown();

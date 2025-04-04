@@ -200,7 +200,7 @@ const AddQuestions = () => {
       {renderHeader()}
 
       {assignment.questions.length > 0 ?
-        <section className='flex flex-col gap-4 h-full bg-gray-100'><QuestionList questions={questions} handleDeleteQuestion={handleDeleteQuestion} handleDeleteFromAssignment={handleDeleteFromAssignment} /></section>
+        <section className='flex flex-col gap-4 h-full bg-gray-100'><QuestionList questions={questions} handleDeleteQuestion={handleDeleteQuestion} assignmentId={assignmentId} handleDeleteFromAssignment={handleDeleteFromAssignment} /></section>
         : <section className="flex flex-col gap-4 justify-center items-center">
           <span className='flex flex-col justify-center items-center'>
             <Writing />
