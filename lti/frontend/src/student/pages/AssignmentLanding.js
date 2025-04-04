@@ -9,12 +9,14 @@ import LoadingPage from "../../instructor/components/LoadingPage.js"
 import TaskSummary from '../components/TaskSummary';
 import Objective from '../components/Objective';
 import SideMenu from '../components/SideMenu';
+import Info from '../../design-system/Info';
 
 const AssignmentLanding = ({ percentageTotal }) => {
     const [isMenuOpen, setMenuOpen] = useState(false)
     const [assignment, setAssignment] = useState(null)
-    const [objectivesData, setObjectivesData] = useState({})
+    const [objectivesData, setObjectivesData] = useState(null)
     const [numberOfQuestionsInAssignment, setNumberOfQuestionsInAssignment] = useState(0)
+    const [assignmentAttempt, setAssignmentAttempt] = useState(null)
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(true)
     const { assignmentId } = useParams()
@@ -37,7 +39,54 @@ const AssignmentLanding = ({ percentageTotal }) => {
         setIsLoading(true);
         try {
           let assignment = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`)
+          let course = await fetch(`/lti/api/courses/get_course_by_id/${COURSE_ID}`, {method: 'GET'})
+          let courseData = await course.json()
           let data = await assignment.json()
+
+          console.log(courseData)
+
+
+          if (courseData.late_completion === false) {
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            const endDate = new Date(data.end_date)
+            endDate.setHours(0, 0, 0, 0)
+
+            if (today > endDate) {
+              data.is_locked = true;
+            }
+          }
+
+          if (courseData.deadline === "WEEK") {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); 
+            const endDate = new Date(data.end_date);
+            endDate.setHours(0, 0, 0, 0); 
+
+            const weekAfterEndDate = new Date(endDate);
+            weekAfterEndDate.setDate(endDate.getDate() + 7); 
+            
+            if (today >= weekAfterEndDate) {
+              data.is_locked = true;
+            }
+          }
+          else if (courseData.deadline == "MONTH") {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); 
+            const endDate = new Date(data.end_date);
+            endDate.setHours(0, 0, 0, 0); 
+
+            const monthAfterEndDate = new Date(endDate);
+            monthAfterEndDate.setMonth(endDate.getMonth() + 1); 
+            
+            if (today >= monthAfterEndDate) {
+              data.is_locked = true;
+            }
+          }
+          else if (courseData.deadline == "END_OF_SESSION") {
+            console.log("TODO: Implement END_OF_SESSION deadline")
+          }
+
           setAssignment(data)
         } catch (error) {
           console.error('Error fetching assignment:', error)
@@ -62,52 +111,94 @@ const AssignmentLanding = ({ percentageTotal }) => {
             }
             numQuestions += datum["questions"].length
             let tempObjective = {
+              "id": datum["id"],
               "title": datum["name"],
               "percentage": 0, // TODO: figure out a way to get a percentage estimate for each objective
               "numberOfQuestions": datum["questions"].length
             }
             objectives.push(tempObjective)
           }
+          const masteryRequest = await fetch(`/lti/api/assignments/get_mastery_level_per_objective/${USER_ID}?assignment_id=${assignmentId}`)
+          const masteryData = await masteryRequest.json()
+
+          for (const i in objectives) {
+            let objective = objectives[i]
+            objective.percentage = masteryData[objective.id]
+          }
+
           setObjectivesData(objectives)
           setNumberOfQuestionsInAssignment(numQuestions)
         }
         catch (error) {
           console.log("Sorry, an error occurred!")
         }
-        finally {
-          setIsLoading(false);
-        }
       }
 
       retrieveAssignmentObjectives()
     }, [assignment])
 
+    
+    useEffect(() => {
+      const retrieveAssignmentAttempt = async () => {
+        try {
+          const request = await fetch(`/lti/api/assignments/get_current_assignment_attempt/${assignmentId}?user_id=${USER_ID}`)
+          const data = await request.json()
+          setAssignmentAttempt(data)
+        } catch (error) {
+          console.log(data)
+        }
+      }
+
+      retrieveAssignmentAttempt()
+    }, [assignment])
+
+
+    useEffect(() => {
+      if (assignment && objectivesData && assignmentAttempt) {
+        setIsLoading(false);
+      }
+    }, [assignment, objectivesData, assignmentAttempt])
+
     const goBackToLanding = () => {
-      console.log(assignmentId)
       navigate('/lti/student_landing/')
+    }
+    
+    const goToAssignment = async () => {
+      try {
+        const request = await fetch(`/lti/api/questions/get_first_question_for_assignment/${assignmentId}?assignment_attempt_id=${assignmentAttempt.id}`)
+        const data = await request.json()
+        navigate(`/lti/assignment/${assignmentId}`, { state: {"question": data, "assignmentAttempt": assignmentAttempt, "assignment": assignment} })
+      } catch (error) {
+        console.log("Sorry, this request has failed!")
+      }
     }
 
     const renderButtonLabel = () => {
-        if (percentageTotal == 0) {
+        if (assignment.is_locked) {
+            return 'Assignment is Past Due'
+        }
+        if (assignmentAttempt.status == 0) {
             return 'Get Started'
         }
-        else if (percentageTotal == 100) {
-            return 'Practice'
+        else if (assignmentAttempt.status == 2) {
+            return 'Assignment Completed'
         }
         else {
             return 'Keep Going'
         }
     }
 
+    const calculatePercentage = () => {
+      var round = Math.round
+      return round(assignmentAttempt.total_grade / assignmentAttempt.possible_points * 100)
+    }
+
     const renderStatus = () => {
-        if (percentageTotal == 0) {
+        if (assignmentAttempt.status == 0) {
             return 'Not Started'
         }
-        else if (percentageTotal == 100) {
-            return 'Completed'
-        }
         else {
-            return `${percentageTotal}% Mastery`
+            return `${calculatePercentage()}% `
         }
     }
 
@@ -146,23 +237,12 @@ const AssignmentLanding = ({ percentageTotal }) => {
                         </section>
                         <section className='flex w-full justify-between items-center p-4 px-8'>
                             <p className='text-slate-600 text-base font-medium'>Last active a minute ago</p>
-                            <Button label='View Activity Details' type='outline' className='px-7 py-3' />
+                            <Button label='View Activity Details' type='outline' className='px-7 py-3' onClick={() => navigate(`/lti/activity_details/${assignment.id}`)} />
                         </section>
                     </section>
         }
 
     }
-
-    const subObjectives = [
-        {
-            title: 'Objective 1.1.1',
-            percentage: 10
-        },
-        {
-            title: 'Objective 1.1.2',
-            percentage: 100
-        }
-    ]
 
     if (isLoading) {
         return (
@@ -198,13 +278,13 @@ const AssignmentLanding = ({ percentageTotal }) => {
                             {/*<TaskSummary title='Due' description='October 11, 2024'
                                 nextLine='12:00pm EST'
                             /> */}
-                            <TaskSummary title='Status' description={renderStatus()}
+                            <TaskSummary title='Assignment Grade' description={renderStatus()}
                             />
                             {renderThirdTaskSummary()}
                         </section>
 
                         <section>
-                            <Button label={renderButtonLabel()} className='px-7 py-3' onClick={() => navigate(`/lti/assignment/${assignmentId}`)}/>
+                            <Button label={renderButtonLabel()} className='px-7 py-3' onClick={() => goToAssignment()} disabled={(assignmentAttempt.status === 2 || assignment.is_locked) ? true : false}/>
                         </section>
                     </section>
                 </header>
@@ -214,8 +294,11 @@ const AssignmentLanding = ({ percentageTotal }) => {
                     <section className='bg-white rounded-xl border border-slate-300 mx-8'>
                         {renderActivity()}
                     </section>
-
-                    <h3 className='text-slate-900 text-lg font-medium ml-12 py-4'>Objectives</h3>
+                    
+                    <section className='flex'>
+                      <h3 className='text-slate-900 text-lg font-medium ml-12 py-4'>Objectives</h3>
+                      <Info text='Objective estimates are based on class averages, so these might change slightly as more students complete the assignment.' />
+                    </section>
                     <section className='bg-white rounded-xl border border-slate-300 mx-8'>
                         <Objective subObjectives={objectivesData} />
                     </section>

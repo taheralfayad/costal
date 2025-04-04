@@ -19,7 +19,8 @@ const CreateAssignment = () => {
   const { moduleId } = useParams();
   const navigate = useNavigate();
 
-  const handleCreateAssignment = async () => {
+  const handleCreateAssignment = async (e) => {
+    e.preventDefault();
     let start = combineDateTime(startDate, startTime)
     let end = combineDateTime(endDate, endTime)
 
@@ -51,40 +52,36 @@ const CreateAssignment = () => {
 
   return (
     <div>
-      <main className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
-        <Title>Create Assignment</Title>
-        <Input label='Name' placeholder='Great Assignment' value={name} onChange={(e) => setName(e.target.value)} />
-        <section className='flex justify-between gap-4'>
-          <DatePickerInput position='top-20 left-1' label='Start Date' placeholder='10/10/2024' type='datetime-local' value={startDate} onChange={(value) => setStartDate(value)} />
-          <TimePickerInput label='Start Time' placeholder='12pm EST' value={startTime} onChange={(value) => setStartTime(value)} />
-        </section>
-        <section className='flex justify-between gap-4'>
-          <DatePickerInput position='top-20 left-1' label='End Date' placeholder='10/12/2024' type='datetime-local' value={endDate} onChange={(value) => setEndDate(value)} />
-          <TimePickerInput label='End Time' placeholder='12pm EST' value={endTime} onChange={(value) => setEndTime(value)} />
-        </section>
-        <section className='flex flex-col gap-4'>
-          <Dropdown label="Assignment Type" placeholder="Assignment Type" options={[{
-            "label": 'Homework', "onClick": () => {
-              setAssessmentType('Homework')
-            }
-          }, {
-            "label": 'Quiz', "onClick": () => {
-              setAssessmentType('Quiz')
-            }
-          }]} />
-        </section>
+      <form onSubmit={handleCreateAssignment}>
+        <main className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
+          <Title>Create Assignment</Title>
 
-        <section className='h-20 rounded-[10px] border border-slate-300 flex items-center justify-center gap-4'>
-          <label
-            className='block text-sm font-medium text-gray-700 text-center'
-          >Import questions and settings from another assignment</label>
-          <Checkbox label='' />
+          <Input required label='Name' placeholder='Great Assignment' value={name} onChange={(e) => setName(e.target.value)} />
+          <section className='flex justify-between gap-4'>
+            <DatePickerInput required position='top-20 left-1' label='Start Date' placeholder='10/10/2024' type='datetime-local' value={startDate} onChange={(value) => setStartDate(value)} />
+            <TimePickerInput required label='Start Time' placeholder='12pm EST' value={startTime} onChange={(value) => setStartTime(value)} />
+          </section>
+          <section className='flex justify-between gap-4'>
+            <DatePickerInput required position='top-20 left-1' label='End Date' placeholder='10/12/2024' type='datetime-local' value={endDate} onChange={(value) => setEndDate(value)} />
+            <TimePickerInput required label='End Time' placeholder='12pm EST' value={endTime} onChange={(value) => setEndTime(value)} />
+          </section>
+          <section className='flex flex-col gap-4'>
+            <Dropdown required label="Assignment Type" placeholder="Assignment Type" options={[{
+              "label": 'Homework', "onClick": () => {
+                setAssessmentType('Homework')
+              }
+            }, {
+              "label": 'Quiz', "onClick": () => {
+                setAssessmentType('Quiz')
+              }
+            }]} />
+          </section>
+        </main>
+        <section className='flex justify-end gap-2 pr-2'>
+          <Button label='Create' form={true} />
+          <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')} />
         </section>
-      </main>
-      <section className='flex justify-end gap-2 pr-2'>
-        <Button label='Create' onClick={handleCreateAssignment} />
-        <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')} />
-      </section>
+      </form>
     </div>
   );
 }

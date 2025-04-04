@@ -15,3 +15,4 @@ export { default as SearchBar } from './SearchBar';
 export { default as SquareButton } from './SquareButton';
 export { default as Radio } from './Radio';
 export { default as TimePickerInput } from './TimePickerInput';
+export { default as Notification } from './Notification';

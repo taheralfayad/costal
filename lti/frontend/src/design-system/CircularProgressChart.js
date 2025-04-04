@@ -11,6 +11,8 @@ const CircularProgressChart = ({
   barColor = '#34D399',
   backgroundColor = '#ECF3FE',
 }) => {
+
+  console.log(percentage)
   const data = [{ name: 'Completed', value: percentage }];
 
   const sizes = {

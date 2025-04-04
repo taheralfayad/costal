@@ -15,6 +15,10 @@ class Textbook(models.Model):
     published_date = models.DateField(null=True, blank=True)
     isbn = models.CharField(max_length=13, unique=True, blank=True, null=True)
     file = models.FileField(upload_to="textbooks/", null=True, blank=True)
+    # need to add a field for the course id that the book is associated with.
+    course = models.ForeignKey(
+        "Course", on_delete=models.CASCADE, blank=True, null=True
+    )
 
     def __str__(self):
         return self.title
@@ -52,12 +56,16 @@ class Module(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
     assignments = models.ManyToManyField("Assignment", blank=True)
     skills = models.ManyToManyField("Skill", blank=True)
+    prequiz = models.OneToOneField(
+        "Prequiz", null=True, on_delete=models.SET_NULL, blank=True
+    )
 
     def __str__(self):
         return self.name
 
 
 class Assignment(models.Model):
+    canvas_id = models.CharField(max_length=200, null=True, blank=True)
     name = models.CharField(max_length=255)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, blank=True, null=True)
     questions = models.ManyToManyField("Question", blank=True)
@@ -70,6 +78,73 @@ class Assignment(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class AssignmentAttempt(models.Model):
+    NOT_STARTED = 0
+    ONGOING = 1
+    COMPLETE = 2
+
+    STATUS_CHOICES = [
+        (NOT_STARTED, "Not Started"),
+        (ONGOING, "Ongoing"),
+        (COMPLETE, "Complete"),
+    ]
+
+    user = models.ForeignKey(
+        CanvasUser, on_delete=models.CASCADE, blank=True, null=True
+    )
+    attempted_questions = models.ManyToManyField("QuestionAttempt", blank=True)
+    current_question_attempt = models.ForeignKey(
+        "Question", on_delete=models.CASCADE, null=True, blank=True
+    )
+    total_grade = models.FloatField(default=0.0)
+    total_time_spent = models.IntegerField(default=0)
+    associated_assignment = models.ForeignKey(
+        "Assignment", on_delete=models.CASCADE, null=True, blank=True
+    )
+    completion_percentage = models.FloatField(default=0.0)
+    status = models.SmallIntegerField(choices=STATUS_CHOICES, default=NOT_STARTED)
+
+
+class QuestionAttempt(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        CanvasUser, on_delete=models.CASCADE, blank=True, null=True
+    )
+    associated_assignment_attempt = models.ForeignKey(
+        "AssignmentAttempt", blank=True, null=True, on_delete=models.CASCADE
+    )
+    associated_assignment = models.ForeignKey(
+        "Assignment", blank=True, null=True, on_delete=models.CASCADE
+    )
+    associated_question = models.ForeignKey(
+        "Question", blank=True, null=True, on_delete=models.CASCADE
+    )
+    grade_for_question_attempt = models.IntegerField(default=0)
+    associated_possible_answer = models.ForeignKey(
+        "PossibleAnswer", blank=True, null=True, on_delete=models.CASCADE
+    )
+    time_spent_on_question = models.IntegerField(default=0)
+    number_of_hints = models.IntegerField(default=0)
+
+
+class Prequiz(Assignment):
+    def __str__(self):
+        return self.name
+
+    def is_valid(self):
+        for skill in self.associated_module.skills.all():
+            if not self.questions.filter(associated_skill=skill).exists():
+                return False
+        return True
+
+    def missing_skills(self):
+        missing_skills = []
+        for skill in self.associated_module.skills.all():
+            if not self.questions.filter(associated_skill=skill).exists():
+                missing_skills.append(skill)
+        return missing_skills
 
 
 class Skill(models.Model):
@@ -93,6 +168,7 @@ class Question(models.Model):
     difficulty = models.IntegerField(default=0)
     num_points = models.IntegerField(default=1)
     type = models.TextField(default="multiple")
+    explanation = models.TextField(default="")
 
     def __str__(self):
         return self.name
@@ -106,20 +182,7 @@ class PossibleAnswer(models.Model):
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.possible_answer
-
-
-class Response(models.Model):
-    user = models.ForeignKey(CanvasUser, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    response = models.ForeignKey(PossibleAnswer, on_delete=models.CASCADE)
-    number_of_seconds_to_answer = models.IntegerField(default=0)
-
-    def __str__(self):
-        return (
-            f"{self.user} answered {self.response} to {self.question}\n"
-            f"in {self.number_of_seconds_to_answer} seconds"
-        )
+        return self.answer
 
 
 # LTI Key Models

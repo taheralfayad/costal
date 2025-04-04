@@ -3,7 +3,7 @@ import ChevronLeft from '../assets/chevron-left.svg';
 import ChevronRight from '../assets/chevron-right.svg';
 import Button from './Button';
 
-const DatePickerInput = ({ label = 'Input', placeholder = 'Pick a date', value, onChange, id, position }) => {
+const DatePickerInput = ({ label = 'Input', placeholder = 'Pick a date', value, onChange, id, position, required = false }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(value || '');
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -82,12 +82,13 @@ const DatePickerInput = ({ label = 'Input', placeholder = 'Pick a date', value, 
     return (
         <div className='relative w-full mb-4'>
             <label htmlFor={id} className='block mb-2 text-sm font-medium text-gray-700'>
-                {label}
+                {label} {required && <span className="text-red-500">*</span>}
             </label>
             <input
                 id={id}
                 type='text'
                 placeholder={placeholder}
+                required={required}
                 className='h-12 w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500'
                 value={value || selectedDate}
                 readOnly

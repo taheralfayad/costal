@@ -3,7 +3,7 @@ import ChevronLeft from '../assets/chevron-left.svg';
 import ChevronRight from '../assets/chevron-right.svg';
 import Button from './Button';
 
-const DatePicker = ({ isCalendarOpen, handleCalendarOpen, position }) => {
+const DatePicker = ({ isCalendarOpen, handleCalendarOpen, position, onDateChange }) => {
   if (!isCalendarOpen) return null;
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -85,7 +85,7 @@ const DatePicker = ({ isCalendarOpen, handleCalendarOpen, position }) => {
 
   const handleApply = () => {
     if (selectedDate) {
-      handleCalendarOpen()
+      onDateChange(selectedDate)
     }
   };
 
@@ -167,8 +167,8 @@ const DatePicker = ({ isCalendarOpen, handleCalendarOpen, position }) => {
           </section>
 
           <section className='flex items-center justify-center gap-4'>
-            <Button type='black' onClick={handleCancel} label='Remove' />
             <Button onClick={handleApply} label='Done' />
+            <Button type='black' onClick={handleCancel} label='Cancel' />
           </section>
         </section>
       </section>

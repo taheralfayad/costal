@@ -4,7 +4,7 @@ import StarFill from '../../assets/star-fill.svg';
 import Star from '../../assets/star.svg';
 
 const ChapterDropdown = ({ chapterTitle, children, fullSelected }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <div>

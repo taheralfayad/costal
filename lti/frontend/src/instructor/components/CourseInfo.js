@@ -4,11 +4,32 @@ import Calendar from '../../assets/calendar.svg';
 
 const CourseInfo = ({white = false}) => {
     const [professorName, setProfessorName] = useState('');
+    const [start, setStart] = useState('')
+    const [end, setEnd] = useState('')
 
     const getProfessorName = async () => {
         const response = await fetch(`/lti/api/get_course_professor_name/?course_id=${COURSE_ID}`);
         const data = await response.json();
-        setProfessorName(data.professors[0]);
+        console.log(data.start, data.end)
+        setProfessorName(data.professor);
+        setStart(formatDate(data.start));
+        setEnd(formatDate(data.end));
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) {
+            return ''
+        }
+        const date = new Date(dateString);
+    
+        const options = { 
+            timeZone: "America/New_York", 
+            year: "numeric", 
+            month: "short", 
+            day: "numeric"
+        };
+    
+        return new Intl.DateTimeFormat("en-US", options).format(date);
     }
 
     useEffect(() => {
@@ -23,7 +44,7 @@ const CourseInfo = ({white = false}) => {
             </section>
             <section className='flex'>
                 <Calendar className={`${white ? 'text-white' : 'text-slate-600' } `} />
-                <p className={`${white ? 'text-white' : 'text-slate-600'} text-base font-medium`}>Aug 23, 2024 - Dec 10, 2024</p>
+                <p className={`${white ? 'text-white' : 'text-slate-600'} text-base font-medium`}>{start} - {end}</p>
             </section>
         </article>
     );

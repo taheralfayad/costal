@@ -1,12 +1,13 @@
 import React from 'react';
 
-const Checkbox = ({ label = 'Checkbox', checked, onChange, id, isIncorrect }) => {
+const Checkbox = ({ label = 'Checkbox', checked, onChange, id, isIncorrect, required = false }) => {
   return (
     <article className='flex items-center gap-2'>
       <input
         id={id}
         checked={checked}
         onChange={onChange}
+        required={required}
         type="checkbox"
         className={` ${isIncorrect ? 'border-red-500' : 'border-gray-300'}  peer bg-white appearance-none h-5 w-5 border rounded focus:ring-blue-500 focus:ring-2 text-emerald-600 checked:bg-emerald-500 checked:border-0`}
       />
@@ -16,7 +17,7 @@ const Checkbox = ({ label = 'Checkbox', checked, onChange, id, isIncorrect }) =>
       </svg>
 
       {label && <label htmlFor={id} className='text-gray-800 text-sm'>
-        {label}
+        {label} {required && <span className="text-red-500">*</span>}
       </label>}
     </article>
   );

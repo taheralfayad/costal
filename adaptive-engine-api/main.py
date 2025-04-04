@@ -44,6 +44,13 @@ class AddArmToMABRequest(BaseModel):
     course_id: int
 
 
+class MasteryPerObjective(BaseModel):
+    course_id: int
+    module_id: int
+    skill_name: int
+    user_id: int
+
+
 @app.post("/run-model-on-response/")
 def run_model_on_response(request: RunModelOnResponseRequest):
     model = pybkt.Model(seed=42, num_fits=1)
@@ -150,9 +157,9 @@ def run_model_on_response(request: RunModelOnResponseRequest):
         pickle.dump(mab, f)
 
     prediction_json = {
-        "state_prediction": predictions_after.iloc[0]["state_predictions"],
-        "next_question": next_question,
-        "reward": reward[0],
+        "state_prediction": float(predictions_after.iloc[0]["state_predictions"]),
+        "next_question": int(next_question),
+        "reward": float(reward[0]),
     }
 
     return prediction_json
@@ -198,6 +205,34 @@ def add_arm_to_mab(request: AddArmToMABRequest):
         return {"message": "Arm added to MAB model"}
 
     return {"message": "Arm already exists in MAB model"}
+
+
+@app.post("/delete-arm-from-mab/")
+def delete_arm_from_mab(request: AddArmToMABRequest):
+    try:
+        with open(
+            "./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}.pkl".format(
+                course_id=request.course_id, assignment_id=request.assignment_id
+            ),
+            "rb",
+        ) as f:
+            mab = pickle.load(f)
+    except FileNotFoundError:
+        return {"message": "MAB model not found"}
+
+    if request.question_id in mab.arms:
+        mab.remove_arm(request.question_id)
+        with open(
+            "./adaptive-engine-api/models/mab_model_{course_id}_{assignment_id}.pkl".format(
+                course_id=request.course_id, assignment_id=request.assignment_id
+            ),
+            "wb",
+        ) as f:
+            pickle.dump(mab, f)
+
+        return {"message": "Arm deleted from MAB model"}
+
+    return {"message": "Arm does not exist in MAB model"}
 
 
 @app.post("/fit-model/")
@@ -269,6 +304,40 @@ def fit_model(request: FitModelRequest):
     bkt.save(bkt_filename)
 
     return {"message": "Model fit successfully"}
+
+
+@app.post("/get-mastery-level/")
+def mastery_of_skill(request: MasteryPerObjective):
+    """
+    Get the mastery of a skill for a given user
+    """
+    model = pybkt.Model(seed=42, num_fits=1)
+    try:
+        model.load(
+            "./adaptive-engine-api/models/bkt_model_{course_id}_{module_id}.pkl".format(
+                course_id=request.course_id, module_id=request.module_id
+            )
+        )
+    except FileNotFoundError:
+        return {"message": "Model not found"}
+
+    data = pd.read_csv(
+        "./adaptive-engine-api/models/bkt_data_{course_id}_{module_id}.csv".format(
+            course_id=request.course_id, module_id=request.module_id
+        )
+    )
+
+    data = data[
+        (data["user_id"] == request.user_id)
+        & (data["skill_name"] == request.skill_name)
+    ]
+
+    try:
+        predictions = model.predict(data=data)
+    except Exception:
+        predictions = pd.DataFrame({"state_predictions": [0]})
+
+    return {"mastery": int(predictions.iloc[-1]["state_predictions"] * 100)}
 
 
 if __name__ == "__main__":

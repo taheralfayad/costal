@@ -164,3 +164,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CANVAS_URL = os.environ.get("CANVAS_URL")
 API_CLIENT_ID = os.environ.get("API_CLIENT_ID")
 API_CLIENT_ID_SECRET = os.environ.get("API_CLIENT_ID_SECRET")
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

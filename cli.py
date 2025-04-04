@@ -84,7 +84,7 @@ def generate_keys():
     print(
         "Keys created.\n\n"
         "To add a new registration: \n"
-        "- If you are using a makefile, run `make register`\n"
+        "- If you are using the manage.sh script, run `./manage.sh register`\n"
         "- If you are running this script directly, run `python cli.py register`\n"
     )
 
@@ -165,7 +165,7 @@ def add_registration():
             f"Created new registration: {new_reg.id}\n"
             "Don't forget to enable the Client ID!\n\n"
             "To add a deployment: \n"
-            "- If you are using a makefile, run `make deploy`\n"
+            "- If you are using the manage.sh script, run `./manage.sh deploy`\n"
             "- If you are running this script directly, run `python cli.py deploy`\n"
         )
     except IntegrityError:
