@@ -65,7 +65,7 @@ const Assignment = () => {
     }
   };
 
-  const onSubmit = async (textAnswer = null) => { // textAnswer is only used for writing questions
+  const onSubmit = async (textAnswer = null, setValue = null) => { // textAnswer is only used for writing questions
     const formData = new FormData();
     setHintAlreadyRequested(false);
     setHintText('');
