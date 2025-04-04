@@ -15,6 +15,10 @@ class Textbook(models.Model):
     published_date = models.DateField(null=True, blank=True)
     isbn = models.CharField(max_length=13, unique=True, blank=True, null=True)
     file = models.FileField(upload_to="textbooks/", null=True, blank=True)
+    # need to add a field for the course id that the book is associated with.
+    course = models.ForeignKey(
+        "Course", on_delete=models.CASCADE, blank=True, null=True
+    )
 
     def __str__(self):
         return self.title

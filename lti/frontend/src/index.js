@@ -17,6 +17,11 @@ import CreateQuestion from "./instructor/pages/CreateQuestion.js";
 import Assignment from "./student/pages/Assignment.js";
 import CreatePrequiz from "./instructor/pages/CreatePrequiz.js";
 import SelectQuestions from "./instructor/pages/SelectQuestions";
+import TextbookList from "./components/TextbookView/TextbookList.js";
+import TextbookView from "./components/TextbookView/TextbookView.js";
+import ManageTextbooks from "./instructor/pages/ManageTextbooks";
+
+
 import ActivityDetails from "./student/pages/ActivityDetails.js";
 import StatsOverall from "./instructor/pages/StatsOverall";
 
@@ -92,7 +97,21 @@ const router = createBrowserRouter([
   {
     path: '/lti/stats/',
     element: <StatsOverall/>
+  },
+  {
+    path: 'lti/textbook_list/:courseId',
+    element: <TextbookList/>
+  },
+  {
+    path: '/lti/textbook/:isbn',
+    element: <TextbookView/>,
+  },
+  {
+    path: '/lti/manage_textbooks',
+    element: <ManageTextbooks/>
   }
+  
+
 ])
 
 ReactDOM.createRoot(document.getElementById("root")).render(

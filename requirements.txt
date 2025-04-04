@@ -10,12 +10,15 @@ pandas==2.2.3
 pydantic==2.10.4
 psycopg[binary]
 pgvector
+pydantic==2.10.4
 pycryptodome
 python-dotenv==1.0.0
 numpy<2.0
 pyBKT
 django-webpack-loader
 uvicorn==0.33.0
+fastapi
+boto3
 mabwiser
 gunicorn==21.2.0
 black~=24.1.1

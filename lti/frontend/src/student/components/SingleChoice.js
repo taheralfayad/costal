@@ -3,7 +3,9 @@ import { Button, Radio } from '../../design-system';
 import DotsVertical from '../../assets/dots-vertical.svg';
 import RadioGroup from '../components/RadioGroup.js';
 
-const SingleChoice = ({ title, question, options, onSubmit, isIncorrect }) => {
+
+const SingleChoice = ({ title, question, options, onSubmit, onHintRequest, isIncorrect }) => {
+  
   return (
     <article className='w-[90%] mx-auto'>
       <header className="flex justify-between items-center mb-4">
@@ -25,7 +27,7 @@ const SingleChoice = ({ title, question, options, onSubmit, isIncorrect }) => {
         <section className='px-8 pb-8'>
           <RadioGroup options={options}/> 
           <section className='flex justify-end gap-2'>
-            <Button label='More instruction' type='outline' />
+            <Button label='More instruction' type='outline' onClick={onHintRequest} />
             <Button label='Submit' onClick={onSubmit} disabled={isIncorrect}/>
           </section>
         </section>

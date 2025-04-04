@@ -36,7 +36,11 @@ class TextbookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Textbook
         fields = "__all__"
-
+    def get_pdf_url(self, obj):
+        request = self.context.get('request')
+        if obj.file and request:
+            return request.build_absolute_uri(obj.file.url)
+        return None
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:

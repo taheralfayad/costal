@@ -13,8 +13,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.parsers import MultiPartParser, FormParser
 from lti.oauth.auth_utils import refresh_access_token
 
+
+from qgservice.engine import LLMEngine  # Import LLM service
 
 from lti.models import (
     Assignment,
@@ -42,6 +45,8 @@ from lti.serializers import (
     ModuleSerializer,
     CourseSerializer,
 )
+
+llm_service = LLMEngine()
 
 def get_assignment_completion_percentage(assignment, user):
     total_questions = assignment.questions.count()
@@ -109,6 +114,9 @@ def get_valid_random_question(assignment, user):
     # Pick random question
     random_question_id = random.choice(valid_question_ids)
     return assignment.questions.get(id=random_question_id)
+
+
+
 
 
 def add_assignment_to_canvas(course_id, assignment, api_key):
@@ -224,15 +232,22 @@ def delete_assignment_from_canvas(course_id, assignment, api_key):
 
 
 class TextbookViewSet(viewsets.ModelViewSet):
-    """ViewSet for the ReportEntry class"""
+    """ViewSet for managing textbooks"""
 
     serializer_class = TextbookSerializer
     queryset = Textbook.objects.all()
+    parser_classes = [MultiPartParser, FormParser]
+
 
     def get_queryset(self):
         queryset = Textbook.objects.all()
         return queryset
-
+    
+    @action(detail=False, methods=["get"], url_path="course/(?P<course_id>[^/.]+)")
+    def get_by_course(self, request, course_id=None):
+        textbooks = Textbook.objects.filter(course=course_id)
+        serializer = self.get_serializer(textbooks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=["get"], url_path="isbn/(?P<isbn>[^/.]+)")
     def get_by_isbn(self, request, isbn=None):
         try:
@@ -243,6 +258,14 @@ class TextbookViewSet(viewsets.ModelViewSet):
             return Response(
                 {"error": "Textbook not found"}, status=status.HTTP_404_NOT_FOUND
             )
+    def create(self, request, *args, **kwargs):
+        print(">>> Incoming request.data:", request.data)
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print(serializer.errors)  # 👈 This shows the problem
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -598,6 +621,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         assignment = Assignment.objects.get(id=assignment_id)
         questions = assignment.questions
         return Response(status=status.HTTP_200_OK)
+    
+        
 
     
     @action(detail=False, methods=['get'], url_path='student_has_completed_prequizzes/(?P<user_id>[^/.]+)')
@@ -761,6 +786,20 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         question.save()
         return Response({"message": "Assignment updated successfully"}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=["post"], url_path="generate_hint")
+    def generate_hint(self, request):
+        try:
+            question_text = request.data.get("question_text")
+            question_answer_choices = request.data.get("question_answer_choices")
+            if not question_text:
+                return Response({"error": "Missing 'question' text."}, status=status.HTTP_400_BAD_REQUEST)
+
+            hint = llm_service.generate_hint(question_text, question_answer_choices)
+            return Response({"hint": hint}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     @action(detail=False, methods=["post"], url_path="create_question")
     def create_question(self, request):
@@ -852,6 +891,31 @@ class QuestionViewSet(viewsets.ModelViewSet):
             question.save()
 
         return Response(status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['post'], url_path='generate_question')
+    def generate_question(self, request):
+        try:
+            data = request.data
+            print(data)
+            course_name = data.get('course_name')
+            text = data.get('text')
+            num_questions = int(data.get('num_questions', 1))
+            previous_questions = data.get('previous_questions', [])
+
+            if not course_name or not text:
+                return Response({'error': 'course_name and text are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            questions_json = llm_service.generate_questions(
+                course_name=course_name,
+                topic=text,
+                num_questions=num_questions,
+                previous_questions=previous_questions
+            )
+
+            return Response(json.loads(questions_json), status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=["post"], url_path="answer_question")
     def answer_question(self, request):
