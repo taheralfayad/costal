@@ -2,36 +2,43 @@
 
 ## Local Development
 
-1. First, make sure you have ngrok installed (instructions can be found [here](https://ngrok.com/download)). Run the following command to start ngrok and expose port 8000.
+1. Setup a self-signed cert with the following commands to run COSTAL over HTTPS on localhost.
 ```
-$ ngrok http 8000
+$ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes
 ``` 
 
-2. Create a new .env file by copying the env template with the following command. Follow the information on [Canvas API Key Setup](#canvas-api-key-setup) to fill out the values in your .env
+2. Move key and cert to the correct location.
+```
+$ sudo mkdir -p /etc/nginx/ssl
+$ sudo mv key.pem /etc/nginx/ssl/
+$ sudo mv cert.pem /etc/nginx/ssl/
+```
+
+3. Create a new .env file by copying the env template with the following command. Follow the information on [Canvas API Key Setup](#canvas-api-key-setup) to fill out the values in your .env
 ```
 $ cp .env.template .env
 ```
 
-3. Build the project with `./manage.sh build`
+4. Build the project with `./manage.sh build`
 ```
 $ ./manage.sh build
 Building Costal images
 ```
 
-4. Run COSTAL and it's services with `./manage.sh start-attached`.
+5. Run COSTAL and it's services with `./manage.sh start-attached`.
 ```
 $ ./manage.sh start-attached
 Starting Costal in attached mode
 docker compose -f docker-compose.yml up
 ```
 
-5. Run database migrations with `./manage.sh migrate`.
+6. Run database migrations with `./manage.sh migrate`.
 ```
 $ ./manage.sh migrate
 docker compose -f docker-compose.yml run --rm web python manage.py migrate
 ```
 
-6. To install the tool into your local canvas instance, follow the steps in [Generating LTI Keys](#generating-lti-keys). After finishing the [course deployment](#deploy-to-an-account-or-course), COSTAL should be availible in the course navigation section on the left side of the course it was installed in.
+7. To install the tool into your local canvas instance, follow the steps in [Generating LTI Keys](#generating-lti-keys). After finishing the [course deployment](#deploy-to-an-account-or-course), COSTAL should be availible in the course navigation section on the left side of the course it was installed in.
 
 ### Canvas API Key Setup
 
@@ -40,9 +47,9 @@ By creating an API key for the application, the tool can access and make changes
 Instructure provides a detailed explanation of the API key creation process [here](https://community.canvaslms.com/t5/Admin-Guide/How-do-I-add-a-developer-API-key-for-an-account/ta-p/259), however simple instructions will be included below.
 
 1. Start your local canvas instance and login. Navigate to **Admin > Site Admin > Developer Keys**. On the Developer Keys page, click **+ Developer Key** to add a new API key.
-2. Set the Redirect URIs and Redirect URI (Legacy) to the following URI format (with your ngrok link).
+2. Set the Redirect URIs and Redirect URI (Legacy) to the following URI format.
 ```
-https://<use-your-unique-number-here>.ngrok-free.app/oauth/oauth_complete/
+https://localhost/lti/oauth_complete/
 ```
 3. Save the key, and enable it by changing the state to "On".
 4. Copy the `API_CLIENT_ID` (# under the details column) and `API_CLIENT_ID_SECRET` (visible after clicking "Show Key") and paste them into your .env file
@@ -74,9 +81,9 @@ You will be prompted to enter a Client ID. The next section will explain how to 
 #### Create Developer LTI Key / Get Client ID
 
 1. On your local canvas instance, navigate to **Admin > Site Admin > Developer Keys**. On the Developer Keys page, click **+ Developer Key** and add a new LTI key
-2. Ensure the application and ngrok is running and go to the following url (in a new tab) to get the tool's LTI config JSON. Copy the contents of the page.
+2. Ensure the application is running and go to the following url (in a new tab) to get the tool's LTI config JSON. Copy the contents of the page.
 ```
-https://<use-your-unique-number-here>.ngrok-free.app/lti/config
+https://localhost/lti/config
 ```
 3. Back on your local canvas instance, choose the **Paste JSON** method, and paste the applications config JSON. 
 4. Save the developer key and enable it by changing the state to "On".

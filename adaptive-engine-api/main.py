@@ -327,8 +327,10 @@ def mastery_of_skill(request: MasteryPerObjective):
         )
     )
 
-
-    data = data[(data["user_id"] == request.user_id) & (data["skill_name"] == request.skill_name)]
+    data = data[
+        (data["user_id"] == request.user_id)
+        & (data["skill_name"] == request.skill_name)
+    ]
 
     try:
         predictions = model.predict(data=data)

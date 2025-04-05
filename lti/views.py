@@ -180,7 +180,7 @@ def launch(request):
     )
     if created:
         course.save()
-        
+
     request.session["course_data"] = response_data
     # Authenticate on new user
     user_exists = CanvasUser.objects.filter(uid=user_id).exists()
