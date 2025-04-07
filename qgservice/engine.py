@@ -104,82 +104,380 @@ class LLMEngine:
         except json.JSONDecodeError:
             return {"error": "Failed to parse response as JSON."}
 
+    def __call_messages_with_params(self, model_id: str, params: dict) -> str:
+        """
+        Calls the Claude LLM model through Bedrock using the provided parameters.
+        Returns the parsed response content.
+        """
+        request_body = json.dumps(params)
+        try:
+            response = self.boto3_client.invoke_model(
+                modelId=model_id,
+                body=request_body
+            )
+            
+            response_body = json.loads(response["body"].read().decode("utf-8"))
+            
+            print(f"Response type: {type(response_body)}")
+            print(f"Response keys: {response_body.keys() if isinstance(response_body, dict) else 'Not a dict'}")
+            
+            if "tool_use" in response_body:
+                tool_use = response_body.get("tool_use", {})
+                tool_name = tool_use.get("name")
+                tool_input = tool_use.get("input", {})
+                
+                if tool_name == "submit_correct_answer" and "answer" in tool_input:
+                    return json.dumps({"answer": tool_input["answer"]})
+            
+            if "content" in response_body and isinstance(response_body["content"], list):
+                for content_item in response_body["content"]:
+                    if isinstance(content_item, dict) and content_item.get("type") == "text":
+                        return content_item.get("text", "")
+            
+            return json.dumps(response_body)
+            
+        except Exception as e:
+            print(f"Detailed error: {str(e)}")
+            raise ValueError(f"Claude API call failed: {str(e)}") from e
+
+
     def generate_questions(self, course_name: str, topic: str, previous_questions: list, num_questions: int = 1) -> str:
         """
-        Chained 3-step generation:
-        1. Extract concept
-        2. Draft question with options (avoiding previous ones)
-        3. Identify correct answer
-        Returns: JSON with question, options, and correct answer letter.
+        Generate multiple-choice questions using Claude tool-call.
+        Claude returns the entire structured question as a tool result.
         """
+        claude_model_id = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+        results = []
 
-        try:
-            system_prompt_1 = f"You are an expert in {course_name}."
-            user_message_1 = (
-                f"From the following topic or objective, extract the most relevant concept to base a multiple choice question on:\n\n"
-                f"{topic}\n\n"
-                "Return a single concept as a JSON string."
-            )
-
-            concept_prompt = self.__format_prompt(system_prompt_1, user_message_1)
-            concept_response = self.__call__(concept_prompt, temperature=0.7)
-
+        for _ in range(num_questions):
             try:
-                concept = json.loads(concept_response)
-            except Exception:
-                raise ValueError("Concept extraction failed or did not return a valid JSON string.", concept_response)
+                concept = topic.strip()
+                if not concept:
+                    raise ValueError("The topic is empty and cannot be used as a concept.")
 
-            prev_q_texts = "\n".join(
-                [f"- {q['question']}" for q in previous_questions if 'question' in q]
-            )
-            
-            avoidance_clause = f"Critically, the new question MUST be substantially different from these previous questions:\n{prev_q_texts}\n\n" if prev_q_texts else ""
+                print(f"\n\n\nPREVIOUS QUESTIONS BEFORE FILTER: {previous_questions}")
 
-            system_prompt_2 = f"You are a skilled educator in {course_name}."
-            
-            user_message_2 = ( f"Generate a **completely new and unique** multiple-choice question focusing on the core idea of this concept: \"{concept}\".\n\n"
-            f"{avoidance_clause}"
-            "Ensure the question tests understanding, not just recall. Phrase it differently using no markup language than any previous examples provided.\n"
-            "The question must have exactly 4 plausible answer choices in no markup language labeled A, B, C, and D. You may use numbers and equations. One choice must be unambiguously correct.\n"
-            "Return ONLY a valid JSON object with NO markup language with keys 'question' (string) and 'options' (object with keys 'A', 'B', 'C', 'D'), like:\n"
-            "{\n" )
+                prev_q_texts = "\n".join(
+                    [f"- {q['text']}" for q in previous_questions if 'text' in q]
+                )
+                # filter prev_q_texts to only include field 'text' from previous_questions
+                
+                avoidance_clause = (
+                    "Ensure this question is completely unique and not similar to the following:\n"
+                    + prev_q_texts + "\n\n"
+                    if prev_q_texts else ""
+                )
+
+                system_message = (
+                    f"You are an expert {course_name} educator creating multiple-choice questions for K-12 and beyond. "
+                    f"When creating questions, be especially careful about: "
+                    f"1. Ensuring numerical answers are precise and accurate "
+                    f"2. Checking that scientific principles are correctly applied "
+                    f"3. Verifying that the question indeed is solvable "
+                    f"4. IMPORTANT: Never use duplicate questions. "
+                    f"5. When writing equations or mathematical expressions, use HTML markup to ensure clarity and correctness "
+                    f"6. Follow the styling, conventions, and types of questions that are provided to you "
+                    f"7. For the question you generate, analyze and explain your reasoning in 2 sentences."
+                    f"8. DO NOT OVER-EXPLAIN YOUR REASONING. Keep it concise and to the point."
+                    f"9. GENERATE ONLY THE QUESTION TEXT, NOT THE ANSWERS OR OPTIONS. "
+                )              
+                user_message = (
+                    f"Topic: \"{concept}\"\n\n"
+                    f"{avoidance_clause}"
+                    "Create a unique, high-quality multiple-choice question.\n\n"
+                    "IMPORTANT: Follow this 2-step process:\n"
+                    "1. Create your question and ensure it has a solution.\n"
+                    "2. Verify your reasoning with calculations or logical steps."
+                    "Return your response using the `submit_question` tool with:\n"
+                    "- Question text\n"
+                    "- Succinct reasoning NO LONGER THAN 5 sentences for why this question."
+                )
+                call_params = {
+                    "anthropic_version": "bedrock-2023-05-31",  
+                    "max_tokens": 2000,                         
+                    "temperature": 0.5,                         
+                    "system": system_message,
+                    "messages": [{
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": user_message
+                            }
+                        ]
+                    }],
+                    "tools": [{
+                        "name": "submit_question",
+                        "description": "Submit a multiple-choice question with reasoning.",
+                        "input_schema": {
+                            "type": "object",
+                            "properties": {
+                                "question": {
+                                    "type": "string",
+                                    "description": "The question text."
+                                },
+                                "reasoning": {
+                                    "type": "string",
+                                    "description": "Explain why this question is a solvable and appropriate."
+                                }
+                            },
+                            "required": ["question", "reasoning"]
+                        }
+                    }],
+                    "tool_choice": {
+                        "type": "tool",
+                        "name": "submit_question"
+                    }
+                }
+                print(f"PREV Q TEXTS: {prev_q_texts}\n\n\n")
+                print(f"CALLING CLAUDE WITH PARAMETERS")
+                response_json_str = self.__call_messages_with_params(claude_model_id, call_params)
+                
+                print(f"FULL CLAUDE RESPONSE: {response_json_str}")
+                
+                try:
+                    response_data = json.loads(response_json_str)
+                    
+                    print(f"RESPONSE STRUCTURE: {json.dumps(response_data, indent=2)}")
+                    
+                    tool_result = None
+                    
+                    if "content" in response_data:
+                        for content_block in response_data["content"]:
+                            if content_block.get("type") == "tool_use":
+                                tool_input = content_block.get("input")
+                                if tool_input and content_block.get("name") == "submit_question":
+                                    tool_result = tool_input
+                                    print(f"FOUND TOOL RESULT IN CONTENT: {json.dumps(tool_result, indent=2)}")
+                                    break
+                    
+                    elif "tool_outputs" in response_data:
+                        for tool_output in response_data["tool_outputs"]:
+                            if tool_output.get("tool_name") == "submit_question":
+                                tool_result = tool_output.get("content")
+                                print(f"FOUND TOOL RESULT IN TOOL_OUTPUTS: {json.dumps(tool_result, indent=2)}")
+                                break
+                    
+                    if tool_result is None:
+                        tool_result = response_data
+                        print(f"USING DIRECT RESPONSE AS TOOL RESULT: {json.dumps(tool_result, indent=2)}")
+                    
+                    question_text = None
+                    options = None
+                    correct_letter = None
+                    reasoning = None
+                    
+                    if "question" in tool_result:
+                        question_text = tool_result.get("question")
+                        reasoning = tool_result.get("reasoning")
+                    
+                    if not question_text or not reasoning:
+                        print(f"VALIDATION ERROR: Missing fields or invalid values")
+                        print(f"question_text: {question_text}")
+                        print(f"reasoning: {reasoning}")
+                        raise ValueError("Claude response is missing required fields or has invalid values.")
+
+                    
+
+                    gen_options_message = (
+                        f"Review this question on {concept} and generate 4 options with one being correct."
+                        f"Question: {question_text}"
+                        f"Do the question step-by-step and provide a reasoning of 100 words max why the correct option is correct."
+                        f"ENSURE THAT YOU ARE NEVER DEFAULTING TO \"CLOSEST ANSWER\" OR \"BEST ANSWER\". GENERATE THE OPTIONS AFTER YOU SOLVE."
+                    )
+                    gen_options_params = {
+                        "anthropic_version": "bedrock-2023-05-31",  
+                        "max_tokens": 1500,                         
+                        "temperature": 0.15,                         
+                        "messages": [{
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": gen_options_message
+                                }
+                            ]
+                        }],
+                        "tools": [{
+                            "name": "create_options",
+                            "description": "Create 4 unique options with on correct for a multiple-choice question.",
+                            "input_schema": {
+                                "type": "object",
+                                "properties": {
+                                    "answer": {
+                                        "type": "string",
+                                        "enum": ["A", "B", "C", "D"],
+                                        "description": "The correct answer (A, B, C, or D)."
+                                    },
+                                    "reasoning": {
+                                        "type": "string",
+                                        "description": "Explain why this answer is correct (for internal verification)."
+                                    },
+                                    "options": {
+                                        "type": "object",
+                                        "properties": {
+                                            "A": {"type": "string"},
+                                            "B": {"type": "string"},
+                                            "C": {"type": "string"},
+                                            "D": {"type": "string"}
+                                        },
+                                        "required": ["A", "B", "C", "D"]
+                                    }
+                                },
+                                "required": ["options", "answer", "reasoning"]
+                            }
+                        }],
+                        "tool_choice": {
+                            "type": "tool",
+                            "name": "create_options"
+                        }
+                    }
+                    print(f"CALLING CLAUDE FOR OPTIONS GENERATION")
+                    gen_response_json_str = self.__call_messages_with_params(claude_model_id, gen_options_params)
+
+                    print(f"FULL CLAUDE RESPONSE: {gen_response_json_str}")
+
+                    try:
+                        response_data = json.loads(gen_response_json_str)
+                        print(f"RESPONSE STRUCTURE: {json.dumps(response_data, indent=2)}")
+                        tool_result = None
+
+                        if "content" in response_data:
+                            for content_block in response_data["content"]:
+                                if content_block.get("type") == "tool_use":
+                                    tool_input = content_block.get("input")
+                                    if tool_input and content_block.get("name") == "create_options":
+                                        tool_result = tool_input
+                                        print(f"FOUND TOOL RESULT IN CONTENT: {json.dumps(tool_result, indent=2)}")
+                                        break
+                        elif "tool_outputs" in response_data:
+                            for tool_output in response_data["tool_outputs"]:
+                                if tool_output.get("tool_name") == "create_options":
+                                    tool_result = tool_output.get("content")
+                                    print(f"FOUND TOOL RESULT IN TOOL_OUTPUTS: {json.dumps(tool_result, indent=2)}")
+                                    break
+                        if tool_result is None:
+                            tool_result = response_data
+                            print(f"USING DIRECT RESPONSE AS TOOL RESULT: {json.dumps(tool_result, indent=2)}")
+                        
+                        options = tool_result.get("options")
+                        correct_letter = tool_result.get("answer")
+                        reasoning = tool_result.get("reasoning")
+
+                        if not options or not correct_letter:
+                            print(f"VALIDATION ERROR: Missing fields or invalid values")
+                            print(f"options: {options}")
+                            print(f"correct_letter: {correct_letter}")
+                            print(f"reasoning: {reasoning}")
+                            raise ValueError("Claude response is missing required fields or has invalid values.")
+                        
+                        if not isinstance(options, dict):
+                            print(f"VALIDATION ERROR: Options must be a dictionary.")
+                            raise ValueError("Options must be a dictionary.")
+                        
+                        if set(options.keys()) != {"A", "B", "C", "D"}:
+                            print(f"VALIDATION ERROR: Invalid options keys: {set(options.keys())}")
+                            raise ValueError("Options must include exactly A, B, C, and D.")
+                        
+                    except json.JSONDecodeError:
+                        print(f"JSON DECODE ERROR: {str(json_err)}")
+                        print(f"RAW RESPONSE: {gen_response_json_str[:200]}...")
+                        raise ValueError(f"Claude returned invalid JSON: {gen_response_json_str[:200]}...")
+                    
 
 
-            question_prompt = self.__format_prompt(system_prompt_2, user_message_2)
-            question_response = self.__call__(question_prompt, temperature=0.5)
+                    verification_message = (
+                        f"Review this multiple-choice question on {concept}:\n\n"
+                        f"Question: {question_text}\n"
+                        f"A: {options['A']}\n"
+                        f"B: {options['B']}\n"
+                        f"C: {options['C']}\n"
+                        f"D: {options['D']}\n\n"
+                        f"Proposed correct answer: {correct_letter}\n"
+                        f"Determine which option (A, B, C, or D) is the correct answer. "
+                        f"Analyze each option carefully and explain your reasoning in about 5 sentences."
+                    )
+                    
+                    verification_params = {
+                        "anthropic_version": "bedrock-2023-05-31",
+                        "max_tokens": 1500,
+                        "temperature": 0.05,
+                        "system": f"You are an expert {course_name} educator verifying the correct answer to a multiple-choice question.",
+                        "messages": [{
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": verification_message
+                                }
+                            ]
+                        }]
+                    }
+                    
+                    verification_response = self.__call_messages_with_params(claude_model_id, verification_params)
+                    print(f"VERIFICATION RESPONSE: {verification_response}")
+                    verified_answer = None
+                    for letter in ["A", "B", "C", "D"]:
+                        if f"correct answer is {letter}" in verification_response or f"Answer: {letter}" in verification_response:
+                            verified_answer = letter
+                            break
+                    
+                    if verified_answer and verified_answer != correct_letter:
+                        print(f"WARNING: Answer verification mismatch! Original: {correct_letter}, Verified: {verified_answer}")
+                        print(f"Original reasoning: {reasoning}")
+                        print(f"Verification response: {verification_response}")
+                        
+                        correct_letter = verified_answer
 
-            try:
-                draft = json.loads(question_response)
-                question_text = draft["question"]
-                options = draft["options"]
-            except Exception:
-                raise ValueError("Question drafting failed or did not return valid JSON.")
-            
-            system_prompt_3 = (
-                "You are an expert grader. You will be shown a multiple choice question with 4 options.\n"
-                "Return only the correct letter (A, B, C, or D) in JSON format like:\n\"B\""
-            )
+                    extraction_params = {
+                        "anthropic_version": "bedrock-2023-05-31",
+                        "max_tokens": 300,
+                        "temperature": 0.0,
+                        "system": "You are an expert at parsing reasoning outputs.",
+                        "messages": [{
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": f"From the following reasoning, extract the correct answer letter (A, B, C, or D): \"{verification_response}\""
+                                }
+                            ]
+                        }]
+                    }
+                    extraction_response = self.__call_messages_with_params(claude_model_id, extraction_params)
+                    print(f"EXTRACTION RESPONSE: {extraction_response}")
+                    
+                    extracted_answer = None
+                    for letter in ["A", "B", "C", "D"]:
+                        if f"correct answer is {letter}" in extraction_response or f"Answer: {letter}" in extraction_response or letter in extraction_response:
+                            extracted_answer = letter
+                            break
+                    if extracted_answer:
+                        correct_letter = extracted_answer
 
-            options_text = "\n".join([f"{key}: {val}" for key, val in options.items()])
-            user_message_3 = f"{question_text}\n\nOptions:\n{options_text}"
-            answer_prompt = self.__format_prompt(system_prompt_3, user_message_3)
-            answer_response = self.__call__(answer_prompt, temperature=0.0)
+                    result = {
+                        "question": question_text.strip(),
+                        "options": options,
+                        "answer": correct_letter
+                    }
+                    
+                    results.append(result)
 
-            try:
-                correct_letter = json.loads(answer_response)
-                if correct_letter not in options:
-                    raise ValueError
-            except Exception:
-                raise ValueError("Answer identification failed or returned invalid option.")
+                except json.JSONDecodeError as json_err:
+                    print(f"JSON DECODE ERROR: {str(json_err)}")
+                    print(f"RAW RESPONSE: {response_json_str[:200]}...")
+                    raise ValueError(f"Claude returned invalid JSON: {response_json_str[:200]}...")
+                except Exception as parse_error:
+                    print(f"PARSE ERROR: {str(parse_error)}")
+                    raise ValueError("Failed to parse structured question response.") from parse_error
 
-            return json.dumps({
-                "question": question_text,
-                "options": options,
-                "answer": correct_letter
-            }, indent=4)
+            except Exception as e:
+                print(f"GENERAL ERROR: {str(e)}")
+                return json.dumps({"error": str(e)}, indent=4)
 
-        except Exception as e:
-            return json.dumps({"error": str(e)}, indent=4)
+        return json.dumps(results[0], indent=4) if num_questions == 1 else json.dumps(results, indent=4)
+
+
 
 
 

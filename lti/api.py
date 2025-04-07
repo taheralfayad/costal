@@ -881,7 +881,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 possible_answer = PossibleAnswer.objects.create(
                     possible_answer=answer["possible_answer"],
                     is_correct=answer["is_correct"],
-                    related_question=question,
+                     related_question=question,
                 )
                 possible_answer.save()
                 question.possible_answers.add(possible_answer)
@@ -902,7 +902,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
             if not course_name or not text:
                 return Response({'error': 'course_name and text are required'}, status=status.HTTP_400_BAD_REQUEST)
-
+            
             questions_json = llm_service.generate_questions(
                 course_name=course_name,
                 topic=text,

@@ -22,7 +22,7 @@ const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], width = 
       )}
       <section className="relative">
         <select
-          className={`${width} px-3 py-2 bg-white border  'border-gray-300 rounded-md shadow-sm text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 appearance-none`}
+          className={`${width} px-3 pr-6 py-2 bg-white border  'border-gray-300 rounded-md shadow-sm text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 appearance-none`}
           value={selected}
           onChange={handleChange}
           required={required}
