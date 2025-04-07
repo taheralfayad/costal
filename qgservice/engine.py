@@ -1,6 +1,7 @@
 import json
 import os
 import boto3
+import time
 
 
 class LLMEngine:
@@ -280,41 +281,39 @@ class LLMEngine:
                     
 
                     gen_options_message = (
-                        f"Review this question on {concept} and generate 4 options with one being correct."
-                        f"Question: {question_text}"
-                        f"Do the question step-by-step and provide a reasoning of 100 words max why the correct option is correct."
-                        f"ENSURE THAT YOU ARE NEVER DEFAULTING TO \"CLOSEST ANSWER\" OR \"BEST ANSWER\". GENERATE THE OPTIONS AFTER YOU SOLVE."
+                    f"CRITICAL TASK: Generate multiple-choice options for the following question about '{concept}'.\n\n"
+                    f"Question: {question_text}\n\n"
+                    f"Follow these steps VERY STRICTLY:\n"
+                    f"1.  **Solve the Question:** First, perform the necessary calculations or logical steps to find the single, precise correct answer value. Show your step-by-step work internally.\n"
+                    f"2.  **Determine Correct Value:** Clearly identify the final calculated correct answer value.\n"
+                    f"3.  **Generate Options:** Create exactly four distinct options (A, B, C, D). One of these options MUST exactly match the correct answer value you determined in Step 2. The other three options must be plausible but incorrect distractors. Ensure distractors are derived from common errors or related concepts, but are definitively wrong.\n"
+                    f"4.  **Assign Correct Letter:** Identify which letter (A, B, C, or D) corresponds to the correct answer value.\n"
+                    f"5.  **Provide Solution Reasoning:** Explain the step-by-step process you used to arrive at the correct answer value (max 100 words). Focus on the calculation/logic, not just stating the answer is correct.\n\n"
+                    f"IMPORTANT CONSTRAINTS:\n"
+                    f"- Do NOT default to 'closest answer' or 'best fit'. The correct option must match your calculated value precisely.\n"
+                    f"- Generate the options ONLY AFTER you have calculated the correct answer value.\n"
+                    f"- Ensure all numerical options are precise if the question requires it.\n\n"
+                    f"Use the 'create_options' tool to submit your result."
                     )
+
                     gen_options_params = {
-                        "anthropic_version": "bedrock-2023-05-31",  
-                        "max_tokens": 1500,                         
-                        "temperature": 0.15,                         
-                        "messages": [{
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": gen_options_message
-                                }
-                            ]
-                        }],
+                        "anthropic_version": "bedrock-2023-05-31",
+                        "max_tokens": 1500,
+                        "temperature": 0.15, 
+                        "messages": [{"role": "user", "content": [{"type": "text", "text": gen_options_message}]}],
                         "tools": [{
                             "name": "create_options",
-                            "description": "Create 4 unique options with on correct for a multiple-choice question.",
+                            "description": "Create 4 unique options (A, B, C, D) for a multiple-choice question after solving it, provide the correct answer letter, the calculated value, and the reasoning for the solution.",
                             "input_schema": {
                                 "type": "object",
                                 "properties": {
-                                    "answer": {
+                                    "calculated_answer": {
                                         "type": "string",
-                                        "enum": ["A", "B", "C", "D"],
-                                        "description": "The correct answer (A, B, C, or D)."
-                                    },
-                                    "reasoning": {
-                                        "type": "string",
-                                        "description": "Explain why this answer is correct (for internal verification)."
+                                        "description": "The exact calculated correct answer value derived from solving the question step-by-step. This MUST be determined BEFORE generating options A,B,C,D."
                                     },
                                     "options": {
                                         "type": "object",
+                                        "description": "A dictionary containing the four options, keyed by A, B, C, D. One option must exactly match the 'calculated_answer'.",
                                         "properties": {
                                             "A": {"type": "string"},
                                             "B": {"type": "string"},
@@ -322,68 +321,98 @@ class LLMEngine:
                                             "D": {"type": "string"}
                                         },
                                         "required": ["A", "B", "C", "D"]
+                                    },
+                                    "answer": {
+                                        "type": "string",
+                                        "enum": ["A", "B", "C", "D"],
+                                        "description": "The letter (A, B, C, or D) corresponding to the option that exactly matches the 'calculated_answer'."
+                                    },
+                                    "reasoning": { 
+                                        "type": "string",
+                                        "description": "Concise explanation of the step-by-step calculation or logical process used to arrive at the 'calculated_answer' (max 100 words)."
                                     }
                                 },
-                                "required": ["options", "answer", "reasoning"]
+                                "required": ["calculated_answer", "options", "answer", "reasoning"] 
                             }
                         }],
-                        "tool_choice": {
-                            "type": "tool",
-                            "name": "create_options"
-                        }
+                        "tool_choice": {"type": "tool", "name": "create_options"}
                     }
-                    print(f"CALLING CLAUDE FOR OPTIONS GENERATION")
-                    gen_response_json_str = self.__call_messages_with_params(claude_model_id, gen_options_params)
 
-                    print(f"FULL CLAUDE RESPONSE: {gen_response_json_str}")
+                    print(f"DEBUG: Calling Claude for Options Generation...")
+                    options_response_json_str = self.__call_messages_with_params(claude_model_id, gen_options_params) 
+                    print(f"DEBUG: Full Claude Response (Options Gen): {options_response_json_str}")
+
+                    options_tool_result = None
+                    options = None
+                    correct_letter = None
+                    solution_reasoning = None 
+                    calculated_answer_value = None 
 
                     try:
-                        response_data = json.loads(gen_response_json_str)
-                        print(f"RESPONSE STRUCTURE: {json.dumps(response_data, indent=2)}")
-                        tool_result = None
+                        options_response_data = json.loads(options_response_json_str)
+                        if "error" in options_response_data:
+                            raise ValueError(f"API Error during options generation: {options_response_data['error']}")
 
-                        if "content" in response_data:
-                            for content_block in response_data["content"]:
-                                if content_block.get("type") == "tool_use":
-                                    tool_input = content_block.get("input")
-                                    if tool_input and content_block.get("name") == "create_options":
-                                        tool_result = tool_input
-                                        print(f"FOUND TOOL RESULT IN CONTENT: {json.dumps(tool_result, indent=2)}")
-                                        break
-                        elif "tool_outputs" in response_data:
-                            for tool_output in response_data["tool_outputs"]:
-                                if tool_output.get("tool_name") == "create_options":
-                                    tool_result = tool_output.get("content")
-                                    print(f"FOUND TOOL RESULT IN TOOL_OUTPUTS: {json.dumps(tool_result, indent=2)}")
+                        print(f"DEBUG: Parsed Response Structure (Options Gen): {json.dumps(options_response_data, indent=2)}")
+
+                        if "content" in options_response_data:
+                            for content_block in options_response_data.get("content", []):
+                                if content_block.get("type") == "tool_use" and content_block.get("name") == "create_options":
+                                    options_tool_result = content_block.get("input")
+                                    print(f"DEBUG: Found Tool Result (Options Gen) in 'content': {json.dumps(options_tool_result, indent=2)}")
                                     break
-                        if tool_result is None:
-                            tool_result = response_data
-                            print(f"USING DIRECT RESPONSE AS TOOL RESULT: {json.dumps(tool_result, indent=2)}")
-                        
-                        options = tool_result.get("options")
-                        correct_letter = tool_result.get("answer")
-                        reasoning = tool_result.get("reasoning")
 
-                        if not options or not correct_letter:
-                            print(f"VALIDATION ERROR: Missing fields or invalid values")
-                            print(f"options: {options}")
-                            print(f"correct_letter: {correct_letter}")
-                            print(f"reasoning: {reasoning}")
-                            raise ValueError("Claude response is missing required fields or has invalid values.")
-                        
+                        if options_tool_result is None:
+                            print(f"WARNING: Could not find 'create_options' tool result. Trying direct response.")
+                            if isinstance(options_response_data, dict) and "options" in options_response_data:
+                                options_tool_result = options_response_data
+                                print(f"DEBUG: Using direct response as tool result (Options Gen): {json.dumps(options_tool_result, indent=2)}")
+                            else:
+                                raise ValueError("Failed to extract options. 'create_options' tool result not found.")
+
+                        calculated_answer_value = options_tool_result.get("calculated_answer")
+                        options = options_tool_result.get("options")
+                        correct_letter = options_tool_result.get("answer")
+                        solution_reasoning = options_tool_result.get("reasoning")
+
+                        # --- Validation for Options Generation ---
+                        if not options or not correct_letter or not solution_reasoning or calculated_answer_value is None:
+                            print(f"VALIDATION ERROR (Options Gen): Missing required fields.")
+                            print(f"  calculated_answer: {calculated_answer_value}")
+                            print(f"  options: {options}")
+                            print(f"  correct_letter: {correct_letter}")
+                            print(f"  solution_reasoning: {solution_reasoning}")
+                            raise ValueError("Claude response from 'create_options' is missing required fields.")
+
                         if not isinstance(options, dict):
-                            print(f"VALIDATION ERROR: Options must be a dictionary.")
+                            print(f"VALIDATION ERROR (Options Gen): Options must be a dictionary. Got: {type(options)}")
                             raise ValueError("Options must be a dictionary.")
-                        
+
                         if set(options.keys()) != {"A", "B", "C", "D"}:
-                            print(f"VALIDATION ERROR: Invalid options keys: {set(options.keys())}")
-                            raise ValueError("Options must include exactly A, B, C, and D.")
-                        
-                    except json.JSONDecodeError:
-                        print(f"JSON DECODE ERROR: {str(json_err)}")
-                        print(f"RAW RESPONSE: {gen_response_json_str[:200]}...")
-                        raise ValueError(f"Claude returned invalid JSON: {gen_response_json_str[:200]}...")
-                    
+                            print(f"VALIDATION ERROR (Options Gen): Invalid options keys: {set(options.keys())}")
+                            raise ValueError("Options must include exactly A, B, C, and D keys.")
+
+                        if correct_letter not in ["A", "B", "C", "D"]:
+                            print(f"VALIDATION ERROR (Options Gen): Invalid 'answer' value: {correct_letter}")
+                            raise ValueError("Correct answer letter must be A, B, C, or D.")
+
+                        correct_option_value_from_dict = options.get(correct_letter)
+                        if str(correct_option_value_from_dict) != str(calculated_answer_value):
+                            print(f"WARNING (Options Gen Consistency): Mismatch between calculated_answer ('{calculated_answer_value}') and the value of the designated correct option '{correct_letter}' ('{correct_option_value_from_dict}').")
+
+                        print(f"DEBUG: Generated Options: {options}")
+                        print(f"DEBUG: Proposed Correct Letter: {correct_letter}")
+                        print(f"DEBUG: Calculated Value by LLM: {calculated_answer_value}")
+                        print(f"DEBUG: Solution Reasoning by LLM: {solution_reasoning}")
+
+
+                    except json.JSONDecodeError as json_err:
+                        print(f"JSON DECODE ERROR (Options Gen): {str(json_err)}")
+                        print(f"RAW RESPONSE (Options Gen): {options_response_json_str[:200]}...")
+                        raise ValueError(f"Claude returned invalid JSON (Options Gen): {options_response_json_str[:200]}...") from json_err
+                    except Exception as parse_error:
+                        print(f"PARSE ERROR (Options Gen): {str(parse_error)}")
+                        raise ValueError("Failed to parse structured options response (Options Gen).") from parse_error
 
 
                     verification_message = (
@@ -444,6 +473,8 @@ class LLMEngine:
                             ]
                         }]
                     }
+                    # wait 2 seconds 
+                    time.sleep(2)
                     extraction_response = self.__call_messages_with_params(claude_model_id, extraction_params)
                     print(f"EXTRACTION RESPONSE: {extraction_response}")
                     
