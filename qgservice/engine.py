@@ -5,7 +5,9 @@ import time
 
 
 class LLMEngine:
-    def __init__(self, model_id="us.meta.llama3-3-70b-instruct-v1:0", region="us-east-1"):
+    def __init__(
+        self, model_id="us.meta.llama3-3-70b-instruct-v1:0", region="us-east-1"
+    ):
         """
         Initializes AWS Bedrock client for calling LLaMA-3 or another Bedrock-supported model.
         Uses environment variables for AWS credentials if available.
@@ -66,7 +68,7 @@ class LLMEngine:
                 "temperature": temperature,
             }
         )
-        
+
         try:
             response = self.boto3_client.invoke_model_with_response_stream(
                 modelId=self.model_id,
@@ -78,7 +80,12 @@ class LLMEngine:
         except Exception as e:
             # Check specifically for AccessDeniedException which indicates model access issues
             if "AccessDeniedException" in str(e):
-                 print(f"Error: AccessDeniedException. Ensure you have requested access to model '{self.model_id}' in the AWS Bedrock console for region '{self.boto3_client.meta.region_name}'.")
+                print(
+                    f"Error: AccessDeniedException. "
+                    f"Ensure you have requested access to model '{self.model_id}' "
+                    "in the AWS Bedrock "
+                    f"console for region '{self.boto3_client.meta.region_name}'."
+                )
             else:
                 print(f"Error invoking Bedrock model {self.model_id}: {e}")
             # Consider raising the exception or returning a more structured error
@@ -88,9 +95,18 @@ class LLMEngine:
         """
         Extracts key concepts from a given text, ensuring structured JSON output.
         """
-        system_prompt = f"You are an expert in {course_name}. Extract {num_concepts} key concepts from the provided text that are fundamental, clear, relevant, and suitable for challenging students."
+        system_prompt = (
+            f"You are an expert in {course_name}. "
+            f"Extract {num_concepts} key concepts from the provided text "
+            "that are fundamental, clear, relevant, and "
+            "suitable for challenging students."
+        )
 
-        user_message = f"Extract {num_concepts} key concepts from the following text:\n\n{text}\n\nReturn a valid JSON array of strings."
+        user_message = (
+            f"Extract {num_concepts} key concepts "
+            f"from the following text:\n\n{text}\n\n "
+            "Return a valid JSON array of strings."
+        )
 
         formatted_prompt = self.__format_prompt(system_prompt, user_message)
 
@@ -518,18 +534,19 @@ class LLMEngine:
         """
         system_instruction = (
             "You are a helpful assistant capable of answering a wide range of questions. "
-            "Provide concise and accurate responses, guiding the user without directly giving away answers."
+            "Provide concise and accurate responses, guiding the user without directly giving "
+            "away answers."
         )
 
         self.conversation_history.append({"role": "user", "content": user_message})
-
-        messages = [{"role": "system", "content": system_instruction}] + self.conversation_history
 
         formatted_prompt = self.__format_prompt(system_instruction, user_message)
 
         response_text = self.__call__(formatted_prompt, temperature=0.7)
 
-        self.conversation_history.append({"role": "assistant", "content": response_text})
+        self.conversation_history.append(
+            {"role": "assistant", "content": response_text}
+        )
 
         return response_text
 
@@ -541,54 +558,61 @@ class LLMEngine:
         answer_texts = []
         if isinstance(question_answer_choices, list):
             for choice in question_answer_choices:
-                if isinstance(choice, dict) and 'answer' in choice:
-                    answer_texts.append(str(choice['answer']))
-                elif hasattr(choice, 'answer'):
-                     answer_texts.append(str(choice.answer))
+                if isinstance(choice, dict) and "answer" in choice:
+                    answer_texts.append(str(choice["answer"]))
+                elif hasattr(choice, "answer"):
+                    answer_texts.append(str(choice.answer))
 
         if not answer_texts:
-            print("Warning: No valid answer texts found in question_answer_choices for hint generation.")
+            print(
+                "Warning: No valid answer texts found in question_answer_choice "
+                "for hint generation."
+            )
             pass
-
 
         system_instruction = (
             "You are an assistant in a sensitive learning environment. "
             "Your responsibility is to generate a concise hint for the given question, "
             "helping the user without revealing the correct answer."
             "Return without using LaTeX or any other markup language."
-            "Be consice and ask yourself, is this too revealing? Only allude to concepts that may help. Not the answer."
+            "Be consice and ask yourself, is this too revealing? Only allude to concepts "
+            "that may help. Not the answer."
             "Do not include the answer or anything that may resemble an answer in your hint."
-            
         )
 
         formatted_prompt = self.__format_prompt(system_instruction, question)
 
         hint = self.__call__(formatted_prompt, temperature=0.7)
 
-        max_rewrites = 3 
+        max_rewrites = 3
         rewrite_count = 0
-        while any(answer_text in hint for answer_text in answer_texts) and rewrite_count < max_rewrites:
-            print(f"Hint contains an answer, rewriting (Attempt {rewrite_count + 1})...")
+        while (
+            any(answer_text in hint for answer_text in answer_texts)
+            and rewrite_count < max_rewrites
+        ):
+            print(
+                f"Hint contains an answer, rewriting (Attempt {rewrite_count + 1})..."
+            )
             hint = self.__rewrite_hint(hint, answer_texts_to_avoid=answer_texts)
             rewrite_count += 1
-        
+
         return hint
-    
+
     def __rewrite_hint(self, hint: str, answer_texts_to_avoid: list) -> str:
         """
         Rewrites the hint to avoid revealing specific answer texts.
         """
         avoid_list_str = "\n - ".join(answer_texts_to_avoid)
         system_instruction = (
-            f"Rewrite the following hint so that it does NOT contain or strongly imply any of these specific answer phrases:\n"
+            f"Rewrite the following hint so that it does NOT contain or strongly "
+            "imply any of these specific answer phrases:\n"
             f" - {avoid_list_str}\n\n"
-            "The rewritten hint must still be relevant to the original question context implied by the original hint, helpful, and concise (1-2 sentences).\n"
+            "The rewritten hint must still be relevant to the original question context "
+            "implied by the original hint, helpful, and concise (1-2 sentences).\n"
             "Use HTML markup.."
         )
         user_message = f"Original Hint: {hint}"
 
-
         formatted_prompt = self.__format_prompt(system_instruction, user_message)
-        rewritten_hint = self.__call__(formatted_prompt, temperature=0.6) 
+        rewritten_hint = self.__call__(formatted_prompt, temperature=0.6)
         return rewritten_hint
-

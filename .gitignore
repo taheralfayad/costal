@@ -8,5 +8,9 @@ main.js
 webpack-stats.json
 *.pyc
 node_modules
-models/
+models/*
 lti/static
+key.pem
+cert.pem
+textbooks/
+media/

@@ -22,6 +22,9 @@ env_vars = {
     "DB_USERNAME": os.getenv("DB_USERNAME", ""),
     "DB_PASSWORD": os.getenv("DB_PASSWORD", ""),
     "DB_PORT": os.getenv("DB_PORT", ""),
+    "AWS_ACCESS_KEY": os.getenv("AWS_ACCESS_KEY_ID", ""),
+    "AWS_SECRET_KEY": os.getenv("AWS_SECRET_ACCESS_KEY", ""),
+    "AWS_REGION": os.getenv("AWS_REGION", ""),
 }
 
 if os.path.exists(USER_DATA_PATH):
