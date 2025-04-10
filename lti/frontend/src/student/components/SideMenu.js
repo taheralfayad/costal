@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import ChevronDown from '../../assets/chevron-down.svg';
+import Logo from '../../assets/logo-horizontal-white.svg';
 import { useNavigate } from 'react-router-dom';
 
-const SideMenu = ({ isMenuOpen }) => {
+const SideMenu = ({ isMenuOpen, assignments }) => {
   const [isExpanded, setExpanded] = useState(false)
   const navigate = useNavigate()
 
@@ -16,44 +17,47 @@ const SideMenu = ({ isMenuOpen }) => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-full bg-emerald-500 text-white w-64 transform ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`fixed top-0 left-0 h-full bg-blue-500 text-white w-64 transform ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300`}
     >
       <nav className='flex flex-col p-4'>
-        <article className='h-20'>LOGO</article>
-        <a className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'>
+        <article className='h-20 mb-10 pl-6'>
+              {isMenuOpen && <Logo className='w-36 h-36'/>}
+       
+        </article>
+        <a className='py-2 px-4 hover:bg-blue-600 rounded font-medium cursor-pointer'
+          onClick={() => navigate(`/lti/launch/`)}
+        >
           Home
         </a>
-        <a className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'
-          // send this to textbookbook view js
+        <a className='py-2 px-4 hover:bg-blue-600 rounded font-medium cursor-pointer'
           onClick={handleOpenTextbookList}>
           Textbook
         </a>
         <section>
           <button
             onClick={toggleSubMenu}
-            className='w-full flex justify-between items-center py-2 px-4 hover:bg-emerald-600 rounded font-medium'
+            className='w-full flex justify-between items-center py-2 px-4 hover:bg-blue-600 rounded font-medium'
           >
             <span>Assignments</span>
             <span>{isExpanded ? <ChevronDown className='text-white rotate-180' /> : <ChevronDown className=' text-white' />}</span>
           </button>
           {isExpanded && (
             <section className='ml-4 flex flex-col pt-2'>
-              <a
+              { /*<a
                 className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'
               >
                 Great Assignment
-              </a>
-              <a
-                className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'
-              >
-                Assignment 1
-              </a>
-              <a
-                className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'
-              >
-                Assignment 2
-              </a>
+              </a> */}
+              {assignments.map((assignment) => (
+                <a
+                  key={assignment.id}
+                  className='py-2 px-4 hover:bg-blue-600 rounded font-medium cursor-pointer'
+                  onClick={() => navigate(`/lti/assignment_landing/${assignment.id}`, { state: { assignments: assignments } })}
+                >
+                  {assignment.name}
+                </a>
+              ))}
             </section>
           )}
         </section>

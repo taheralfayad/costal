@@ -1003,6 +1003,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
             id=data["assignment_attempt_id"]
         )
         number_of_hints = 0  # TODO: track the number of hints
+        correct_answer = PossibleAnswer.objects.filter(
+            related_question=question, is_correct=True
+        ).first()
 
         if "answer_choice" in data:
             answer_choice = PossibleAnswer.objects.get(id=data["answer_choice"])
@@ -1155,6 +1158,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
                         "message": "No more questions to ask",
                         "assessment_status": "completed",
                         "is_correct": answer_choice.is_correct,
+                        "correct_answer": correct_answer.answer,
+                        "answer_choice": answer_choice.answer,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -1166,13 +1171,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
             question_data = question_serializer.data.copy()
             question_data["associated_skill"] = skill_serializer.data
 
-            assignment_attempt.current_question_attempt = next_question
+            assignment_attempt.current_question_attempt = random_question
             assignment_attempt.completion_percentage = assignment_completion_percentage
             assignment_attempt.save()
             data = {
                 "question": question_data,
                 "assignment_completion_percentage": assignment_completion_percentage,
                 "is_correct": answer_choice.is_correct,
+                "correct_answer": correct_answer.answer,
+                "answer_choice": answer_choice.answer,
             }
 
             return Response(data, status=status.HTTP_200_OK)
@@ -1187,10 +1194,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment_attempt.completion_percentage = assignment_completion_percentage
         assignment_attempt.save()
 
+
+        print("answer choice answer", answer_choice.answer)
+
         data = {
             "question": question_data,
             "assignment_completion_percentage": assignment_completion_percentage,
             "is_correct": answer_choice.is_correct,
+            "correct_answer": correct_answer.answer,
+            "answer_choice": answer_choice.answer,
         }
 
         return Response(data, status=status.HTTP_200_OK)
@@ -1394,6 +1406,29 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         return Response(data, status=status.HTTP_200_OK)
 
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="retrieve_latest_question_attempt/(?P<assignment_id>[^/.]+)",
+    )
+    def retrieve_latest_question_attempt(self, request, assignment_id=None):
+        assignment = Assignment.objects.get(id=assignment_id)
+        user_id = request.query_params.get("user_id")
+
+        user = CanvasUser.objects.get(uid=user_id)
+
+        question_attempts = QuestionAttempt.objects.filter(
+            user=user, associated_assignment=assignment
+        ).order_by("-id")
+
+        if question_attempts.exists():
+            latest_question_attempt = question_attempts.first()
+            serializer = QuestionAttemptSerializer(latest_question_attempt)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"error": "No question attempts found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -1582,19 +1617,22 @@ class ModuleViewSet(viewsets.ModelViewSet):
             selected_question_ids = set()
 
             if assignment_id:
+                assignment_filter = Assignment.objects.filter(id=assignment_id, associated_module=module).first()
+
+                response['assignment_name'] = assignment_filter.name
                 assignment_filter = Assignment.objects.filter(
                     id=assignment_id, associated_module=module
                 ).first()
                 response["assignment_name"] = assignment_filter.name
                 if not assignment_filter:
-                    return Response(
-                        {"error": "Assignment not found in this module"},
-                        status=status.HTTP_404_NOT_FOUND,
-                    )
-                selected_question_ids = set(
-                    assignment_filter.questions.values_list("id", flat=True)
-                )
+                    return Response({"error": "Assignment not found in this module"}, status=status.HTTP_404_NOT_FOUND)
+                selected_question_ids = set(assignment_filter.questions.values_list("id", flat=True))
 
+            serializer = QuestionSerializer(module.prequiz.questions.all(), many=True)
+            for question in serializer.data:
+                question["is_selected"] = question["id"] in selected_question_ids
+                response["questions"].append(question)
+        
             for assignment in module.assignments.all():
                 serializer = QuestionSerializer(assignment.questions.all(), many=True)
                 for question in serializer.data:

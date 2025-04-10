@@ -6,7 +6,7 @@ import ShortAnswerConfig from '../components/ShortAnswerConfig';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 const EditQuestion = () => {
-    const { questionId } = useParams();
+    const { assignmentId, questionId } = useParams();
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [text, setText] = useState('');
@@ -14,7 +14,6 @@ const EditQuestion = () => {
     const [objectives, setObjectives] = useState([]);
     const [dropdownObjectives, setDropdownObjectives] = useState([]);
     const [objective, setObjective] = useState('');
-    const [assignmentId, setAssignmentId] = useState('');
     const [selectedCheckbox, setSelectedCheckbox] = useState(null);
     const [associatedSkill, setAssociatedSkill] = useState(0);
     const [solvingText, setSolvingText] = useState('');
@@ -30,6 +29,7 @@ const EditQuestion = () => {
             text: answer.answer || '',
             checked: answer.is_correct || false
         }))
+
     }
 
     const transformShortAnswerBack = (answers) => {
@@ -52,10 +52,17 @@ const EditQuestion = () => {
         setDifficulty(difficulty_map[resData.difficulty])
         setSelectedCheckbox(resData.type)
         setPoints(resData.num_points)
-        setAssignmentId(resData.assignments[0])
+
+        setSolvingText(resData.explanation)
 
         if (resData.type === 'multiple') {
-            setMultipleChoiceAnswers(transformMultipleChoiceBack(resData.possible_answers))
+            let answers = transformMultipleChoiceBack(resData.possible_answers)
+            answers.push({
+                id: answers.length,
+                text: '',
+                checked: false
+            })
+            setMultipleChoiceAnswers(answers)
         } else {
             setShortAnswerItems(transformShortAnswerBack(resData.possible_answers))
         }
@@ -98,6 +105,7 @@ const EditQuestion = () => {
         try {
             const response = await fetch(`/lti/api/skills/get_skill_by_assignment_id/${assignmentId}`);
             const data = await response.json();
+
             let obj = data.find(item => item.id === associatedSkill).name
             setObjective(obj)
 
@@ -119,7 +127,7 @@ const EditQuestion = () => {
             return;
         }
 
-        if (selectedCheckbox === 'multiple' && multipleChoiceAnswers.length < 3) {
+        if (selectedCheckbox === 'multiple' && multipleChoiceAnswers.length < 2) {
             toast.error("Please add more choices to multiple choice");
             return;
         }
@@ -169,7 +177,7 @@ const EditQuestion = () => {
 
     useEffect(() => {
         fetchObjectives();
-    }, [assignmentId]);
+    }, [assignmentId, associatedSkill]);
 
     useEffect(() => {
         formatObjectivesForDropdown();

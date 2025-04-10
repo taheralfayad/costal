@@ -36,6 +36,9 @@ class ExtendedDjangoMessageLaunch(DjangoMessageLaunch):
         return super().validate_nonce()
 
 
+def index(request):
+    return render(request, "index.html")
+
 # Helper functions for LTI 1.3 processes
 def get_lti_config():
     registrations = Registration.objects.all()

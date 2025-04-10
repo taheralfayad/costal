@@ -32,7 +32,6 @@ const ActivityDetails = () => {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-      timeZoneName: 'short',
     });
   };
 
@@ -105,7 +104,7 @@ const ActivityDetails = () => {
                 isActive={activeFilter === filter.label}
                 onClick={() => setActiveFilter(filter.label)}
                 icon={filter.icon}
-                noBorder={index == 1 || index === 2}
+                noBorder={index == 0 || index === 1}
               />
             ))}
           </nav>

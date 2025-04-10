@@ -4,7 +4,7 @@ import Check from '../../assets/check.svg';
 import XClose from '../../assets/x-close.svg';
 import { Button, CorrectAnswer } from '../../design-system';
 
-const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect }) => {
+const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect, explanation, setMoveOnToNextQuestionFromExplanation}) => {
   return (
     <article className='w-[90%] mx-auto'>
       <header className="flex justify-between items-center mb-4">
@@ -20,8 +20,10 @@ const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect }) 
           <h4 className="text-slate-900 font-medium uppercase text-base">
             Question
           </h4>
-          <label className='block text-sm font-medium text-gray-700'>{question}</label>
-
+          <div
+            className="block text-sm font-medium text-gray-700"
+            dangerouslySetInnerHTML={{ __html: question }}
+          ></div>
         </section>
 
         <section className={`${isCorrect ? 'bg-emerald-500' : 'bg-red-500'} text-white flex gap-2 rounded p-4`}>
@@ -29,6 +31,7 @@ const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect }) 
           <p className='text-base font-semibold'>{isCorrect ? 'Perfect. Your hard work is paying off' : 'Keep trying - mistakes can help us grow.'}</p>
         </section>
         <section className='px-8 pb-8 flex flex-col gap-6'>
+          <p className='text-slate-900 text-lg font-medium'>YOUR ANSWER</p>
           <p className="w-full h-16 p-4 text-slate-700 text-base font-medium mt-4
             bg-gray-100 rounded-md border border-gray-200 justify-start items-start gap-2.5 inline-flex">{studentAnswer}</p>
 
@@ -36,15 +39,14 @@ const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect }) 
           <CorrectAnswer correctAnswer={correctAnswer} />
 
           <section className='flex flex-col gap-2'>
-            <p>Here is a super duper fun explanation on how to achieve the answer</p>
-            <p className='text-center'>y = 2x</p>
-            <p className='text-center'>where x = 4</p>
-            <p>Now we can plug x</p>
-            <p className='text-center'>y = 2 (4)</p>
-            <p className='text-center'>y = 8</p>
+            {explanation && <p>Here's how you can get the right answer next time!</p>}
+            <div 
+              className="block text-sm text-center font-medium text-gray-700"
+              dangerouslySetInnerHTML={{ __html: explanation }}
+            ></div>
           </section>
           <section className='flex justify-end'>
-            <Button label='Continue' />
+            <Button label='Continue' onClick={() => setMoveOnToNextQuestionFromExplanation(true)} />
           </section>
         </section>
       </main>

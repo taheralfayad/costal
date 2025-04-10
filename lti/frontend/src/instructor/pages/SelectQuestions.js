@@ -107,10 +107,10 @@ const SelectQuestions = () => {
       <NavCard description={name} />
       
       {questions.map((q) => (
-        <SelectQuestion title={q.name} possibleAnswers={q.possible_answers} key={q.id} question={q.text} value={q.is_selected} correctAnswer={q.possible_answers.reduce((acc, ans) => {
+        <SelectQuestion type={q.type} title={q.name} possibleAnswers={q.possible_answers} key={q.id} question={q.text} value={q.is_selected} correctAnswer={q.possible_answers.reduce((acc, ans) => {
           if (ans.is_correct) acc.push(ans.answer);
           return acc;
-        }, [])} onEdit={() => navigate(`/lti/edit_question/${q.id}`)} onAdd={() => handleAddQuestion(q.id)}  onDelete={() => handleDeleteQuestion(q.id)} onDeleteForever={() => handleOpenModal(q.id, q.name)} />
+        }, [])} onEdit={() => navigate(`/lti/edit_question/${assignmentId}/${q.id}`)} onAdd={() => handleAddQuestion(q.id)}  onDelete={() => handleDeleteQuestion(q.id)} onDeleteForever={() => handleOpenModal(q.id, q.name)} />
       ))}
       
       <section className='flex justify-end gap-2 pr-2'>

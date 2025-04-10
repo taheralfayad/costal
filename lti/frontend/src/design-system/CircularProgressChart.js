@@ -1,6 +1,6 @@
 import React from 'react';
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts';
-import EmeraldStar from '../assets/star-fill-emerald.svg';
+import blueStar from '../assets/star-fill-emerald.svg';
 import SlateStar from '../assets/star-slate.svg';
 
 const CircularProgressChart = ({
@@ -8,7 +8,7 @@ const CircularProgressChart = ({
   label = '',
   showStar = false,
   size = 'medium', 
-  barColor = '#34D399',
+  barColor = '#60a5fa',
   backgroundColor = '#ECF3FE',
 }) => {
 
@@ -51,10 +51,10 @@ const CircularProgressChart = ({
       </ResponsiveContainer>
       <section className="absolute inset-0 flex flex-col items-center justify-center">
         {showStar ? (
-          percentage === 100 ? <EmeraldStar /> : <SlateStar />
+          percentage === 100 ? <blueStar /> : <SlateStar />
         ) : (
           <>
-            <h4 className="text-3xl font-bold text-emerald-500">{percentage}%</h4>
+            <h4 className="text-3xl font-bold text-blue-500">{percentage}%</h4>
             {label && <p className="text-gray-500 text-sm font-semibold">{label}</p>}
           </>
         )}

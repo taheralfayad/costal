@@ -29,7 +29,7 @@ const Dropdown = ({ label = 'Dropdown', placeholder = '', options = [], width = 
         >
           <option value="" disabled>{placeholder || 'Select an option'}</option>
           {options.map((option, index) => (
-            <option key={index} value={option.label} className="appearance-none text-gray-700 hover:bg-emerald-100 px-3 py-2">
+            <option key={index} value={option.label} className="appearance-none text-gray-700 hover:bg-blue-100 px-3 py-2">
             {option.label}
           </option>
           ))}

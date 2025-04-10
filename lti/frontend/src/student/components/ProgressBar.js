@@ -20,7 +20,7 @@ const ProgressBar = ({ percentage }) => {
                 >
                     <XAxis type='number' hide domain={['dataMin', 'dataMax']} />
                     <YAxis type='category' hide domain={['dataMin', 'dataMax']} />
-                    <Bar dataKey='completed' stackId='a' fill='#34d399' radius={[10, 0, 0, 10]} />
+                    <Bar dataKey='completed' stackId='a' fill='#60a5fa' radius={[10, 0, 0, 10]} />
                     <Bar dataKey='remaining' stackId='a' fill='#E0E0E0' radius={[0, 10, 10, 0]} />
                 </BarChart>
             </ResponsiveContainer>
