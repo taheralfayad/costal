@@ -15,8 +15,6 @@ services:
 
   adaptive-engine:
     image: ${ECR_REPOSITORY}:adaptive-engine-${RELEASE}
-    volumes:
-      - .:/app
     env_file:
       - .env
     ports:
