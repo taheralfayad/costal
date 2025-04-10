@@ -1,10 +1,7 @@
 import React from 'react';
-import Rating from '../components/Rating';
-import { Button } from '../../design-system';
 import Party from '../../assets/party.png';
 import Background from '../../assets/background.png';
 
-// the svgs turned against me :(
 const HwDone = () => {
   return (
     <main className='relative bg-emerald-700 w-screen h-screen  flex items-center justify-center'>
@@ -13,9 +10,6 @@ const HwDone = () => {
           <img src={Party} className='w-1/6' />
           <h1 className='text-5xl font-medium'>You did it!</h1>
           <h2 className='text-4xl font-medium'>Your hard work paid off!</h2>
-          <p className='font-medium text-base'>Rate this assignment</p>
-          <Rating />
-          <Button label='Continue' type='outline' />
         </section>
       
     </main>

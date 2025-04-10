@@ -1003,6 +1003,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
             id=data["assignment_attempt_id"]
         )
         number_of_hints = 0  # TODO: track the number of hints
+        correct_answer = PossibleAnswer.objects.filter(
+            related_question=question, is_correct=True
+        ).first()
 
         if "answer_choice" in data:
             answer_choice = PossibleAnswer.objects.get(id=data["answer_choice"])
@@ -1155,6 +1158,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
                         "message": "No more questions to ask",
                         "assessment_status": "completed",
                         "is_correct": answer_choice.is_correct,
+                        "correct_answer": correct_answer.answer,
+                        "answer_choice": answer_choice.answer,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -1173,6 +1178,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 "question": question_data,
                 "assignment_completion_percentage": assignment_completion_percentage,
                 "is_correct": answer_choice.is_correct,
+                "correct_answer": correct_answer.answer,
+                "answer_choice": answer_choice.answer,
             }
 
             return Response(data, status=status.HTTP_200_OK)
@@ -1187,10 +1194,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment_attempt.completion_percentage = assignment_completion_percentage
         assignment_attempt.save()
 
+
+        print("answer choice answer", answer_choice.answer)
+
         data = {
             "question": question_data,
             "assignment_completion_percentage": assignment_completion_percentage,
             "is_correct": answer_choice.is_correct,
+            "correct_answer": correct_answer.answer,
+            "answer_choice": answer_choice.answer,
         }
 
         return Response(data, status=status.HTTP_200_OK)
@@ -1394,6 +1406,29 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         return Response(data, status=status.HTTP_200_OK)
 
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="retrieve_latest_question_attempt/(?P<assignment_id>[^/.]+)",
+    )
+    def retrieve_latest_question_attempt(self, request, assignment_id=None):
+        assignment = Assignment.objects.get(id=assignment_id)
+        user_id = request.query_params.get("user_id")
+
+        user = CanvasUser.objects.get(uid=user_id)
+
+        question_attempts = QuestionAttempt.objects.filter(
+            user=user, associated_assignment=assignment
+        ).order_by("-id")
+
+        if question_attempts.exists():
+            latest_question_attempt = question_attempts.first()
+            serializer = QuestionAttemptSerializer(latest_question_attempt)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"error": "No question attempts found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""

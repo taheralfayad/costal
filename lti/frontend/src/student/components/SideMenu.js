@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import ChevronDown from '../../assets/chevron-down.svg';
+import Logo from '../../assets/fish.svg';
 import { useNavigate } from 'react-router-dom';
 
-const SideMenu = ({ isMenuOpen }) => {
+const SideMenu = ({ isMenuOpen, assignments }) => {
   const [isExpanded, setExpanded] = useState(false)
   const navigate = useNavigate()
 
@@ -20,12 +21,17 @@ const SideMenu = ({ isMenuOpen }) => {
         } transition-transform duration-300`}
     >
       <nav className='flex flex-col p-4'>
-        <article className='h-20'>LOGO</article>
-        <a className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'>
+        <article className='h-20'>
+          <div className='absolute top-0 left-0 z-20'>
+              {isMenuOpen && <Logo className='w-20 h-20 z-50'/>}
+          </div>
+        </article>
+        <a className='py-2 px-4 hover:bg-emerald-600 rounded font-medium cursor-pointer'
+          onClick={() => navigate(`/lti/launch/`)}
+        >
           Home
         </a>
-        <a className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'
-          // send this to textbookbook view js
+        <a className='py-2 px-4 hover:bg-emerald-600 rounded font-medium cursor-pointer'
           onClick={handleOpenTextbookList}>
           Textbook
         </a>
@@ -39,21 +45,20 @@ const SideMenu = ({ isMenuOpen }) => {
           </button>
           {isExpanded && (
             <section className='ml-4 flex flex-col pt-2'>
-              <a
+              { /*<a
                 className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'
               >
                 Great Assignment
-              </a>
-              <a
-                className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'
-              >
-                Assignment 1
-              </a>
-              <a
-                className='py-2 px-4 hover:bg-emerald-600 rounded font-medium'
-              >
-                Assignment 2
-              </a>
+              </a> */}
+              {assignments.map((assignment) => (
+                <a
+                  key={assignment.id}
+                  className='py-2 px-4 hover:bg-emerald-600 rounded font-medium cursor-pointer'
+                  onClick={() => navigate(`/lti/assignment_landing/${assignment.id}`, { state: { assignments: assignments } })}
+                >
+                  {assignment.name}
+                </a>
+              ))}
             </section>
           )}
         </section>

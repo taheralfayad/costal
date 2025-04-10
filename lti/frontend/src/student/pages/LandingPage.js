@@ -40,7 +40,7 @@ const LandingPage = () => {
   }
 
   const navigateToAssignment = (id) => {
-    navigate(`/lti/assignment_landing/${id}`);
+    navigate(`/lti/assignment_landing/${id}`, {state: {"assignments": assignments}});
    }
 
   useEffect(() => {

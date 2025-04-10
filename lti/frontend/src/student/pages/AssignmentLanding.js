@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Badge, Button, CircularProgressChart, Title } from '../../design-system';
 import Arrow from '../../assets/arrow-left.svg';
 import StarDark from '../../assets/star-dark.svg';
@@ -17,9 +17,14 @@ const AssignmentLanding = ({ percentageTotal }) => {
     const [objectivesData, setObjectivesData] = useState(null)
     const [numberOfQuestionsInAssignment, setNumberOfQuestionsInAssignment] = useState(0)
     const [assignmentAttempt, setAssignmentAttempt] = useState(null)
-    const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(true)
+    const [questionLastAttempted, setQuestionLastAttempted] = useState(null)
+
+    const { assignments } = useLocation().state || { assignments: [] }
+
     const { assignmentId } = useParams()
+
+    const navigate = useNavigate()
 
     const formatTimeStamps = (timestamp) => {
         const date = new Date(timestamp);
@@ -42,9 +47,6 @@ const AssignmentLanding = ({ percentageTotal }) => {
           let course = await fetch(`/lti/api/courses/get_course_by_id/${COURSE_ID}`, {method: 'GET'})
           let courseData = await course.json()
           let data = await assignment.json()
-
-          console.log(courseData)
-
 
           if (courseData.late_completion === false) {
             const today = new Date()
@@ -154,10 +156,27 @@ const AssignmentLanding = ({ percentageTotal }) => {
 
 
     useEffect(() => {
-      if (assignment && objectivesData && assignmentAttempt) {
+      const retrieveLatestQuestionAttempt = async () => {
+        try {
+          const request = await fetch(`/lti/api/questions/retrieve_latest_question_attempt/${assignmentId}?user_id=${USER_ID}`)
+          const data = await request.json()
+          console.log(data)
+          if (data) {
+            setQuestionLastAttempted(data)
+          }
+        } catch (error) {
+          console.log("Sorry, an error occurred!")
+        }
+      }
+      retrieveLatestQuestionAttempt();
+    }, [])
+
+
+    useEffect(() => {
+      if (assignment && objectivesData && assignmentAttempt && questionLastAttempted) {
         setIsLoading(false);
       }
-    }, [assignment, objectivesData, assignmentAttempt])
+    }, [assignment, objectivesData, assignmentAttempt, questionLastAttempted])
 
     const goBackToLanding = () => {
       navigate('/lti/student_landing/')
@@ -167,7 +186,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
       try {
         const request = await fetch(`/lti/api/questions/get_first_question_for_assignment/${assignmentId}?assignment_attempt_id=${assignmentAttempt.id}`)
         const data = await request.json()
-        navigate(`/lti/assignment/${assignmentId}`, { state: {"question": data, "assignmentAttempt": assignmentAttempt, "assignment": assignment} })
+        navigate(`/lti/assignment/${assignmentId}`, { state: {"question": data, "assignmentAttempt": assignmentAttempt, "assignment": assignment, "assignments": assignments} })
       } catch (error) {
         console.log("Sorry, this request has failed!")
       }
@@ -236,7 +255,11 @@ const AssignmentLanding = ({ percentageTotal }) => {
                             <p className='text-slate-900 text-base font-medium'>{numberOfQuestionsInAssignment}</p>
                         </section>
                         <section className='flex w-full justify-between items-center p-4 px-8'>
-                            <p className='text-slate-600 text-base font-medium'>Last active a minute ago</p>
+                            <p className='text-slate-600 text-base font-medium'>
+                              {questionLastAttempted.created_at
+                                ? `Last question attempted at: ${formatTimeStamps(questionLastAttempted.created_at)}`
+                                : "Assignment not yet attempted"}
+                            </p>
                             <Button label='View Activity Details' type='outline' className='px-7 py-3' onClick={() => navigate(`/lti/activity_details/${assignment.id}`)} />
                         </section>
                     </section>
@@ -254,7 +277,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
 
     return (
         <main>
-            <SideMenu isMenuOpen={isMenuOpen} />
+            <SideMenu isMenuOpen={isMenuOpen} assignments={assignments}/>
             <section
                 className={`flex-1 transition-all duration-300 ${isMenuOpen ? "ml-64" : "ml-0"
                     }`}

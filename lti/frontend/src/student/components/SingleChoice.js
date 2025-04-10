@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Radio } from '../../design-system';
+import { Button, Radio, Notification } from '../../design-system';
 import DotsVertical from '../../assets/dots-vertical.svg';
 import RadioGroup from '../components/RadioGroup.js';
 
 
-const SingleChoice = ({ title, question, options, onSubmit, onHintRequest, isIncorrect }) => {
+const SingleChoice = ({ title, question, options, onSubmit, onHintRequest, isCorrect }) => {
   
   return (
     <article className='w-[90%] mx-auto'>
@@ -23,12 +23,25 @@ const SingleChoice = ({ title, question, options, onSubmit, onHintRequest, isInc
           </h4>
           <div className='block mb-2 text-sm font-medium text-gray-700' dangerouslySetInnerHTML={{ __html: question }}></div>
         </section>
-        {isIncorrect && (<p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-2 rounded'>Sorry, that's incorrect.</p>)}
+        <div className="mt-6 mx-60 flex justify-center text-center">
+          {!isCorrect && (
+            <Notification
+              type='error'
+              message='Not quite! Keep going.'
+            />
+          )}
+          {isCorrect !== '-1' && isCorrect === true && (
+            <Notification
+              type='success'
+              message='Great job!'
+            />
+          )}
+        </div>
         <section className='px-8 pb-8'>
           <RadioGroup options={options}/> 
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' onClick={onHintRequest} />
-            <Button label='Submit' onClick={onSubmit} disabled={isIncorrect}/>
+            <Button label='Submit' onClick={onSubmit} disabled={!(isCorrect === '-1')}/>
           </section>
         </section>
       </main>

@@ -1,13 +1,14 @@
 import MathInput from "react-math-keyboard";
 import React, { useRef, useState } from "react";
-import { Button, TextArea } from '../../design-system';
+import { Button, TextArea, Notification } from '../../design-system';
 import DotsVertical from '../../assets/dots-vertical.svg';
 import styles from "./styles.css";
 
 
-const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isIncorrect, isMath = false }) => {
+const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isCorrect, isMath = false }) => {
   const firstMathfieldRef = useRef();
   const [value, setValue] = useState("");
+
 
 
   return (
@@ -27,15 +28,28 @@ const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isInco
           </h4>
           <div className='block mb-2 text-sm font-medium text-gray-700' dangerouslySetInnerHTML={{ __html: question }}></div>
         </section>
-        {isIncorrect && (<p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-4 rounded'>Sorry, that's incorrect.</p>)}
+        <div className="mt-6 mx-60 flex justify-center text-center">
+          {!isCorrect && (
+            <Notification
+              type='error'
+              message='Not quite! Keep going.'
+            />
+          )}
+          {isCorrect !== '-1' && isCorrect === true && (
+            <Notification
+              type='success'
+              message='Great job!'
+            />
+          )}
+        </div>
         <section className='px-8 pb-8'>
           {isMath ? <article className='mb-4'><MathInput
             setValue={(val) => {
               setValue(val);
             }}
             style={{
-              border: isIncorrect && '#f87171',
-              boxShadow: isIncorrect && '0 0 0 2px rgba(248, 113, 113, 0.5)'
+              border: !isCorrect && '#f87171',
+              boxShadow: !isCorrect && '0 0 0 2px rgba(248, 113, 113, 0.5)'
             }}
             setMathfieldRef={(mathfield) => {
               if (mathfield) {
@@ -45,10 +59,10 @@ const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isInco
               }
             }}
             divisionFormat="obelus"
-          /></article> : <TextArea placeholder={placeholder} isIncorrect={isIncorrect} label='' value={value} onChange={(e) => setValue(e.target.value)}/>}
+          /></article> : <TextArea placeholder={placeholder} isCorrect={isCorrect} label='' value={value} onChange={(e) => setValue(e.target.value)}/>}
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' onClick={onHintRequest} />
-            <Button label='Submit' onClick={() => onSubmit(value, setValue)} disabled={isIncorrect}/>
+            <Button label='Submit' onClick={() => onSubmit(value, setValue)} disabled={!(isCorrect === '-1')}/>
           </section>
         </section>
       </main>
