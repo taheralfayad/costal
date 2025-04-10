@@ -1194,7 +1194,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment_attempt.completion_percentage = assignment_completion_percentage
         assignment_attempt.save()
 
-
         print("answer choice answer", answer_choice.answer)
 
         data = {
@@ -1427,8 +1426,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(
-                {"error": "No question attempts found"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "No question attempts found"},
+                status=status.HTTP_404_NOT_FOUND,
             )
+
 
 class PossibleAnswersViewSet(viewsets.ModelViewSet):
     """ViewSet for the ReportEntry class"""
@@ -1617,22 +1618,29 @@ class ModuleViewSet(viewsets.ModelViewSet):
             selected_question_ids = set()
 
             if assignment_id:
-                assignment_filter = Assignment.objects.filter(id=assignment_id, associated_module=module).first()
+                assignment_filter = Assignment.objects.filter(
+                    id=assignment_id, associated_module=module
+                ).first()
 
-                response['assignment_name'] = assignment_filter.name
+                response["assignment_name"] = assignment_filter.name
                 assignment_filter = Assignment.objects.filter(
                     id=assignment_id, associated_module=module
                 ).first()
                 response["assignment_name"] = assignment_filter.name
                 if not assignment_filter:
-                    return Response({"error": "Assignment not found in this module"}, status=status.HTTP_404_NOT_FOUND)
-                selected_question_ids = set(assignment_filter.questions.values_list("id", flat=True))
+                    return Response(
+                        {"error": "Assignment not found in this module"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                selected_question_ids = set(
+                    assignment_filter.questions.values_list("id", flat=True)
+                )
 
             serializer = QuestionSerializer(module.prequiz.questions.all(), many=True)
             for question in serializer.data:
                 question["is_selected"] = question["id"] in selected_question_ids
                 response["questions"].append(question)
-        
+
             for assignment in module.assignments.all():
                 serializer = QuestionSerializer(assignment.questions.all(), many=True)
                 for question in serializer.data:
