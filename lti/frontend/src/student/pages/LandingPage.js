@@ -40,7 +40,7 @@ const LandingPage = () => {
   }
 
   const navigateToAssignment = (id) => {
-    navigate(`/lti/assignment_landing/${id}`);
+    navigate(`/lti/assignment_landing/${id}`, {state: {"assignments": assignments}});
    }
 
   useEffect(() => {
@@ -101,7 +101,7 @@ const LandingPage = () => {
 
   return (
     <main>
-      <header className='bg-emerald-400 p-8 flex flex-col gap-2 pl-10'>
+      <header className='bg-blue-400 p-8 flex flex-col gap-2 pl-10'>
         <Title white>Welcome to COSTAL</Title>
         <h2 className='text-white text-xl font-semibold'>{COURSE_NAME}</h2>
         <CourseInfo white />
@@ -110,10 +110,13 @@ const LandingPage = () => {
         <h3 className='text-xl font-medium text-slate-900 ml-8 py-4'>Schedule</h3>
         <section className='bg-white rounded-xl border border-slate-300 mx-8'>
           <table className='w-full text-center'>
-            {assignments.map((assignment, index) =>
-              <tr 
+            {assignments.map((assignment, index) => {
+              const isLast = index === assignments.length - 1;
+              return (<tr 
                 key={assignment.id} 
-                className={`border-b border-slate-300 text-slate-700 text-sm font-medium ${assignment.is_locked ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`${
+                  !isLast ? 'border-b border-slate-300' : ''
+                } text-slate-700 text-sm font-medium ${assignment.is_locked ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 <td className='p-4 text-left'>{assignment.name}</td>
                 {assignment.assignment_is_late ?
@@ -130,7 +133,8 @@ const LandingPage = () => {
                     {getIcon(assignment)}
                   </button>
                 </td>
-            </tr> 
+            </tr> )
+            }
             )}
           </table>
         </section>

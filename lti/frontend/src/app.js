@@ -20,6 +20,7 @@ import Assignment from './student/pages/Assignment.js';
 import StudentLanding from './student/pages/LandingPage.js'
 import Button from './design-system/Button.js';
 import { useNavigate } from 'react-router-dom';
+import Landing from './landing.js';
 
 
 const App = () => {
@@ -60,7 +61,7 @@ const App = () => {
       <ActivityDetails /> 
       <Assignment /> 
       <CourseOutline/> */}
-      {IS_PROFESSOR === "True" ? <LandingPage /> : <StudentLanding/>}
+      {IS_PROFESSOR === "True" ? <LandingPage /> : <StudentLanding/>} 
     </div>
   );
 }

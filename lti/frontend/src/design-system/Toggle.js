@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const Toggle = ({ color = 'bg-emerald-400', isToggled, setIsToggled }) => {
+const Toggle = ({ color = 'bg-blue-400', isToggled, setIsToggled }) => {
   
   return (
     <article

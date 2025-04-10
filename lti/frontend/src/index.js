@@ -24,6 +24,7 @@ import ManageTextbooks from "./instructor/pages/ManageTextbooks";
 
 import ActivityDetails from "./student/pages/ActivityDetails.js";
 import StatsOverall from "./instructor/pages/StatsOverall";
+import Landing from "./landing";
 
 const router = createBrowserRouter([
   {
@@ -79,7 +80,7 @@ const router = createBrowserRouter([
     element: <AssignmentLanding/>
   },
   {
-    path: '/lti/edit_question/:questionId',
+    path: '/lti/edit_question/:assignmentId/:questionId',
     element: <EditQuestion/>,
   },
   {
@@ -110,7 +111,12 @@ const router = createBrowserRouter([
     path: '/lti/manage_textbooks',
     element: <ManageTextbooks/>
   }
-  
+  ,
+  {
+    path: '/',
+    element: <Landing />
+
+  }
 
 ])
 

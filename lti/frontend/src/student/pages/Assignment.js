@@ -12,6 +12,7 @@ import Textbook from '../components/Textbook';
 import Video from '../components/Video';
 import Writing from '../components/Writing';
 import PopupModal from '../components/PopupModal';
+import HwDone from './HwDone';
 
 const Assignment = () => {
   const navigate = useNavigate();
@@ -28,8 +29,17 @@ const Assignment = () => {
   const [hintText, setHintText] = useState('');
   const [isHintLoading, setIsHintLoading] = useState(false);
   const [hintAlreadyRequested, setHintAlreadyRequested] = useState(false);
+  const [homeworkDone, setHomeworkDone] = useState(false);
+  const [hideExplanation, setHideExplanation] = useState(true);
+  const [correctAnswer, setCorrectAnswer] = useState("");
+  const [studentAnswer, setStudentAnswer] = useState("");
+  const [moveOnToNextQuestionFromExplanation, setMoveOnToNextQuestionFromExplanation] = useState(false);
+  const [moveOnToAssignmentDoneFromExplanation, setMoveOnToAssignmentDoneFromExplanation] = useState(false);
+  const [nextQuestionData, setNextQuestionData] = useState(null);
 
-  const [answerIsCorrect, setAnswerIsCorrect] = useState(true);
+  const [answerIsCorrect, setAnswerIsCorrect] = useState('-1');
+
+  const assignments = location.state.assignments;
 
   const onSelect = (label) => {
     setAnswerChoice(label);
@@ -101,13 +111,17 @@ const Assignment = () => {
 
         if (response.ok) {
           if (data.assessment_status === 'completed') {
-            navigate('/lti/student_landing/')
+            setHomeworkDone(true)
+            setTimeout(() => {
+              navigate('/lti/student_landing/')
+            }, 2500)
           }
-
-          setQuestion(question)
-          setAssignmentCompletionPercentage(assignment_completion_percentage)         
-          setAnswerChoice(null)
-          setSeconds(0)
+          else {
+            setQuestion(question)
+            setAssignmentCompletionPercentage(assignment_completion_percentage)         
+            setAnswerChoice(null)
+            setSeconds(0)
+          }
         }
     }
     else {
@@ -129,42 +143,69 @@ const Assignment = () => {
 
         if (response.ok) {
           if (data.assessment_status === 'completed') {
-            console.log(data)
-            setAnswerIsCorrect(data.is_correct) 
-
-            if (!data.is_correct) {
-              setTimeout(() => { 
-                navigate('/lti/student_landing/')
-              }, 1500)
+            if (data.explanation !== "") {
+              setHideExplanation(false)
+              setMoveOnToAssignmentDoneFromExplanation(true)
             }
             else {
-              navigate('/lti/student_landing/')
+              setAnswerIsCorrect(data.is_correct) 
+              setHomeworkDone(true)
+              setTimeout(() => {
+                navigate('/lti/student_landing/')
+              }, 2500)
             }
+            
           }
         else {
-          console.log(data)
           setAnswerIsCorrect(data.is_correct)
 
-          if (!data.is_correct) {
+          if(data.explanation !== "") {
+            setHideExplanation(false)
+            setCorrectAnswer(data.correct_answer)
+            setStudentAnswer(data.answer_choice)
+            setNextQuestionData({
+              question: data.question,
+              assignment_completion_percentage: data.assignment_completion_percentage,
+            })
+          }
+          else{
             setTimeout(() => {
               setQuestion(question)
               setAssignmentCompletionPercentage(assignment_completion_percentage)
               setAnswerChoice(null)
-              setAnswerIsCorrect(true)
+              setAnswerIsCorrect('-1')
               setSeconds(0)
             }, 1500)
           }
-          else {
-            setQuestion(question)
-            setAssignmentCompletionPercentage(assignment_completion_percentage)
-            setAnswerChoice(null)
-            setAnswerIsCorrect(true)
-            setSeconds(0)
-          }
+
         }
        } 
     }
   }
+
+
+useEffect(() => {
+  if (moveOnToNextQuestionFromExplanation && nextQuestionData) {
+
+
+    setQuestion(nextQuestionData.question);
+    setAssignmentCompletionPercentage(nextQuestionData.assignment_completion_percentage);
+    setAnswerChoice(null);
+    setAnswerIsCorrect('-1');
+    setSeconds(0);
+    setMoveOnToNextQuestionFromExplanation(false);
+    setNextQuestionData(null);
+    setHideExplanation(true);
+  }
+  else if (moveOnToNextQuestionFromExplanation && moveOnToAssignmentDoneFromExplanation) {
+    setHomeworkDone(true);
+    setTimeout(() => {
+      navigate('/lti/student_landing/')
+    }
+    , 2500)
+  }
+
+}, [moveOnToNextQuestionFromExplanation, nextQuestionData, moveOnToAssignmentDoneFromExplanation])
 
 
 useEffect(() => {
@@ -197,9 +238,14 @@ useEffect(() => {
   }, []); 
 
 
+  if(homeworkDone) {
+    return <HwDone />
+  }
+
+
   return (
     <main>
-      <SideMenu isMenuOpen={isMenuOpen} />
+      <SideMenu isMenuOpen={isMenuOpen} assignments={assignments}/>
       <section
         className={`flex-1 transition-all duration-300 ${isMenuOpen ? "ml-64" : "ml-0"
           }`}
@@ -212,18 +258,21 @@ useEffect(() => {
             <p>Back to Assignment Overview</p>
           </section>
           <section className='flex gap-2 items-center'>
-            <span onClick={() => setMenuOpen(!isMenuOpen)}><Menu /></span>
+            <span className='cursor-pointer'  onClick={() => setMenuOpen(!isMenuOpen)}><Menu /></span>
             <Title>{question.associated_skill.name}</Title>
           </section>
           <ProgressBar percentage={assignmentCompletionPercentage} />
         </header>
 
         <section className='bg-[#f8f8f8] h-full py-8'>
-        {question.type === "multiple" 
+        {hideExplanation ? (question.type === "multiple" 
         ? 
-            <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit} isIncorrect={!answerIsCorrect} onHintRequest={fetchHint} />
+            <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit} isCorrect={answerIsCorrect} onHintRequest={fetchHint} />
         : 
-            <Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' onHintRequest={fetchHint} isIncorrect={!answerIsCorrect}/>}
+            <Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' onHintRequest={fetchHint} isCorrect={answerIsCorrect}/>) :
+
+           ( <Answered title={question.name} question={question.text} correctAnswer={correctAnswer} studentAnswer={studentAnswer} isCorrect={answerIsCorrect} explanation={question.explanation} setMoveOnToNextQuestionFromExplanation={setMoveOnToNextQuestionFromExplanation}/> )
+        }
         </section>
       </section>
       {showHintModal && (

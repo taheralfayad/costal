@@ -51,7 +51,7 @@ const TextbookView = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center">
-      <header className="w-full bg-emerald-400 text-white py-4 shadow-md">
+      <header className="w-full bg-blue-400 text-white py-4 shadow-md">
         <div className="max-w-6xl mx-auto flex justify-between items-center px-6">
           <h1 className="text-ext-white text-xl font-semibold">Textbook Reader</h1>
           <nav>
@@ -69,11 +69,11 @@ const TextbookView = () => {
           <h2 className="text-3xl font-semibold text-black">{textbook.title}</h2>
           <p className="text-md text-gray-700">By {textbook.author}</p>
         </div>
-        <div className="bg-green-50 border border-emerald-400 shadow-lg rounded-lg overflow-hidden h-1/2">
+        <div className="bg-green-50 border border-blue-400 shadow-lg rounded-lg overflow-hidden h-1/2">
           <PDFViewer pdfFile={textbook.file} />
         </div>
       </main>
-      <footer className="w-full bg-emerald-400 text-white py-4 text-center text-sm">
+      <footer className="w-full bg-blue-400 text-white py-4 text-center text-sm">
         © {new Date().getFullYear()} Textbook Reader. All rights reserved.
       </footer>
     </div>
