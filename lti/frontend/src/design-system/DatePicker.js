@@ -44,7 +44,7 @@ const DatePicker = ({ isCalendarOpen, handleCalendarOpen, position, onDateChange
         'flex h-[38px] w-[38px] items-center justify-center rounded-[7px] border-[.5px] border-transparent hover:text-slate-900 hover:bg-gray-100 text-slate-900 mb-2';
 
       if (currentDateValue === selectedDate) {
-        dayDiv.classList.add('bg-emerald-400', 'text-white');
+        dayDiv.classList.add('bg-blue-400', 'text-white');
       }
 
       dayDiv.textContent = i;
@@ -52,8 +52,8 @@ const DatePicker = ({ isCalendarOpen, handleCalendarOpen, position, onDateChange
         setSelectedDate(currentDateValue);
         daysContainer
           .querySelectorAll('div')
-          .forEach((d) => d.classList.remove('bg-emerald-400', 'text-white'));
-        dayDiv.classList.add('bg-emerald-400', 'text-white');
+          .forEach((d) => d.classList.remove('bg-blue-400', 'text-white'));
+        dayDiv.classList.add('bg-blue-400', 'text-white');
       });
       daysContainer.appendChild(dayDiv);
     }
@@ -105,7 +105,7 @@ const DatePicker = ({ isCalendarOpen, handleCalendarOpen, position, onDateChange
           <nav className='flex items-center justify-between pb-2'>
             <button
               id='prevMonth'
-              className='flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-[7px] border bg-gray-100 border-gray-300 text-black hover:border-emerald-400  hover:bg-emerald-400 fill-black hover:fill-white'
+              className='flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-[7px] border bg-gray-100 border-gray-300 text-black hover:border-blue-400  hover:bg-blue-400 fill-black hover:fill-white'
               onClick={handlePrevMonth}
             >
               <ChevronLeft />
@@ -123,7 +123,7 @@ const DatePicker = ({ isCalendarOpen, handleCalendarOpen, position, onDateChange
 
             <button
               id='nextMonth'
-              className='group flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-[7px] border bg-gray-100 border-gray-300 hover:border-emerald-400 hover:bg-emerald-400 fill-black hover:fill-white'
+              className='group flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-[7px] border bg-gray-100 border-gray-300 hover:border-blue-400 hover:bg-blue-400 fill-black hover:fill-white'
               onClick={handleNextMonth}
             >
               <ChevronRight />

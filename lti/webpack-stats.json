@@ -11,10 +11,20 @@
       "path": "/app/lti/static/frontend/loading.gif",
       "publicPath": "/static/frontend//loading.gif"
     },
+    "/macbook.png": {
+      "name": "/macbook.png",
+      "path": "/app/lti/static/frontend/macbook.png",
+      "publicPath": "/static/frontend//macbook.png"
+    },
     "/party.png": {
       "name": "/party.png",
       "path": "/app/lti/static/frontend/party.png",
       "publicPath": "/static/frontend//party.png"
+    },
+    "/student.png": {
+      "name": "/student.png",
+      "path": "/app/lti/static/frontend/student.png",
+      "publicPath": "/static/frontend//student.png"
     },
     "0108e89c9003e8c14ea3.woff": {
       "name": "0108e89c9003e8c14ea3.woff",

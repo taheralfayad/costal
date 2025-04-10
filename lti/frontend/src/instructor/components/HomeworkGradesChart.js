@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const HomeworkGradesChart = ({ data }) => {
 
   console.log(data)
-  const getColor = (grade) => (grade >= 70 ? '#34D399' : '#a7f3d0');
+  const getColor = (grade) => (grade >= 70 ? '#60a5fa' : '#93c5fd');
   return (
     <article className="w-[400px] h-96">
       <h3 className="text-slate-950 text-lg font-medium">Homework Grades</h3>

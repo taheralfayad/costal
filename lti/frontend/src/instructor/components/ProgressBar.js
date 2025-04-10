@@ -23,7 +23,7 @@ const ProgressBar = ({ data }) => {
                     >
                         <XAxis hide type='number' />
                         <YAxis type='category' hide />
-                        <Bar dataKey='completed' fill='#6ee7b7' stackId='a' style={{ stroke: '#fff', strokeWidth: 4 }} />
+                        <Bar dataKey='completed' fill='#60a5fa' stackId='a' style={{ stroke: '#fff', strokeWidth: 4 }} />
                         <Bar dataKey='inProgress' fill='#fef08a' stackId='a' style={{ stroke: '#fff', strokeWidth: 4 }} />
                         <Bar dataKey='struggling' fill='#f87171' stackId='a' style={{ stroke: '#fff', strokeWidth: 4 }} />
                         <Bar dataKey='notStarted' fill='#94a3b8' stackId='a' style={{ stroke: '#fff', strokeWidth: 4 }} />

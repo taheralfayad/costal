@@ -1,12 +1,12 @@
 import React from 'react';
 
 const Notification = ({ type, message }) => {
-  const baseClasses = 'w-full max-w-2xl text-white text-base font-semibold px-8 p-2 rounded';
+  const baseClasses = 'w-full text-white text-base font-semibold px-8 p-2 rounded';
   
   const typeClasses = {
     error: 'bg-red-500',
     warning: 'bg-yellow-500',
-    success: 'bg-emerald-500',
+    success: 'bg-blue-500',
   };
 
   return (

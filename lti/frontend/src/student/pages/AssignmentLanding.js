@@ -27,16 +27,18 @@ const AssignmentLanding = ({ percentageTotal }) => {
     const navigate = useNavigate()
 
     const formatTimeStamps = (timestamp) => {
-        const date = new Date(timestamp);
-        return date.toLocaleString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: true
-        });
+      console.log(timestamp)
+      timestamp = timestamp.replace(/Z$/, '');
+      const options = {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        timeZone: 'America/New_York'
+      };
+      return new Intl.DateTimeFormat('en-US', options).format(new Date(timestamp));
     };
 
     useEffect(() => {
@@ -257,7 +259,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
                         <section className='flex w-full justify-between items-center p-4 px-8'>
                             <p className='text-slate-600 text-base font-medium'>
                               {questionLastAttempted.created_at
-                                ? `Last question attempted at: ${formatTimeStamps(questionLastAttempted.created_at)}`
+                                ? `Last question attempted at ${formatTimeStamps(questionLastAttempted.created_at)}`
                                 : "Assignment not yet attempted"}
                             </p>
                             <Button label='View Activity Details' type='outline' className='px-7 py-3' onClick={() => navigate(`/lti/activity_details/${assignment.id}`)} />
@@ -290,7 +292,7 @@ const AssignmentLanding = ({ percentageTotal }) => {
                         <p>Back to Course</p>
                     </section>
                     <section className='flex gap-2 items-center'>
-                        <span onClick={() => setMenuOpen(!isMenuOpen)}><Menu /></span>
+                        <span className='cursor-pointer'  onClick={() => setMenuOpen(!isMenuOpen)}><Menu /></span>
                         <Title>{assignment.name}</Title>
                     </section>
                     <section className='ml-8 flex flex-col gap-4'>

@@ -29,6 +29,7 @@ const EditQuestion = () => {
             text: answer.answer || '',
             checked: answer.is_correct || false
         }))
+
     }
 
     const transformShortAnswerBack = (answers) => {
@@ -52,8 +53,16 @@ const EditQuestion = () => {
         setSelectedCheckbox(resData.type)
         setPoints(resData.num_points)
 
+        setSolvingText(resData.explanation)
+
         if (resData.type === 'multiple') {
-            setMultipleChoiceAnswers(transformMultipleChoiceBack(resData.possible_answers))
+            let answers = transformMultipleChoiceBack(resData.possible_answers)
+            answers.push({
+                id: answers.length,
+                text: '',
+                checked: false
+            })
+            setMultipleChoiceAnswers(answers)
         } else {
             setShortAnswerItems(transformShortAnswerBack(resData.possible_answers))
         }
@@ -118,7 +127,7 @@ const EditQuestion = () => {
             return;
         }
 
-        if (selectedCheckbox === 'multiple' && multipleChoiceAnswers.length < 3) {
+        if (selectedCheckbox === 'multiple' && multipleChoiceAnswers.length < 2) {
             toast.error("Please add more choices to multiple choice");
             return;
         }

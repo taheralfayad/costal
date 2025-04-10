@@ -160,8 +160,13 @@ const CreateQuestion = () => {
       return;
     }
 
-    if (selectedCheckbox === 'multiple' && multipleChoiceAnswers.length < 3) {
+    if (selectedCheckbox === 'multiple' && multipleChoiceAnswers.length < 2) {
       toast.error("Please add more choices to multiple choice");
+      return;
+    }
+
+    if (selectedCheckbox == 'multiple' && !multipleChoiceAnswers.some(answer => answer.checked)) {
+      toast.error("At least one of your multiple choices has to be correct");
       return;
     }
 

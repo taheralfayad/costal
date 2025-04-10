@@ -258,7 +258,7 @@ useEffect(() => {
             <p>Back to Assignment Overview</p>
           </section>
           <section className='flex gap-2 items-center'>
-            <span onClick={() => setMenuOpen(!isMenuOpen)}><Menu /></span>
+            <span className='cursor-pointer'  onClick={() => setMenuOpen(!isMenuOpen)}><Menu /></span>
             <Title>{question.associated_skill.name}</Title>
           </section>
           <ProgressBar percentage={assignmentCompletionPercentage} />

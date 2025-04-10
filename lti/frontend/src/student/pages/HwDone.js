@@ -4,7 +4,7 @@ import Background from '../../assets/background.png';
 
 const HwDone = () => {
   return (
-    <main className='relative bg-emerald-700 w-screen h-screen  flex items-center justify-center'>
+    <main className='relative bg-blue-700 w-screen h-screen  flex items-center justify-center'>
       <img src={Background} className='absolute inset-0 w-full h-full object-cover'/>
         <section className='relative z-10 text-white gap-6 flex flex-col items-center justify-center'>
           <img src={Party} className='w-1/6' />
