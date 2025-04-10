@@ -37,7 +37,7 @@ const TextbookList = () => {
   };
     return (
         <div className=" pb-6 bg-backgroundGray min-h-screen">
-          <header className="w-full bg-emerald-400 text-white py-4 shadow-md mb-4 relative">
+          <header className="w-full bg-blue-400 text-white py-4 shadow-md mb-4 relative">
             <div className="max-w-6xl mx-auto px-6 relative">
               <button className="absolute left-0 ml-2 top-1/2 transform -translate-y-1/2" onClick={() => goBackToLanding()}>
                 <Arrow className='w-5 h-5' />

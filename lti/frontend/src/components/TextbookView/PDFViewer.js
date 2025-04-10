@@ -56,14 +56,12 @@ const PDFViewer = ({ pdfFile }) => {
           <Button
             disabled={scale <= 0.5}
             onClick={zoomOut}
-            className="px-2 py-1 bg-blue-500 text-white font-semibold rounded-lg mr-2 transition hover:bg-blue-600"
             label='Zoom Out'
           >      
           </Button>
           <Button
             disabled={scale >= 2}
             onClick={zoomIn}
-            className="px-2 py-1 bg-blue-500 text-white font-semibold rounded-lg transition hover:bg-blue-600"
             label='Zoom In'
           >
           </Button>
@@ -95,7 +93,6 @@ const PDFViewer = ({ pdfFile }) => {
           <Button
             onClick={goToPrevPage}
             disabled={pageNumber === 1}
-            className="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed transition hover:bg-green-600"
             label='Previous'
           >   
           </Button>
@@ -105,7 +102,6 @@ const PDFViewer = ({ pdfFile }) => {
           <Button
             onClick={goToNextPage}
             disabled={pageNumber === numPages}
-            className="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed transition hover:bg-green-600"
             label='Next'
           >
           </Button>

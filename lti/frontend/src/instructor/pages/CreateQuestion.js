@@ -112,6 +112,9 @@ const CreateQuestion = () => {
           setEditorValue(llmData.question);
           setEditorKey(prevKey => prevKey + 1);
         }
+        else{
+          toast.error("We ran into a problem generating your question, please try again in a moment.")
+        }
   
         if (llmData.options) {
           const formattedOptions = Object.entries(llmData.options).map(([key, value]) => ({
