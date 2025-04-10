@@ -1171,7 +1171,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             question_data = question_serializer.data.copy()
             question_data["associated_skill"] = skill_serializer.data
 
-            assignment_attempt.current_question_attempt = next_question
+            assignment_attempt.current_question_attempt = random_question
             assignment_attempt.completion_percentage = assignment_completion_percentage
             assignment_attempt.save()
             data = {
