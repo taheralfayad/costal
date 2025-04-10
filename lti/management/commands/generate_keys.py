@@ -4,7 +4,7 @@ from lti.models import Key, KeySet
 
 
 class Command(BaseCommand):
-    help = 'Generate RSA keys for LTI authentication'
+    help = "Generate RSA keys for LTI authentication"
 
     def handle(self, *args, **options):
         self.generate_keys()
@@ -12,16 +12,18 @@ class Command(BaseCommand):
     def generate_keys(self):
         keyset = self.get_keyset()
         if not keyset:
-            self.stdout.write(self.style.ERROR('Unable to get valid keyset. Exiting.'))
+            self.stdout.write(self.style.ERROR("Unable to get valid keyset. Exiting."))
             return
 
         self.create_keys(keyset)
 
-        self.stdout.write(self.style.SUCCESS(
-            'Keys created.\n\n'
-            'To add a new registration: \n'
-            'Run `python manage.py register`\n'
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Keys created.\n\n"
+                "To add a new registration: \n"
+                "Run `python manage.py register`\n"
+            )
+        )
 
     def get_keyset(self):
         all_keysets = KeySet.objects.all()
@@ -36,7 +38,9 @@ class Command(BaseCommand):
         if new_or_old == "1":
             self.stdout.write("Creating new key set...")
             selected_keyset = KeySet.objects.create()
-            self.stdout.write(self.style.SUCCESS(f"Created new key set: {selected_keyset.id}"))
+            self.stdout.write(
+                self.style.SUCCESS(f"Created new key set: {selected_keyset.id}")
+            )
         elif new_or_old == "2":
             self.stdout.write("Which keyset would you like to use?")
             for keyset in all_keysets:
@@ -46,15 +50,21 @@ class Command(BaseCommand):
 
             selected_keyset = KeySet.objects.filter(id=keyset_id).first()
             if selected_keyset:
-                self.stdout.write(self.style.SUCCESS(f"Using key set: {selected_keyset.id}"))
+                self.stdout.write(
+                    self.style.SUCCESS(f"Using key set: {selected_keyset.id}")
+                )
             else:
                 self.stdout.write(
-                    self.style.ERROR(f"Unable to find keyset with key set ID '{keyset_id}'. Cancelling...")
+                    self.style.ERROR(
+                        f"Unable to find keyset with key set ID '{keyset_id}'. Cancelling..."
+                    )
                 )
                 return None
 
         else:
-            self.stdout.write(self.style.ERROR(f"Invalid option '{new_or_old}'. Cancelling..."))
+            self.stdout.write(
+                self.style.ERROR(f"Invalid option '{new_or_old}'. Cancelling...")
+            )
             return None
 
         return selected_keyset

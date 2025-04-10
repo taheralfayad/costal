@@ -4,7 +4,7 @@ from lti.models import Deployment, Registration
 
 
 class Command(BaseCommand):
-    help = 'Add a new LTI deployment to an existing registration'
+    help = "Add a new LTI deployment to an existing registration"
 
     def handle(self, *args, **options):
         self.add_deployment()
@@ -31,9 +31,13 @@ class Command(BaseCommand):
 
             registration.deployments.add(new_deploy)
             self.stdout.write(
-                self.style.SUCCESS(f"Added deployment {new_deploy.id} ({new_deploy.deployment_id}).")
+                self.style.SUCCESS(
+                    f"Added deployment {new_deploy.id} ({new_deploy.deployment_id})."
+                )
             )
         except ObjectDoesNotExist:
             self.stdout.write(
-                self.style.ERROR(f"Unable to find registration with ID '{reg_id}'. Cancelling...")
+                self.style.ERROR(
+                    f"Unable to find registration with ID '{reg_id}'. Cancelling..."
+                )
             )

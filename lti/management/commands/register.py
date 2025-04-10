@@ -4,7 +4,7 @@ from lti.models import KeySet, Registration
 
 
 class Command(BaseCommand):
-    help = 'Register the LTI tool with a platform'
+    help = "Register the LTI tool with a platform"
 
     def handle(self, *args, **options):
         self.add_registration()
@@ -35,7 +35,9 @@ class Command(BaseCommand):
 
             selected_platform = platform_options[platform_choice - 1]
             if platform_choice == len(platform_options):
-                self.stdout.write("Provide your server url. Remove any trailing slashes.")
+                self.stdout.write(
+                    "Provide your server url. Remove any trailing slashes."
+                )
                 platform_url = input("Server URL: ")
                 selected_platform["url_base"] = platform_url
 
@@ -46,7 +48,9 @@ class Command(BaseCommand):
         self.stdout.write(f"Registering in {selected_platform['name']}...")
 
         # client_id
-        self.stdout.write(f"Input the Client ID provided by {selected_platform['name']}s")
+        self.stdout.write(
+            f"Input the Client ID provided by {selected_platform['name']}s"
+        )
         client_id = input("Client ID: ")
 
         # key_set_id
@@ -58,10 +62,14 @@ class Command(BaseCommand):
 
         selected_keyset = KeySet.objects.filter(id=keyset_id).first()
         if selected_keyset:
-            self.stdout.write(self.style.SUCCESS(f"Using key set: {selected_keyset.id}"))
+            self.stdout.write(
+                self.style.SUCCESS(f"Using key set: {selected_keyset.id}")
+            )
         else:
             self.stdout.write(
-                self.style.ERROR(f"Unable to find keyset with key set ID '{keyset_id}'. Cancelling...")
+                self.style.ERROR(
+                    f"Unable to find keyset with key set ID '{keyset_id}'. Cancelling..."
+                )
             )
             return
 
@@ -89,5 +97,7 @@ class Command(BaseCommand):
             )
         except IntegrityError:
             self.stdout.write(
-                self.style.ERROR("A registration with that issuer and client_id already exists.")
+                self.style.ERROR(
+                    "A registration with that issuer and client_id already exists."
+                )
             )
