@@ -79,7 +79,7 @@ const router = createBrowserRouter([
     element: <AssignmentLanding/>
   },
   {
-    path: '/lti/edit_question/:questionId',
+    path: '/lti/edit_question/:assignmentId/:questionId',
     element: <EditQuestion/>,
   },
   {
