@@ -44,6 +44,7 @@ const CreateQuestion = () => {
   const editorRef = useRef(null)
 
   const { assignmentId } = useParams()
+  
 
   const onSelectDifficulty = (value) => {
     setDifficulty(value)
@@ -58,6 +59,16 @@ const CreateQuestion = () => {
   const onSelectObjective = (value) => {
     setObjective(value)
   }
+
+  const fetchWithTimeout = (url, options = {}, timeout = 60000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out')), timeout)
+      ),
+    ]);
+  };
+  
 
   const formatObjectivesForDropdown = () => {
     let formattedObjectivesForDropdown = []
@@ -96,7 +107,7 @@ const CreateQuestion = () => {
         const courseData = await courseResponse.json();
         setCourseName(courseData[0].name);
   
-        const llmResponse = await fetch(`/lti/api/questions/generate_question/`, {
+        const llmResponse = await fetchWithTimeout(`/lti/api/questions/generate_question/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -129,6 +140,7 @@ const CreateQuestion = () => {
         setDifficulty('Easy');
       } catch (error) {
         console.error("Error fetching data:", error);
+        toast.error("Something went wrong while generating your question. Please try again.");
       } finally {
         setIsLoading(false);
       }

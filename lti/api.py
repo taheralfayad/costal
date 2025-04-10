@@ -953,7 +953,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 possible_answer = PossibleAnswer.objects.create(
                     possible_answer=answer["possible_answer"],
                     is_correct=answer["is_correct"],
-                     related_question=question,
+                    related_question=question,
                 )
                 possible_answer.save()
                 question.possible_answers.add(possible_answer)
