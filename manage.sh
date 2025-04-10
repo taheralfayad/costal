@@ -64,15 +64,15 @@ collect_static() {
 }
 
 generate_keys() {
-  ${DOCKER_COMPOSE} run --rm web python cli.py generate_keys
+  ${DOCKER_COMPOSE} run --rm web python manage.py generate_keys
 }
 
 register() {
-  ${DOCKER_COMPOSE} run --rm web python cli.py add_registration
+  ${DOCKER_COMPOSE} run --rm web python manage.py register
 }
 
 deploy() {
-  ${DOCKER_COMPOSE} run --rm web python cli.py add_deployment
+  ${DOCKER_COMPOSE} run --rm web python manage.py deploy
 }
 
 format_code() {
