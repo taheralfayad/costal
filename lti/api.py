@@ -1194,7 +1194,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment_attempt.completion_percentage = assignment_completion_percentage
         assignment_attempt.save()
 
-
         print("answer choice answer", answer_choice.answer)
 
         data = {
