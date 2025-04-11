@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../../design-system';
 
 
 const PopupModal = ({isLoading, input, setModalShow}) => {
@@ -9,12 +10,12 @@ const PopupModal = ({isLoading, input, setModalShow}) => {
             <p className="text-gray-700 mb-4">
                {isLoading ? 'Loading...' : input}
             </p>
-            <button
-            className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600"
+            <Button
+            className="primary"
             onClick={() => {setModalShow(false);}}
             >
             Close
-            </button>
+            </Button>
          </div>
       </div>
    );

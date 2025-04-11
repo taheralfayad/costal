@@ -13,6 +13,7 @@ import Video from '../components/Video';
 import Writing from '../components/Writing';
 import PopupModal from '../components/PopupModal';
 import HwDone from './HwDone';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 const Assignment = () => {
   const navigate = useNavigate();
@@ -46,6 +47,18 @@ const Assignment = () => {
   }
 
   const fetchHint = async () => {
+    if (assignment.assessment_type === 'Quiz' || assignment.assessment_type === 'prequiz') {
+      toast.error("Hints are not available for quizzes or prequizzes.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
     if(hintAlreadyRequested) {
       setShowHintModal(true);
       return;
@@ -245,6 +258,7 @@ useEffect(() => {
 
   return (
     <main>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick={false} rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" transition={Bounce}/>
       <SideMenu isMenuOpen={isMenuOpen} assignments={assignments}/>
       <section
         className={`flex-1 transition-all duration-300 ${isMenuOpen ? "ml-64" : "ml-0"
@@ -275,6 +289,7 @@ useEffect(() => {
         }
         </section>
       </section>
+      {/* only show if assignment is not a quiz */}
       {showHintModal && (
       <PopupModal 
         isLoading={isHintLoading}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation} from "react-router-dom"
-import { Button, Checkbox, Dropdown, Input, RichTextEditor, Title } from '../../design-system';
+import { Button, Checkbox, Dropdown, Input, RichTextEditor, Title, Notification } from '../../design-system';
 import MultipleChoiceConfig from '../components/MultipleChoiceConfig';
 import ShortAnswerConfig from '../components/ShortAnswerConfig';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
@@ -44,6 +44,7 @@ const CreateQuestion = () => {
   const editorRef = useRef(null)
 
   const { assignmentId } = useParams()
+  
 
   const onSelectDifficulty = (value) => {
     setDifficulty(value)
@@ -58,6 +59,16 @@ const CreateQuestion = () => {
   const onSelectObjective = (value) => {
     setObjective(value)
   }
+
+  const fetchWithTimeout = (url, options = {}, timeout = 60000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out')), timeout)
+      ),
+    ]);
+  };
+  
 
   const formatObjectivesForDropdown = () => {
     let formattedObjectivesForDropdown = []
@@ -88,36 +99,33 @@ const CreateQuestion = () => {
 
 
   useEffect(() => {
-    console.log("isLLMGen:", isLLMGen);
-    console.log("objectiveSelected:", objectiveSelected);
-    console.log("assignmentId:", assignmentId);
     const fetchData = async () => {
       if (!isLLMGen || !objectiveSelected) return;
       try {
         const prevResponse = await fetch(`/lti/api/assignments/get_assignment_by_id/${assignmentId}`);
         const prevData = await prevResponse.json();
-        setPreviousQuestions(prevData.questions);
-  
         const courseResponse = await fetch(`/lti/api/modules/get_modules_by_course_id/${COURSE_ID}`);
         const courseData = await courseResponse.json();
         setCourseName(courseData[0].name);
   
-        const llmResponse = await fetch(`/lti/api/questions/generate_question/`, {
+        const llmResponse = await fetchWithTimeout(`/lti/api/questions/generate_question/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             course_name: courseData[0].name,
             text: objective,
-            numQuestions: 1,
-            previousQuestions: prevData.questions,
+            num_questions: 1,
+            previous_questions: prevData['questions'],
           }),
         });
   
         const llmData = await llmResponse.json();
-        console.log("LLM Data:", llmData);
         if (llmData.question) {
           setEditorValue(llmData.question);
           setEditorKey(prevKey => prevKey + 1);
+        }
+        else{
+          toast.error("We ran into a problem generating your question, please try again in a moment.")
         }
   
         if (llmData.options) {
@@ -133,6 +141,7 @@ const CreateQuestion = () => {
         setDifficulty('Easy');
       } catch (error) {
         console.error("Error fetching data:", error);
+        toast.error("Something went wrong while generating your question. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -253,7 +262,7 @@ const CreateQuestion = () => {
     return (
       <div className="p-10 flex flex-col gap-6 items-center">
       <Title>Select Objective for LLM Question</Title>
-      <p className="text-red-500">Warning: The LLM may behave unexpectedly if there are fewer than 5 human-made questions.</p>
+      <Notification type={'error'} message={`Warning: The LLM may behave unexpectedly if there are fewer than 5 human-made questions. Always double-check the question.`}/>
       <Dropdown
         label="Objective"
         placeholder="Select Objective"

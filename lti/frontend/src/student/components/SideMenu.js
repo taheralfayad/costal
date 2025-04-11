@@ -52,7 +52,7 @@ const SideMenu = ({ isMenuOpen, assignments }) => {
               {assignments.map((assignment) => (
                 <a
                   key={assignment.id}
-                  className='py-2 px-4 hover:bg-emerald-600 rounded font-medium cursor-pointer'
+                  className='py-2 px-4 hover:bg-blue-600 rounded font-medium cursor-pointer'
                   onClick={() => navigate(`/lti/assignment_landing/${assignment.id}`, { state: { assignments: assignments } })}
                 >
                   {assignment.name}

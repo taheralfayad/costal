@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Title } from '../../design-system';
+import LoadingPage from '../components/LoadingPage';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 const ManageTextbooks = () => {
   const [textbooks, setTextbooks] = useState([]);
@@ -11,6 +13,16 @@ const ManageTextbooks = () => {
     published_date: '',
     file: null
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
+  const [allFieldsFilled, setAllFieldsFilled] = useState(false);
+
+  const handleFileButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   const navigate = useNavigate();
 
@@ -23,14 +35,23 @@ const ManageTextbooks = () => {
 
   const handleTitleChange = (e) =>
     setForm((prev) => ({ ...prev, title: e.target.value }));
-  const handleAuthorChange = (e) =>
+  const handleAuthorChange = (e) => {
     setForm((prev) => ({ ...prev, author: e.target.value }));
-  const handleIsbnChange = (e) =>
+  }
+  const handleIsbnChange = (e) => {
     setForm((prev) => ({ ...prev, isbn: e.target.value }));
-  const handleDateChange = (e) =>
-    setForm((prev) => ({ ...prev, published_date: e.target.value }));
-  const handleFileChange = (e) =>
+  }
+  const handleDateChange = (e) => {
+    setForm((prev) => ({ ...prev, published_date: e.target.value }));    
+  }
+  const handleFileChange = (e) =>{
+    if (e.target.files[0] && !['application/pdf', 'application/msword', 'text/plain'].includes(e.target.files[0].type)) {
+      toast.error("File type not supported. Please upload a PDF, DOCX, or TXT file.");
+      return;
+    }
+    setSelectedFile(e.target.files[0]);
     setForm((prev) => ({ ...prev, file: e.target.files[0] }));
+  }
 
   const handleAddTextbook = async (e) => {
     e.preventDefault();
@@ -76,6 +97,7 @@ const ManageTextbooks = () => {
 
   return (
     <main className='p-6 pl-10'>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick={false} rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" transition={Bounce}/>
       <Title>Manage Textbooks</Title>
 
 
