@@ -593,6 +593,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         data = request.data
         assignment = Assignment.objects.get(id=data["assignment_id"])
         question = Question.objects.get(id=data["question_id"])
+        question.assignments.add(assignment)
         assignment.questions.add(question)
         assignment.save()
         serializer = AssignmentSerializer(assignment)
@@ -768,19 +769,19 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def delete_question(self, request):
         data = request.data
         question = Question.objects.get(id=data["question_id"])
-        assignment = question.assignments.first()
+        assignments = question.assignments.all()
 
-        request_to_adaptive_engine = {
-            "question_id": question.id,
-            "assignment_id": assignment.id,
-            "course_id": question.assignments.first().course_id,
-        }
-
-        if assignment.assessment_type == "Homework":
-            requests.post(
-                os.environ.get("ADAPTIVE_ENGINE_URL") + "/delete-arm-from-mab/",
-                json=request_to_adaptive_engine,
-            )
+        for assignment in assignments:
+            if assignment.assessment_type == "Homework":
+                request_to_adaptive_engine = {
+                    "question_id": question.id,
+                    "assignment_id": assignment.id,
+                    "course_id": question.assignments.first().course_id,
+                }
+                requests.post(
+                    os.environ.get("ADAPTIVE_ENGINE_URL") + "/delete-arm-from-mab/",
+                    json=request_to_adaptive_engine,
+                )
 
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -791,6 +792,18 @@ class QuestionViewSet(viewsets.ModelViewSet):
         try:
             assignment = Assignment.objects.get(id=data["assignment_id"])
             question = Question.objects.get(id=data["question_id"])
+
+            request_to_adaptive_engine = {
+                "question_id": question.id,
+                "assignment_id": assignment.id,
+                "course_id": assignment.course_id,
+            }
+
+            if assignment.assessment_type == "Homework":
+                requests.post(
+                    os.environ.get("ADAPTIVE_ENGINE_URL") + "/delete-arm-from-mab/",
+                    json=request_to_adaptive_engine,
+                )
 
             if question in assignment.questions.all():
                 assignment.questions.remove(question)
@@ -1003,8 +1016,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
             id=data["assignment_attempt_id"]
         )
         number_of_hints = 0  # TODO: track the number of hints
+
+        # TODO: Figure out why the hell PossibleAnswer duplicates sometimes.
+
         correct_answer = PossibleAnswer.objects.filter(
-            related_question=question, is_correct=True
+            related_question__id=question.id, is_correct=True
         ).first()
 
         if "answer_choice" in data:
@@ -1087,8 +1103,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
         if check_if_assignment_is_completed(assignment, user):
             course = assignment.course
 
-            print(course.__dict__)
-
             if course.deadline == "WEEK" or course.deadline == "MONTH":
                 current_date = timezone.now()
                 end_date = assignment.end_date
@@ -1120,6 +1134,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
                     "message": "Assignment completed",
                     "assessment_status": "completed",
                     "is_correct": answer_choice.is_correct,
+                    "correct_answer": correct_answer.answer,
+                    "answer_choice": answer_choice.answer,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -1193,8 +1209,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment_attempt.current_question_attempt = next_question
         assignment_attempt.completion_percentage = assignment_completion_percentage
         assignment_attempt.save()
-
-        print("answer choice answer", answer_choice.answer)
 
         data = {
             "question": question_data,

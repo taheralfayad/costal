@@ -157,11 +157,21 @@ const Assignment = () => {
         if (response.ok) {
           if (data.assessment_status === 'completed') {
             if (data.explanation !== "") {
+
+              console.log(data.is_correct)
+              console.log(data.correct_answer)
+              console.log(data.answer_choice)
+
+              setAnswerIsCorrect(data.is_correct) 
+              setCorrectAnswer(data.correct_answer)
+              setStudentAnswer(data.answer_choice)
               setHideExplanation(false)
               setMoveOnToAssignmentDoneFromExplanation(true)
             }
             else {
               setAnswerIsCorrect(data.is_correct) 
+              setCorrectAnswer(data.correct_answer)
+              setStudentAnswer(data.answer_choice)
               setHomeworkDone(true)
               setTimeout(() => {
                 navigate('/lti/student_landing/')
