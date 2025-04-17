@@ -848,6 +848,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
             question.num_points = data["num_points"]
         if skill:
             question.associated_skill = skill
+        if "is_math" in data:
+            question.is_math = data["is_math"] == "true"
         if "possible_answers" in data:
             possible_answers = json.loads(data["possible_answers"])
             question.possible_answers.set([])
@@ -902,6 +904,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             num_points=data["points"],
             associated_skill=skill,
             explanation=data["explanation"],
+            is_math=data["is_math"] == "true"
         )
 
         question.save()

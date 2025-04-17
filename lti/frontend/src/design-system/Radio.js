@@ -1,6 +1,7 @@
 import React from 'react';
+import katex from "katex";
 
-const Radio = ({ label = 'Radio', checked, onChange, id, isIncorrect }) => {
+const Radio = ({ label = 'Radio', checked, onChange, id, isIncorrect, isMath = false }) => {
     return (
         <article className='flex items-center gap-2'>
             <input
@@ -17,7 +18,7 @@ const Radio = ({ label = 'Radio', checked, onChange, id, isIncorrect }) => {
             />
 
             {label && <label htmlFor={id} className='text-gray-800 text-sm'>
-                {label}
+                {isMath ?  <span dangerouslySetInnerHTML={{ __html: katex.renderToString(label) }}></span> : label}
             </label>}
         </article>
     );

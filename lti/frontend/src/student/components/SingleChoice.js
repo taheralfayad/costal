@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Button, Radio, Notification } from '../../design-system';
 import DotsVertical from '../../assets/dots-vertical.svg';
 import RadioGroup from '../components/RadioGroup.js';
+import 'quill-editor-math/dist/index.css';
 
 
-const SingleChoice = ({ title, question, options, onSubmit, onHintRequest, isCorrect }) => {
+const SingleChoice = ({ title, question, options, onSubmit, onHintRequest, isCorrect, isMath }) => {
   
   return (
     <article className='w-[90%] mx-auto'>
@@ -21,7 +22,9 @@ const SingleChoice = ({ title, question, options, onSubmit, onHintRequest, isCor
           <h4 className="text-slate-900 font-medium uppercase text-base">
             Question
           </h4>
-          <div className='block mb-2 text-sm font-medium text-gray-700' dangerouslySetInnerHTML={{ __html: question }}></div>
+          <div className="prose prose-slate mb-2">
+            <div dangerouslySetInnerHTML={{ __html: question }} />
+          </div>
         </section>
         <div className="mt-6 mx-60 flex justify-center text-center">
           {!isCorrect && (
@@ -38,7 +41,7 @@ const SingleChoice = ({ title, question, options, onSubmit, onHintRequest, isCor
           )}
         </div>
         <section className='px-8 pb-8'>
-          <RadioGroup options={options}/> 
+          <RadioGroup options={options} isMath={isMath}/> 
           <section className='flex justify-end gap-2'>
             <Button label='More instruction' type='outline' onClick={onHintRequest} />
             <Button label='Submit' onClick={onSubmit} disabled={!(isCorrect === '-1')}/>

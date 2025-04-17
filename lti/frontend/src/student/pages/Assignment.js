@@ -291,11 +291,11 @@ useEffect(() => {
         <section className='bg-[#f8f8f8] h-full py-8'>
         {hideExplanation ? (question.type === "multiple" 
         ? 
-            <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit} isCorrect={answerIsCorrect} onHintRequest={fetchHint} />
+            <SingleChoice title={question.name} question={question.text} options={answerChoices} onSubmit={onSubmit} isCorrect={answerIsCorrect} onHintRequest={fetchHint} isMath={question.is_math} />
         : 
-            <Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' onHintRequest={fetchHint} isCorrect={answerIsCorrect}/>) :
+            <Writing title={question.name} question={question.text} onSubmit={onSubmit} placeholder='Enter your answer here' onHintRequest={fetchHint} isCorrect={answerIsCorrect} isMath={question.is_math}/>) :
 
-           ( <Answered title={question.name} question={question.text} correctAnswer={correctAnswer} studentAnswer={studentAnswer} isCorrect={answerIsCorrect} explanation={question.explanation} setMoveOnToNextQuestionFromExplanation={setMoveOnToNextQuestionFromExplanation}/> )
+           ( <Answered title={question.name} question={question.text} correctAnswer={correctAnswer} studentAnswer={studentAnswer} isCorrect={answerIsCorrect} explanation={question.explanation} setMoveOnToNextQuestionFromExplanation={setMoveOnToNextQuestionFromExplanation} isMath={question.is_math}/> )
         }
         </section>
       </section>

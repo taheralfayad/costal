@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { TextArea, CorrectAnswer, Button } from '../../design-system';
+import katex from "katex";
+import 'quill-editor-math/dist/index.css';
 
-const SelectQuestion = ({ type, title, possibleAnswers, question, placeholder = 'Placeholder', correctAnswer, onAdd, onDelete, onDeleteForever, onEdit, value }) => {
+const SelectQuestion = ({ type, title, isMath, possibleAnswers, question, placeholder = 'Placeholder', correctAnswer, onAdd, onDelete, onDeleteForever, onEdit, value }) => {
     const [isSelected, setSelected] = useState(value);
 
     const handleToggle = () => {
@@ -15,25 +17,31 @@ const SelectQuestion = ({ type, title, possibleAnswers, question, placeholder = 
 
     const renderQuestionType = () => {
         if (type == 'short') {
-            return <><div dangerouslySetInnerHTML={{ __html: question }} className="block text-sm font-medium text-gray-700"></div>
+            return <><div className="prose prose-slate mb-2">
+            <div dangerouslySetInnerHTML={{ __html: question }} />
+          </div>
                 <p className="w-full h-16 p-4 text-slate-700 text-sm mt-4
            rounded-md border border-gray-200 justify-start items-start gap-2.5 inline-flex">{placeholder}</p></>
         } else {
             if (possibleAnswers.filter(ans => ans.is_correct).length < 2) {
-                return <><div dangerouslySetInnerHTML={{ __html: question }} className="block text-sm font-medium text-gray-700 mb-4 gap-4"></div>
+                return <><div className="prose prose-slate mb-2">
+                <div dangerouslySetInnerHTML={{ __html: question }} />
+              </div>
                     {possibleAnswers.map((p) => {
                         return <section className="flex items-center space-x-2 cursor-pointer">
                             <div className="w-4 h-4 border border-gray-300 rounded-full"></div>
-                            <span className="text-gray-800 text-sm">{p.answer}</span>
+                            {isMath ? <span className="text-gray-800 text-sm mb-2" dangerouslySetInnerHTML={{ __html: katex.renderToString(p.answer) }}></span> : <span className="text-gray-800 text-sm mb-2">{p.answer}</span>}
                         </section>
                     })}
                 </>
             } else {
-                return <><div dangerouslySetInnerHTML={{ __html: question }} className="block text-sm font-medium text-gray-700 mb-4 gap-4"></div>
+                return <><div className="prose prose-slate mb-2">
+                <div dangerouslySetInnerHTML={{ __html: question }} />
+              </div>
                     {possibleAnswers.map((p) => {
                         return <section className="flex items-center space-x-2 cursor-pointer">
-                            <div className="w-4 h-4 border border-gray-300 rounded-sm"></div>
-                            <span className="text-gray-800 text-sm">{p.answer}</span>
+                            <div className="w-4 h-4 border border-gray-300 rounded-sm mb-2"></div>
+                            {isMath ? <span className="text-gray-800 text-sm" dangerouslySetInnerHTML={{ __html: katex.renderToString(p.answer) }}></span> : <span className="text-gray-800 text-sm mb-2">{p.answer}</span>}
                         </section>
                     })}
                 </>

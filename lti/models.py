@@ -168,6 +168,7 @@ class Question(models.Model):
     difficulty = models.IntegerField(default=0)
     num_points = models.IntegerField(default=1)
     type = models.TextField(default="multiple")
+    is_math = models.BooleanField(default=False)
     explanation = models.TextField(default="")
 
     def __str__(self):

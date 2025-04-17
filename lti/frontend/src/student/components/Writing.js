@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import { Button, TextArea, Notification } from '../../design-system';
 import DotsVertical from '../../assets/dots-vertical.svg';
 import styles from "./styles.css";
+import 'quill-editor-math/dist/index.css';
 
 
 const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isCorrect, isMath = false }) => {
@@ -26,7 +27,9 @@ const Writing = ({ title, question, placeholder, onSubmit, onHintRequest, isCorr
           <h4 className="text-slate-900 font-medium uppercase text-base">
             Question
           </h4>
-          <div className='block mb-2 text-sm font-medium text-gray-700' dangerouslySetInnerHTML={{ __html: question }}></div>
+          <div className="prose prose-slate mb-2">
+            <div dangerouslySetInnerHTML={{ __html: question }} />
+          </div>
         </section>
         <div className="mt-6 mx-60 flex justify-center text-center">
           {!isCorrect && (

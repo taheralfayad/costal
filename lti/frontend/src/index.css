@@ -15,3 +15,23 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.ql-font-serif {
+  @apply font-serif;
+}
+
+.ql-font-monospace {
+  @apply font-mono;
+}
+
+.ql-size-small {
+  @apply text-sm;
+}
+
+.ql-size-large {
+  @apply text-xl;
+}
+
+.ql-size-huge {
+  @apply text-2xl;
+}

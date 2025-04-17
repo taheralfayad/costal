@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@react-pdf/renderer": "^4.0.0",
+    "@tailwindcss/typography": "^0.5.16",
     "file-loader": "^6.2.0",
     "katex": "^0.16.11",
     "postcss-loader": "^7.3.3",

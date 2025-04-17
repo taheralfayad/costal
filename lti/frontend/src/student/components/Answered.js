@@ -3,8 +3,10 @@ import DotsVertical from '../../assets/dots-vertical.svg';
 import Check from '../../assets/check.svg';
 import XClose from '../../assets/x-close.svg';
 import { Button, CorrectAnswer } from '../../design-system';
+import katex from "katex";
+import 'quill-editor-math/dist/index.css';
 
-const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect, explanation, setMoveOnToNextQuestionFromExplanation}) => {
+const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect, explanation, setMoveOnToNextQuestionFromExplanation, isMath }) => {
   return (
     <article className='w-[90%] mx-auto'>
       <header className="flex justify-between items-center mb-4">
@@ -20,10 +22,9 @@ const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect, ex
           <h4 className="text-slate-900 font-medium uppercase text-base">
             Question
           </h4>
-          <div
-            className="block text-sm font-medium text-gray-700"
-            dangerouslySetInnerHTML={{ __html: question }}
-          ></div>
+          <div className="prose prose-slate mb-2">
+            <div dangerouslySetInnerHTML={{ __html: question }} />
+          </div>
         </section>
 
         <section className={`${isCorrect ? 'bg-emerald-500' : 'bg-red-500'} text-white flex gap-2 rounded p-4`}>
@@ -33,17 +34,17 @@ const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect, ex
         <section className='px-8 pb-8 flex flex-col gap-6'>
           <p className='text-slate-900 text-lg font-medium'>YOUR ANSWER</p>
           <p className="w-full h-16 p-4 text-slate-700 text-base font-medium mt-4
-            bg-gray-100 rounded-md border border-gray-200 justify-start items-start gap-2.5 inline-flex">{studentAnswer}</p>
+            bg-gray-100 rounded-md border border-gray-200 justify-start items-start gap-2.5 inline-flex"> {isMath ? <span className="text-gray-800 text-sm mb-2" dangerouslySetInnerHTML={{ __html: katex.renderToString(studentAnswer) }}></span> : <span className="text-gray-800 text-sm mb-2">{studentAnswer}</span>}</p>
 
           <p className='text-slate-900 text-lg font-medium'>ANSWER EXPLANATION</p>
           <CorrectAnswer correctAnswer={correctAnswer} />
 
           <section className='flex flex-col gap-2'>
             {explanation && <p>Here's how you can get the right answer next time!</p>}
-            <div 
-              className="block text-sm text-center font-medium text-gray-700"
-              dangerouslySetInnerHTML={{ __html: explanation }}
-            ></div>
+
+            <div className="prose mb-2">
+              <div dangerouslySetInnerHTML={{ __html: question }} />
+            </div>
           </section>
           <section className='flex justify-end'>
             <Button label='Continue' onClick={() => setMoveOnToNextQuestionFromExplanation(true)} />
