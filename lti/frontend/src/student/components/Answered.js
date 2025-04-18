@@ -43,7 +43,7 @@ const Answered = ({ title, question, correctAnswer, studentAnswer, isCorrect, ex
             {explanation && <p>Here's how you can get the right answer next time!</p>}
 
             <div className="prose mb-2">
-              <div dangerouslySetInnerHTML={{ __html: question }} />
+              <div dangerouslySetInnerHTML={{ __html: explanation }} />
             </div>
           </section>
           <section className='flex justify-end'>

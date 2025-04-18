@@ -196,6 +196,7 @@ const Assignment = () => {
               setQuestion(question)
               setAssignmentCompletionPercentage(assignment_completion_percentage)
               setAnswerChoice(null)
+              setValue('')
               setAnswerIsCorrect('-1')
               setSeconds(0)
             }, 1500)
