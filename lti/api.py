@@ -904,7 +904,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             num_points=data["points"],
             associated_skill=skill,
             explanation=data["explanation"],
-            is_math=data["is_math"] == "true"
+            is_math=data["is_math"] == "true",
         )
 
         question.save()
