@@ -56,6 +56,13 @@ const ManageTextbooks = () => {
     setForm((prev) => ({ ...prev, file: e.target.files[0] }));
   }
 
+  const convertToISODate = (dateStr) => {
+    const [month, day, year] = dateStr.split('/').map(Number);
+    const paddedMonth = String(month).padStart(2, '0');
+    const paddedDay = String(day).padStart(2, '0');
+    return `${year}-${paddedMonth}-${paddedDay}`;
+  }
+
   const handleAddTextbook = async (e) => {
     e.preventDefault();
 
@@ -65,7 +72,7 @@ const ManageTextbooks = () => {
     formData.append("title", form.title);
     formData.append("author", form.author);
     formData.append("isbn", form.isbn);
-    formData.append("published_date", form.published_date);
+    formData.append("published_date", convertToISODate(form.published_date));
     if (form.file) {
       const fileBlob = new Blob([form.file], { type: form.file.type });
       formData.append("file", fileBlob, form.file.name);
