@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input, Title } from '../../design-system';
+import { Button, DatePickerInput, Input, Title } from '../../design-system';
 import LoadingPage from '../components/LoadingPage';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 const ManageTextbooks = () => {
   const [textbooks, setTextbooks] = useState([]);
+  const today = new Date();
+  const formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+
   const [form, setForm] = useState({
     title: '',
     author: '',
     isbn: '',
-    published_date: '',
+    published_date: formattedDate,
     file: null
   });
   const [selectedFile, setSelectedFile] = useState(null);
@@ -42,7 +45,7 @@ const ManageTextbooks = () => {
     setForm((prev) => ({ ...prev, isbn: e.target.value }));
   }
   const handleDateChange = (e) => {
-    setForm((prev) => ({ ...prev, published_date: e.target.value }));    
+    setForm((prev) => ({ ...prev, published_date: e }));    
   }
   const handleFileChange = (e) =>{
     if (e.target.files[0] && !['application/pdf', 'application/msword', 'text/plain'].includes(e.target.files[0].type)) {
@@ -51,6 +54,13 @@ const ManageTextbooks = () => {
     }
     setSelectedFile(e.target.files[0]);
     setForm((prev) => ({ ...prev, file: e.target.files[0] }));
+  }
+
+  const convertToISODate = (dateStr) => {
+    const [month, day, year] = dateStr.split('/').map(Number);
+    const paddedMonth = String(month).padStart(2, '0');
+    const paddedDay = String(day).padStart(2, '0');
+    return `${year}-${paddedMonth}-${paddedDay}`;
   }
 
   const handleAddTextbook = async (e) => {
@@ -62,7 +72,7 @@ const ManageTextbooks = () => {
     formData.append("title", form.title);
     formData.append("author", form.author);
     formData.append("isbn", form.isbn);
-    formData.append("published_date", form.published_date);
+    formData.append("published_date", convertToISODate(form.published_date));
     if (form.file) {
       const fileBlob = new Blob([form.file], { type: form.file.type });
       formData.append("file", fileBlob, form.file.name);
@@ -107,8 +117,15 @@ const ManageTextbooks = () => {
             <Input value={form.title} onChange={handleTitleChange} label="Title" />
             <Input value={form.author} onChange={handleAuthorChange} label="Author" />
             <Input value={form.isbn} onChange={handleIsbnChange} label="ISBN" />
-            <Input type="date" value={form.published_date} onChange={handleDateChange} label="Published Date" />
-            <input type="file" onChange={handleFileChange} />
+            <DatePickerInput position='top-20 left-1' placeholder='10/12/2024' type='datetime-local' value={form.published_date} onChange={handleDateChange} label="Published Date"
+            />
+            <label
+          className='block mb-2 text-sm font-medium text-gray-700'
+      
+        >
+          Add your file <span className="text-red-500">*</span>
+        </label>
+            <input type="file" required onChange={handleFileChange} />
 
           </section>
           <aside className='w-2/5 border border-slate-300 rounded-lg shadow-sm p-4 m-6' >

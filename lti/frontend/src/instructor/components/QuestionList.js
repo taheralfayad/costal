@@ -17,7 +17,7 @@ const QuestionList = ({ assignmentId, questions, handleDeleteQuestion, handleDel
 
       {questions.map((question) => (
 
-        <PreviewQuestion id={question.id} handleDeleteFromAssignment={handleDeleteFromAssignment} handleDeleteQuestion={handleDeleteQuestion} handleEditQuestion={() => navigate(`/lti/edit_question/${assignmentId}/${question.id}`)} title={question.name} points={question.num_points} percentage={difficultyMap[question.difficulty]} question={question.text} possibleAnswers={question.possible_answers} correctAnswer={question.possible_answers.reduce((acc, ans) => {
+        <PreviewQuestion isMath={question.is_math} id={question.id} handleDeleteFromAssignment={handleDeleteFromAssignment} handleDeleteQuestion={handleDeleteQuestion} handleEditQuestion={() => navigate(`/lti/edit_question/${assignmentId}/${question.id}`)} title={question.name} points={question.num_points} percentage={difficultyMap[question.difficulty]} question={question.text} possibleAnswers={question.possible_answers} correctAnswer={question.possible_answers.reduce((acc, ans) => {
           if (ans.is_correct) acc.push(ans.answer);
           return acc;
         }, [])} type={question.type} />

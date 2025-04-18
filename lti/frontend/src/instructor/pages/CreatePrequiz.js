@@ -18,7 +18,8 @@ const CreatePrequiz = () => {
   const { moduleId } = useParams();
   const navigate = useNavigate();
 
-  const handleCreatePrequiz = async () => {
+  const handleCreatePrequiz = async (e) => {
+    e.preventDefault();
     let start = combineDateTime(startDate, startTime)
     let end = combineDateTime(endDate, endTime)
 
@@ -50,22 +51,30 @@ const CreatePrequiz = () => {
 
   return (
     <div>
+      <form onSubmit={handleCreatePrequiz}>
       <main className='p-6 pl-10 w-1/2 flex flex-col gap-4'>
         <Title>Create Prequiz</Title>
-        <Input label='Name' placeholder='Great Prequiz' value={name} onChange={(e) => setName(e.target.value)} />
+        <Input required label='Name' placeholder='Great Prequiz' value={name} onChange={(e) => setName(e.target.value)} />
         <section className='flex justify-between gap-4'>
-          <DatePickerInput position='top-20 left-1' label='Start Date' placeholder='10/10/2024' type='datetime-local' value={startDate} onChange={(value) => setStartDate(value)} />
-          <TimePickerInput label='Start Time' placeholder='12pm EST' value={startTime} onChange={(value) => setStartTime(value)} />
+          <DatePickerInput  required position='top-20 left-1' label='Start Date' placeholder='10/10/2024' type='datetime-local' value={startDate} onChange={(value) => setStartDate(value)} />
+          <TimePickerInput 
+          required
+          label='Start Time' placeholder='12pm EST' value={startTime} onChange={(value) => setStartTime(value)} />
         </section>
         <section className='flex justify-between gap-4'>
-          <DatePickerInput position='top-20 left-1' label='End Date' placeholder='10/12/2024' type='datetime-local' value={endDate} onChange={(value) => setEndDate(value)} />
-          <TimePickerInput label='End Time' placeholder='12pm EST' value={endTime} onChange={(value) => setEndTime(value)} />
+          <DatePickerInput 
+          required
+          position='top-20 left-1' label='End Date' placeholder='10/12/2024' type='datetime-local' value={endDate} onChange={(value) => setEndDate(value)} />
+          <TimePickerInput 
+          required
+          label='End Time' placeholder='12pm EST' value={endTime} onChange={(value) => setEndTime(value)} />
         </section>
       </main>
       <section className='flex justify-end gap-2 pr-2'>
-        <Button label='Create' onClick={handleCreatePrequiz} />
+      <Button label='Create' form={true} />
         <Button label='Cancel' type='outline' onClick={() => navigate('/lti/course_outline')} />
       </section>
+      </form>
     </div>
   );
 }

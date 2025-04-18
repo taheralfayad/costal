@@ -17,6 +17,7 @@ const EditQuestion = () => {
     const [selectedCheckbox, setSelectedCheckbox] = useState(null);
     const [associatedSkill, setAssociatedSkill] = useState(0);
     const [solvingText, setSolvingText] = useState('');
+    const [isMath, setIsMath] = useState(false);
     const [points, setPoints] = useState(0);
     const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState([{ id: 1, text: '', checked: false }]);
     const [shortAnswerItems, setShortAnswerItems] = useState([]);
@@ -52,6 +53,7 @@ const EditQuestion = () => {
         setDifficulty(difficulty_map[resData.difficulty])
         setSelectedCheckbox(resData.type)
         setPoints(resData.num_points)
+        setIsMath(resData.is_math)
 
         setSolvingText(resData.explanation)
 
@@ -146,6 +148,7 @@ const EditQuestion = () => {
         formData.append('text', text);
         formData.append('type', selectedCheckbox);
         formData.append('explanation', solvingText);
+        formData.append('is_math', isMath);
 
         if (selectedCheckbox === 'multiple') {
             const multipleChoiceData = multipleChoiceAnswers.filter((choice) => choice.text.trim() !== "").map((choice) => {
@@ -212,13 +215,23 @@ const EditQuestion = () => {
                                 id="multiple"
                             />
                         </section>
+                        <label className='block text-sm font-medium text-gray-700'>
+                            Choose if your question is a math one
+                        </label>
+                        <Checkbox
+                            label="Is Math Question"
+                            checked={isMath}
+                            onChange={() => setIsMath(!isMath)}
+                            id="math"
+                        />
+
                         <Input type='number' label='Points' min={1} max={15} placeholder={1} width='w-1/4' value={points} onChange={(e) => setPoints(e.target.value)} />
                     </section>
                     {selectedCheckbox &&
                         <aside className='mt-16 ml-10 w-2/5 h-1/2 flex flex-col gap-4 border border-slate-300 rounded-lg shadow-sm m-6'>
                             {selectedCheckbox === 'short' ?
-                                <ShortAnswerConfig items={shortAnswerItems} setItems={setShortAnswerItems} /> :
-                                <MultipleChoiceConfig choices={multipleChoiceAnswers} setChoices={setMultipleChoiceAnswers} />}
+                                <ShortAnswerConfig items={shortAnswerItems} setItems={setShortAnswerItems} isMath={isMath} /> :
+                                <MultipleChoiceConfig choices={multipleChoiceAnswers} setChoices={setMultipleChoiceAnswers} isMath={isMath} />}
 
                             <section className='mx-4 mb-2'>
                                 <RichTextEditor label='Add an explanation on how to solve this question' required value={solvingText} onChange={setSolvingText} />

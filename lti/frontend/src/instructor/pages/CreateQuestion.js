@@ -33,6 +33,7 @@ const CreateQuestion = () => {
   const [shortAnswerItems, setShortAnswerItems] = useState([]);
   const isLLMGen = new URLSearchParams(location.search).get('llm') === 'true';
   const [isLoading, setIsLoading] = useState(true);
+  const [isMath, setIsMath] = useState(false);
   const [previousQuestions, setPreviousQuestions] = useState([]);
   const [data, setData] = useState(null);
   const [courseName, setCourseName] = useState('');
@@ -195,6 +196,7 @@ const CreateQuestion = () => {
     formData.append('text', editorValue);
     formData.append('type', selectedCheckbox);
     formData.append('explanation', solvingText);
+    formData.append('is_math', isMath);
 
 
     if (selectedCheckbox === 'multiple') {
@@ -322,13 +324,23 @@ const CreateQuestion = () => {
                 id="multiple"
               />
             </section>
+
+            <label className='block text-sm font-medium text-gray-700'>
+                Choose if your question is a math one
+              </label>
+            <Checkbox
+                label="Allow Math Keyboard"
+                checked={isMath}
+                onChange={() => setIsMath(!isMath)}
+                id="math"
+              />
             <Input type='number' label='Points' min={1} max={15} placeholder={1} width='w-1/4' onChange={(e) => handlePointsChange(e)} />
           </section>
           {selectedCheckbox &&
             <aside className='mt-16 ml-10 w-2/5 h-1/2 flex flex-col gap-4 border border-slate-300 rounded-lg shadow-sm mx-6'>
               {selectedCheckbox === 'short' ?
-                <ShortAnswerConfig items={shortAnswerItems} setItems={setShortAnswerItems} /> :
-                <MultipleChoiceConfig choices={multipleChoiceAnswers} setChoices={setMultipleChoiceAnswers} />}
+                <ShortAnswerConfig items={shortAnswerItems} setItems={setShortAnswerItems} isMath={isMath} /> :
+                <MultipleChoiceConfig choices={multipleChoiceAnswers} setChoices={setMultipleChoiceAnswers} isMath={isMath} />}
               <section className='mx-4 mb-2'>
                 <RichTextEditor label='Add an explanation on how to solve this question' required value={solvingText} onChange={setSolvingText} />
               </section>

@@ -19,10 +19,9 @@ const MultipleChoice = ({ title, question, options, onHintRequest }) => {
       <main className="w-full border border-slate-300 rounded-lg bg-white flex flex-col gap-4">
         <section className='px-8 pt-8 flex flex-col gap-4'>
           <h4 className="text-slate-900 font-medium uppercase text-base">Question</h4>
-          <div
-            className='block mb-2 text-sm font-medium text-gray-700'
-            dangerouslySetInnerHTML={{ __html: question }}
-          ></div>
+          <div className="prose prose-slate mb-2">
+            <div dangerouslySetInnerHTML={{ __html: question }} />
+          </div>
         </section>
         {isIncorrect && (
           <p className='bg-red-500 w-full text-white text-base font-semibold pl-8 p-2 mb-2 rounded'>
