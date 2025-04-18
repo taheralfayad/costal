@@ -329,7 +329,7 @@ const CreateQuestion = () => {
                 Choose if your question is a math one
               </label>
             <Checkbox
-                label="Is Math Question"
+                label="Allow Math Keyboard"
                 checked={isMath}
                 onChange={() => setIsMath(!isMath)}
                 id="math"

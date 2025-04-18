@@ -5,16 +5,16 @@ import MathInput from "react-math-keyboard";
 
 const MultipleChoiceConfig = ({ choices, setChoices, isMath }) => {
   const firstMathfieldRef = useRef();
-  
-  
+
+
   const handleInputChange = (id, value) => {
     setChoices((prevChoices) => {
       const updatedChoices = prevChoices.map((choice) =>
         choice.id === id ? { ...choice, text: value } : choice
       );
-  
+
       const lastChoice = updatedChoices[updatedChoices.length - 1];
-  
+
       if (
         lastChoice.id === id &&
         value.trim() !== '' &&
@@ -25,12 +25,12 @@ const MultipleChoiceConfig = ({ choices, setChoices, isMath }) => {
           { id: updatedChoices.length + 1, text: '', checked: false },
         ];
       }
-  
+
       return updatedChoices;
     });
   };
-  
-  
+
+
 
   const handleCheckboxChange = (id) => {
     setChoices((prevChoices) =>
@@ -62,6 +62,7 @@ const MultipleChoiceConfig = ({ choices, setChoices, isMath }) => {
             />
           </span>
           {isMath ? <article className='mb-4 flex-1'><MathInput
+            initialLatex={choice.text}
             setValue={(e) => handleInputChange(choice.id, e)}
             setMathfieldRef={(mathfield) => {
               if (mathfield) {
@@ -78,7 +79,7 @@ const MultipleChoiceConfig = ({ choices, setChoices, isMath }) => {
             value={choice.text}
             onChange={(e) => handleInputChange(choice.id, e.target.value)}
             width='w-full'
-          /> }
+          />}
           <span className='pb-4'>
             <Trash onClick={() => handleRemoveChoice(choice.id)}
               className='text-slate-500 hover:text-red-600' />
