@@ -6,11 +6,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 import boto3
 
-if not Path('.env').exists():
+if not Path('devops/.deploy.env').exists():
     print("Create a .deploy.env file")
     exit()
 
-load_dotenv('.env')
+load_dotenv('devops/.deploy.env')
 
 COMMIT_TAG = os.getenv('COMMIT_TAG')
 ECR_REPOSITORY = os.getenv('ECR_REPOSITORY')
@@ -33,9 +33,9 @@ subprocess.run(['docker', 'ps', '-a'], check=True)
 subprocess.run(['docker', 'tag', 'costal-web', f'backend:web-{COMMIT_TAG}'], check=True)
 subprocess.run(['docker', 'tag', 'costal-adaptive-engine', f'backend:adaptive-engine-{COMMIT_TAG}'], check=True)
 
-# Login to Amazon ECR Public
+# Login to Amazon ECR (Private)
 login = subprocess.Popen(
-    ['aws', 'ecr-public', 'get-login-password', '--region', AWS_REGION],
+    ['aws', 'ecr', 'get-login-password', '--region', AWS_REGION],
     stdout=subprocess.PIPE
 )
 docker_login = subprocess.Popen(
@@ -77,7 +77,7 @@ env_setup.update({
     'DB_PASSWORD': DB_PASSWORD,
     'DB_PORT': DB_PORT
 })
-subprocess.run(['python', 'devops/setup.py'], check=True, env=env_setup)
+subprocess.run(['python3', 'devops/setup.py'], check=True, env=env_setup)
 
 # Restart instances via Auto Scaling
 autoscaling = boto3.client('autoscaling', region_name=AWS_REGION)
