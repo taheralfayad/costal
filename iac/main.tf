@@ -214,6 +214,12 @@ resource "aws_s3_bucket" "s3-release-bucket" {
 }
 
 # RDS
+variable "db_password" {
+  description = "The password for the RDS database"
+  type        = string
+  sensitive   = true
+}
+
 resource "aws_db_subnet_group" "rds-private-subnet-group" {
   description = "Private RDS subnet group"
   name        = "rds-private-subnet-group-1"
@@ -232,7 +238,7 @@ resource "aws_db_instance" "costal-db" {
   publicly_accessible    = "false"
   vpc_security_group_ids = [aws_security_group.rds-sg.id]
   username               = "costal"
-  password               = "TURNTHISINTOANENVVARIABLE"
+  password               = var.db_password
 }
 
 # IAM
@@ -330,7 +336,7 @@ resource "aws_lb" "costal-alb" {
   enable_cross_zone_load_balancing            = "true"
   ip_address_type                             = "ipv4"
   load_balancer_type                          = "application"
-  name                                        = "costal-alb-tf" # TODO: REMOVE TF FROM NAME
+  name                                        = "costal-alb"
   security_groups                             = [aws_security_group.alb-sg.id]
 
   subnets                    = [aws_subnet.alb_public_subnet_a.id, aws_subnet.alb_public_subnet_b.id]
@@ -359,7 +365,7 @@ resource "aws_lb_target_group" "webserver-tg" {
   vpc_id      = aws_vpc.costal-vpc.id
 }
 
-resource "aws_lb_listener" "alb-listener" {
+resource "aws_lb_listener" "alb-https-listener" {
   certificate_arn = aws_acm_certificate_validation.costal.certificate_arn
 
   default_action {
@@ -387,6 +393,31 @@ resource "aws_lb_listener" "alb-listener" {
   ssl_policy                           = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 }
 
+resource "aws_lb_listener" "alb-http-listener" {
+  default_action {
+    forward {
+      stickiness {
+        duration = "3600"
+        enabled  = "false"
+      }
+
+      target_group {
+        arn    = aws_lb_target_group.webserver-tg.arn
+        weight = "1"
+      }
+    }
+
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.webserver-tg.arn
+  }
+
+  load_balancer_arn = aws_lb.costal-alb.arn
+
+  port                                 = "80"
+  protocol                             = "HTTP"
+  routing_http_response_server_enabled = "true"
+}
+
 # AutoScaling
 resource "aws_launch_template" "ec2-launch-template" {
   iam_instance_profile {
@@ -395,7 +426,7 @@ resource "aws_launch_template" "ec2-launch-template" {
 
   image_id      = "ami-0c614dee691cbbf37"
   instance_type = "t2.medium"
-  name          = "costal-launch-template-tf" # TODO: REMOVE TF FROM NAME
+  name          = "costal-launch-template"
 
   tag_specifications {
     resource_type = "instance"
@@ -409,7 +440,7 @@ resource "aws_launch_template" "ec2-launch-template" {
 }
 
 resource "aws_autoscaling_group" "costal-asg" {
-  name                      = "costal-asg-tf"
+  name                      = "costal-asg"
   default_cooldown          = "300"
   desired_capacity          = "1"
   max_size                  = "1"
