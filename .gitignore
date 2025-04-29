@@ -16,3 +16,4 @@ textbooks/
 media/
 .terraform/
 .deploy.env
+*.zip
