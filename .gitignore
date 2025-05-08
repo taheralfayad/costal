@@ -14,3 +14,6 @@ key.pem
 cert.pem
 textbooks/
 media/
+.terraform/
+.deploy.env
+*.zip

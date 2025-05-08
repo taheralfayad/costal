@@ -107,3 +107,45 @@ Select which key set you would like to use. Typically, this will be the one you 
 ./manage.sh deploy
 ```
 5. Select which registration you'd like to use for this deployment. Typically, it will be the one you created in the previous section. When prompted, paste the deployment ID you copied earlier.
+
+## Production Deployment
+
+To ease the process of setting the cloud infrastructure required to run COSTAL, `.tf` scripts are provided in the `iac/` directory for use with either OpenTofu of Terraform. For these instructions we will be using OpenTofu.
+
+1. Install and setup OpenTofu using the instructions [here](https://opentofu.org/docs/intro/install/)
+
+2. Create an S3 bucket named `costal-tf-state` in the `us-east-1` region to store the Terraform state file.
+
+3. Create a DynamoDB table named `costal-tf-locks` with a primary key of `LockID` (type: String) to enable state locking and consistency.
+
+4. Use Route53 to obtain an ACM cert for SSL on your domain name. This is required for the LTI launch process with Canvas.
+
+5. Change into the `iac/` directory and initialize OpenTofu.
+```sh
+cd iac/
+tofu init
+```
+
+6. After the initalization is complete you can apply the changes with `apply` while passing in the certificate_arn from step 4 (The ACM arn is not required in case you want to test the application over HTTP). You will be prompted to input a password for the database. **DO NOT LOSE THIS PASSWORD** as it cannot be recovered without recreating the db instance.
+```sh
+tofu apply -var="certificate_arn=arn:aws:acm:us-east-1:123456789012:certificate/EXAMPLE"
+```
+
+7. If you ever need to take down the cloud infrastructure, it can be removed with.
+```sh
+tofu destroy
+```
+
+### Deployment Script
+
+Once you have the necessary cloud infrastructure setup, we need to build the application and push it to AWS. Typically this is done through the Github Actions script in `.github/workflows/deploy.yml` everytime a push is made to the `main` branch. However, if you simply want to do this process manually, a `devops/deploy.py` script is provided.
+
+1. Copy and fill out your `.deploy.env` file with the AWS IDs and ARNs of the various resources. You can use the `COMMIT_TAG` variable to specify the version number of the build.
+```sh
+cp devops/.deploy.env.template devops/.deploy.env
+```
+
+2. Run the deploy script to initiate the build process.
+```sh
+python devops/deploy.py
+```

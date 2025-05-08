@@ -11,7 +11,7 @@ source /etc/environment
 
 
 # pull release bundle from s3 and cd into project directory
-aws s3 cp s3://costal-release-bucket/$RELEASE_BUNDLE_NAME /home/ec2-user/costal/
+aws s3 cp s3://release-bucket-costal/$RELEASE_BUNDLE_NAME /home/ec2-user/costal/
 cd /home/ec2-user/costal/
 
 # create .env using the exported variables
@@ -52,7 +52,7 @@ systemctl start docker
 touch .env
 
 # login to ecr
-aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPOSITORY}
 
 # start docker compose
 docker compose -f docker-compose-aws.yml up
