@@ -110,7 +110,7 @@ Select which key set you would like to use. Typically, this will be the one you 
 
 ## Production Deployment
 
-To ease the process of setting the cloud infrastructure required to run COSTAL, `.tf` scripts are provided in the `iac/` directory for use with either openTofu of Terraform. For these instructions we will be using openTofu.
+To ease the process of setting the cloud infrastructure required to run COSTAL, `.tf` scripts are provided in the `iac/` directory for use with either OpenTofu of Terraform. For these instructions we will be using OpenTofu.
 
 1. Install and setup OpenTofu using the instructions [here](https://opentofu.org/docs/intro/install/)
 
@@ -118,18 +118,20 @@ To ease the process of setting the cloud infrastructure required to run COSTAL, 
 
 3. Create a DynamoDB table named `costal-tf-locks` with a primary key of `LockID` (type: String) to enable state locking and consistency.
 
-4. Change into the `iac/` directory and initialize OpenTofu.
+4. Use Route53 to obtain an ACM cert for SSL on your domain name. This is required for the LTI launch process with Canvas.
+
+5. Change into the `iac/` directory and initialize OpenTofu.
 ```sh
 cd iac/
 tofu init
 ```
 
-5. After the initalization is complete you can apply the changes with `apply`. You will be prompted to input a password for the database. **DO NOT LOSE THIS PASSWORD** as it cannot be recovered without recreating the db instance.
+6. After the initalization is complete you can apply the changes with `apply` while passing in the certificate_arn from step 4 (The ACM arn is not required in case you want to test the application over HTTP). You will be prompted to input a password for the database. **DO NOT LOSE THIS PASSWORD** as it cannot be recovered without recreating the db instance.
 ```sh
-tofu apply
+tofu apply -var="certificate_arn=arn:aws:acm:us-east-1:123456789012:certificate/EXAMPLE"
 ```
 
-6. If you ever need to take down the cloud infrastructure, it can be removed with.
+7. If you ever need to take down the cloud infrastructure, it can be removed with.
 ```sh
 tofu destroy
 ```

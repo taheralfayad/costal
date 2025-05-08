@@ -287,51 +287,17 @@ resource "aws_ecr_repository" "ecr-image-store" {
   force_delete = true
 }
 
-# Route53
-data "aws_route53_zone" "costal" {
-  name         = "costal-learning.com."
-  private_zone = false
-}
-
-resource "aws_acm_certificate" "costal" {
-  domain_name               = "costal-learning.com"
-  subject_alternative_names = ["www.costal-learning.com"]
-  validation_method         = "DNS"
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  tags = {
-    Name = "costal-learning.com-cert"
-  }
-}
-
-resource "aws_route53_record" "cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.costal.domain_validation_options :
-    dvo.domain_name => {
-      name   = dvo.resource_record_name
-      type   = dvo.resource_record_type
-      record = dvo.resource_record_value
-    }
-  }
-
-  zone_id = data.aws_route53_zone.costal.zone_id
-  name    = each.value.name
-  type    = each.value.type
-  ttl     = 60
-  records = [each.value.record]
-}
-
-resource "aws_acm_certificate_validation" "costal" {
-  certificate_arn         = aws_acm_certificate.costal.arn
-  validation_record_fqdns = [
-    for r in aws_route53_record.cert_validation : r.fqdn
-  ]
-}
-
 # ALB
+variable "certificate_arn" {
+  description = "ARN of an existing ACM cert to use on the ALB HTTPS listener. Set to \"\" or \"none\" to disable HTTPS."
+  type        = string
+  default     = ""
+}
+
+locals {
+  enable_https = var.certificate_arn != "" && lower(var.certificate_arn) != "none"
+}
+
 resource "aws_lb" "costal-alb" {
   enable_cross_zone_load_balancing            = "true"
   ip_address_type                             = "ipv4"
@@ -365,32 +331,30 @@ resource "aws_lb_target_group" "webserver-tg" {
   vpc_id      = aws_vpc.costal-vpc.id
 }
 
-resource "aws_lb_listener" "alb-https-listener" {
-  certificate_arn = aws_acm_certificate_validation.costal.certificate_arn
+resource "aws_lb_listener" "https" {
+  count             = local.enable_https ? 1 : 0
+  load_balancer_arn = aws_lb.costal-alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+
+  ssl_policy      = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn = var.certificate_arn
 
   default_action {
-    forward {
-      stickiness {
-        duration = "3600"
-        enabled  = "false"
-      }
-
-      target_group {
-        arn    = aws_lb_target_group.webserver-tg.arn
-        weight = "1"
-      }
-    }
-
     type             = "forward"
     target_group_arn = aws_lb_target_group.webserver-tg.arn
+
+    forward {
+      target_group {
+        arn    = aws_lb_target_group.webserver-tg.arn
+        weight = 1
+      }
+      stickiness {
+        enabled  = false
+        duration = 3600
+      }
+    }
   }
-
-  load_balancer_arn = aws_lb.costal-alb.arn
-
-  port                                 = "443"
-  protocol                             = "HTTPS"
-  routing_http_response_server_enabled = "true"
-  ssl_policy                           = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 }
 
 resource "aws_lb_listener" "alb-http-listener" {
